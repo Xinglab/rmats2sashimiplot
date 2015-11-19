@@ -28,7 +28,7 @@ setup(name='rmats2sashimiplot',
 			package_dir = {'':'src'},   # all distutils packages are under src
       entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main']},
 			description = 'rmats2sashimiplot',
-            author='Yu-Ting Tseng, Emad Bahrami-Samani,
+            author='Yu-Ting Tseng, Emad Bahrami-Samani',
 			author_email = 'ting0514@gmail.com',
             url='https://github.com/Xinglab/rmats2sashimiplot',
             download_url='https://github.com/Xinglab/rmats2sashimiplot',
