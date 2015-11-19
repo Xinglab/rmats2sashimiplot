@@ -30,6 +30,7 @@ Running with bam files:
         $python rmats2sashimiplot.py -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLabel2 -exon_s exonScale -intron_s intronScale -o outDir
 
 Required Parameters:
+
         -s1 s1_rep1.sam[,s1_rep2.sam]	Mapping results for the sample_1 in sam format.
                                 Replicates must be in a comma separated list.
                                 (Only if using sam)
