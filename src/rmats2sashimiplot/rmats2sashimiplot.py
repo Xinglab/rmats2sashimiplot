@@ -68,10 +68,10 @@ for paramIndex in range(1,len(sys.argv)): ## going through the all parameters
 ### checking out the required arguments
 if (s1=='' or  s2=='' or events=='' or l1=='' or  l2=='' or outDir==''): ### at least one required param is missing
   print ('Not enough arguments!!');
-  print ('Usage (with sam files):\n\tpython rmats2sashimiplot.py -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
-  print ('Example\n\tpython rmats2sashimiplot.py -s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam -s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_events_output\n');
-  print ('Usage (with bam files):\n\tpython rmats2sashimiplot.py -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
-  print ('Example\n\tpython rmats2sashimiplot.py -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output\n');
+  print ('Usage (with sam files):\n\trmats2sashimiplot -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
+  print ('Example\n\trmats2sashimiplot -s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam -s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_events_output\n');
+  print ('Usage (with bam files):\n\trmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
+  print ('Example\n\trmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output\n');
   sys.exit();
 
 outPath = os.path.abspath(outDir);
@@ -146,7 +146,7 @@ logging.debug("#################################################################
 
 def prepareSettingFile(gene_no_str): ## get AS events from GTF and SAM files
   logging.debug("prepare sashimi plot setting file..");
-  
+
   geneSymbol = (gene_no_str.split('_'))[0];
   settingFile = open(outPath + '/Sashimi_index_'+gene_no_str+'/sashimi_plot_settings.txt', 'w');
   settingFile.write("[data]\n");
@@ -225,7 +225,7 @@ def prepareSettingFile(gene_no_str): ## get AS events from GTF and SAM files
 
 def prepareCoorSettingFile(): ## get AS events from GTF and SAM files
   logging.debug("prepare sashimi plot setting file..");
-  
+
   settingFile = open(outPath + '/Sashimi_index/sashimi_plot_settings.txt', 'w');
   settingFile.write("[data]\n");
   settingFile.write("bam_prefix = "+samDir+"\n");
@@ -296,10 +296,10 @@ def prepareCoorSettingFile(): ## get AS events from GTF and SAM files
 
 def drawPlotWithEventsFile(): ## events file is provided
   logging.debug("drawPlotWithEventsFile()");
-  
+
   fo = open(events,'r');
   w2 = open(outPath+'/Sashimi_index/SE.event.list.txt','w');
-  
+
   events_no = 0;
   for line in fo:
     geneSymbol = "";
@@ -400,9 +400,9 @@ def drawPlotWithEventsFile(): ## events file is provided
             w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (chr,e2st_s,e2st_e,strand,id_str,id_str))
             w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
     w1.close()
-    
+
     logging.debug("start preparing sashimi plot setting files");
-    
+
     try:
       prepareSettingFile(gene_no_str);
       pass;
@@ -411,7 +411,7 @@ def drawPlotWithEventsFile(): ## events file is provided
       logging.debug("Exception: %s" % sys.exc_info()[0]);
       logging.debug("Detail: %s" % sys.exc_info()[1]);
       sys.exit(-1);
-    
+
     logging.debug("done making setting file..");
     logging.debug("use gff3 format file to run index_gff..");
 
@@ -428,12 +428,12 @@ def drawPlotWithEventsFile(): ## events file is provided
   w2.close()
 
   return;
-  
+
 ##### end of drawPlotWithEventsFile ####
 
 def drawPlotWithCoordinate(): ## coordinate is provided
   logging.debug("drawPlotWithCoordinate()");
-  
+
   tmp_str = events.split(':');
   in_chr = tmp_str[0];
   in_strand = tmp_str[1];
@@ -447,10 +447,10 @@ def drawPlotWithCoordinate(): ## coordinate is provided
   w2 = open(outPath + '/Sashimi_index/SE.event.list.txt','w');
   w1 = open(outPath+'/Sashimi_index/tmp.gff3','w');
   sashimiPath = outPath + '/Sashimi_index';
-  
+
   w1.write( "%s\tensGene\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (in_chr,in_coor_s,in_coor_e,in_strand,id_str,id_str))
   w1.write( "%s\tensGene\tmRNA\t%s\t%s\t.\t%s\t.\tName=ENST00000000000;Parent=%s;ID=ENST00000000000\n" % (in_chr,in_coor_s,in_coor_e,in_strand,id_str))
-  
+
   events_no = 0;
   for line in fo:
     if line.startswith('#'):
@@ -471,26 +471,26 @@ def drawPlotWithCoordinate(): ## coordinate is provided
         ENST_Name_str = annot_items[0];
         ENST_Parent_str = annot_items[1];
         ENST_ID_str = annot_items[2].replace("\n","");
-        if type=='mRNA': 
+        if type=='mRNA':
           logging.debug(line.replace("\n",""));
           w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,id_str,ENST_ID_str))
-        if type=='exon': 
+        if type=='exon':
           logging.debug(line.replace("\n",""));
           w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
       if strand =='-' and in_strand==strand and int(in_coor_s)<=int(coor_e) and int(coor_s)<=int(in_coor_e):
         ENST_Name_str = annot_items[0];
         ENST_Parent_str = annot_items[1];
         ENST_ID_str = annot_items[2].replace("\n","");
-        if type=='mRNA': 
+        if type=='mRNA':
           logging.debug(line.replace("\n",""));
           w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,id_str,ENST_ID_str))
-        if type=='exon': 
+        if type=='exon':
           logging.debug("exon: " + line.replace("\n",""));
           w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
   w1.close()
 
   logging.debug("start preparing sashimi plot setting files");
-  
+
   try:
     prepareCoorSettingFile();
     pass;
@@ -499,7 +499,7 @@ def drawPlotWithCoordinate(): ## coordinate is provided
     logging.debug("Exception: %s" % sys.exc_info()[0]);
     logging.debug("Detail: %s" % sys.exc_info()[1]);
     sys.exit(-2);
-  
+
   logging.debug("done making setting file..");
   logging.debug("use gff3 format file to run index_gff..");
   os.system('index_gff --index '+outPath+'/Sashimi_index/tmp.gff3 '+outPath+'/Sashimi_index/');
@@ -533,7 +533,7 @@ if eventsFile==0: #user input coordinate
       drawPlotWithCoordinate();
       pass;
     except:
-      logging.debug("There is an exception in drawPlotWithCoordinate()");du 
+      logging.debug("There is an exception in drawPlotWithCoordinate()");du
       logging.debug("Exception: %s" % sys.exc_info()[0]);
       logging.debug("Detail: %s" % sys.exc_info()[1]);
       sys.exit(-1);
