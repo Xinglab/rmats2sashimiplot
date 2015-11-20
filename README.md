@@ -44,7 +44,7 @@ The following is a detailed description of the options used with rmats2sashimipl
                                         result as event file)
         -e eventsFile	                The rMATS output event file. (Only if using rMATS
                                         format result as event file)
-        -c coordinate:annotaionFile	The coordinate of genome region and an annotation
+        -c coordinate:annotaionFile	    The coordinate of genome region and an annotation
                                         of genes and transcripts in GFF3 format. Coordinate
                                         and annotation file must be colon separated.
                                         (Only if using coordinate and annotaion file)
