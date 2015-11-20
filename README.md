@@ -48,9 +48,9 @@ The following is a detailed description of the options used with rmats2sashimipl
                                         of genes and transcripts in GFF3 format. Coordinate
                                         and annotation file must be colon separated.
                                         (Only if using coordinate and annotaion file)
-        -l1 SampleLabel1	        The label for first sample.
-        -l2 SampleLabel2	        The label for second sample.
-        -o outDir	                The output directory.
+        -l1 SampleLabel1	            The label for first sample.
+        -l2 SampleLabel2	            The label for second sample.
+        -o outDir	                    The output directory.
 
         Optional:
         -exon_s <int>	                The size of scale down exons. The default is 1.
