@@ -24,6 +24,7 @@ for argIndex in range(1,len(sys.argv)): ## going through the all parameters
   if(sys.argv[argIndex][0]=='-' and sys.argv[argIndex] not in validArgList): ## incorrect argument
     print ('Not valid argument: %s' % sys.argv[argIndex]);
     print ('Please provide valid arguments.');
+
     sys.exit();
 
 for paramIndex in range(1,len(sys.argv)): ## going through the all parameters
@@ -67,12 +68,50 @@ for paramIndex in range(1,len(sys.argv)): ## going through the all parameters
 
 ### checking out the required arguments
 if (s1=='' or  s2=='' or events=='' or l1=='' or  l2=='' or outDir==''): ### at least one required param is missing
-  print ('Not enough arguments!!');
-  print ('Usage (with sam files):\n\trmats2sashimiplot -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
-  print ('Example\n\trmats2sashimiplot -s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam -s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_events_output\n');
-  print ('Usage (with bam files):\n\trmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
-  print ('Example\n\trmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output\n');
-  sys.exit();
+    print ('Not enough arguments!\n');
+    print ('Required parameters:');
+    print ('-s1 s1_rep1.sam[,s1_rep2.sam]   Mapping results for the sample_1 in sam format.');
+    print ('                                Replicates must be in a comma separated list.');
+    print ('                                (Only if using sam)');
+    print ('-s2 s2.rep1.sam[,s2.rep2.sam]   Mapping results for the sample_2 in sam format.');
+    print ('                                Replicates must be in a comma separated list.');
+    print ('                                (Only if using sam)');
+    print ('-b1 s1_rep1.bam[,s1_rep2.bam]   Mapping results for the sample_1 in bam format.');
+    print ('                                Replicates must be in a comma separated list.');
+    print ('                                (Only if using bam)');
+    print ('-b2 s2.rep1.bam[,s2.rep2.bam]   Mapping results for the sample_2 in bam format.');
+    print ('                                Replicates must be in a comma separated list.');
+    print ('                                (Only if using bam)');
+    print ('-t eventType                    Type of event from rMATS result used in the analysis.');
+    print ('                                eventType is \'SE\', \'A5SS\', \'A3SS\', \'MXE\' or \'RI\'.');
+    print ('                                \'SE\' is for skipped exon events, \'A5SS\' is for');
+    print ('                                alternative 5\' splice site events, \'A3SS\' is for');
+    print ('                                alternative 3\' splice site events, \'MXE\' is for');
+    print ('                                mutually exclusive exons events and \'RI\' is for');
+    print ('                                retained intron events. (Only if using rMATS format');
+    print ('                                result as event file)');
+    print ('-e eventsFile                   The rMATS output event file. (Only if using rMATS');
+    print ('                                format result as event file)');
+    print ('-c coordinate:annotaionFile     The coordinate of genome region and an annotation');
+    print ('                                of genes and transcripts in GFF3 format. Coordinate');
+    print ('                                and annotation file must be colon separated.');
+    print ('                                (Only if using coordinate and annotaion file)');
+    print ('-l1 SampleLabel1                The label for first sample.');
+    print ('-l2 SampleLabel2                The label for second sample.');
+    print ('-o outDir                       The output directory.');
+    print ('                                ');
+    print ('Optional:');
+    print ('-exon_s <int>                   The size of scale down exons. The default is 1.');
+    print ('intron_s <int>                  The size of scale down introns. For example, if');
+    print ('                                -intron_s is 5, it means the size of intron is 5:1');
+    print ('                                (if the real size of intron is 5, the size in the');
+    print ('                                plot will be scaled down to 1). The default is 1.');
+    print ('                                ');
+    print ('Usage (with sam files):\n\trmats2sashimiplot -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
+    print ('Example\n\trmats2sashimiplot -s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam -s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_events_output\n');
+    print ('Usage (with bam files):\n\trmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir');
+    print ('Example\n\trmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output\n');
+    sys.exit();
 
 outPath = os.path.abspath(outDir);
 sashimiPath = outPath + '/Sashimi_index';
