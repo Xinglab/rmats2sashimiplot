@@ -4,196 +4,6 @@ from sets import Set
 ### import necessary libraries
 import re,os,sys,logging,time,datetime;
 
-startTime = time.time();
-
-s1=''; 		## sample_1
-s2=''; 		## sample_2
-l1=''; 		## label_1
-l2=''; 		## label_2
-exon_s=1; 		## exon_scale
-intron_s=1; 		## intron_scale
-samDir=''; 	## path of sam files
-outDir=''; 	## path of output files
-event_type=''; 		## event type
-bamFile=0; ## by default, no bam file
-eventsFile=0; ## by default, no events file
-
-helpStr = "Required parameters:                                                                         \n" +\
-          "-s1 s1_rep1.sam[,s1_rep2.sam]   Mapping results for the sample_1 in sam format.              \n" +\
-          "                                Replicates must be in a comma separated list                 \n" +\
-          "                                (Only if using sam).                                         \n" +\
-          "-s2 s2.rep1.sam[,s2.rep2.sam]   Mapping results for the sample_2 in sam format.              \n" +\
-          "                                Replicates must be in a comma separated list                 \n" +\
-          "                                (Only if using sam).                                         \n" +\
-          "-b1 s1_rep1.bam[,s1_rep2.bam]   Mapping results for the sample_1 in bam format.              \n" +\
-          "                                Replicates must be in a comma separated list                 \n" +\
-          "                                (Only if using bam).                                         \n" +\
-          "-b2 s2.rep1.bam[,s2.rep2.bam]   Mapping results for the sample_2 in bam format.              \n" +\
-          "                                Replicates must be in a comma separated list                 \n" +\
-          "                                (Only if using bam).                                         \n" +\
-          "-t eventType                    Type of event from rMATS result used in the analysis.        \n" +\
-          "                                eventType is \'SE\', \'A5SS\', \'A3SS\', \'MXE\' or \'RI\'.  \n" +\
-          "                                \'SE\' is for skipped exon events, \'A5SS\' is for           \n" +\
-          "                                alternative 5\' splice site events, \'A3SS\' is for          \n" +\
-          "                                alternative 3\' splice site events, \'MXE\' is for           \n" +\
-          "                                mutually exclusive exons events and \'RI\' is for            \n" +\
-          "                                retained intron events (Only if using rMATS format           \n" +\
-          "                                result as event file).                                       \n" +\
-          "-e eventsFile                   The rMATS output event file (Only if using rMATS             \n" +\
-          "                                format result as event file).                                \n" +\
-          "-c coordinate:annotaionFile     The coordinate of genome region and an annotation            \n" +\
-          "                                of genes and transcripts in GFF3 format. Coordinate          \n" +\
-          "                                and annotation file must be colon separated                  \n" +\
-          "                                (Only if using coordinate and annotaion file).               \n" +\
-          "-l1 SampleLabel1                The label for first sample.                                  \n" +\
-          "-l2 SampleLabel2                The label for second sample.                                 \n" +\
-          "-o outDir                       The output directory.                                        \n" +\
-          "                                                                                             \n" +\
-          "Optional:                                                                                    \n" +\
-          "-exon_s <int>                   The size of scale down exons. The default is 1.              \n" +\
-          "intron_s <int>                  The size of scale down introns. For example, if              \n" +\
-          "                                -intron_s is 5, it means the size of intron is 5:1           \n" +\
-          "                                (if the real size of intron is 5, the size in the            \n" +\
-          "                                plot will be scaled down to 1). The default is 1.            \n" +\
-          "-h                              Print this help message and exit (also --help).              \n" +\
-          "                                                                                             \n" +\
-          "Usage (with sam files):\n" +\
-          "rmats2sashimiplot -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
-          "Example (with sam files):\n" +\
-          "rmats2sashimiplot -s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam -s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_events_output  \n\n" +\
-          "Usage (with bam files):\n" +\
-          "rmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
-          "Example (with bam files):\n" +\
-          "rmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output"
-
-def isHelpString(s) :
-  norm = s.strip().lower()
-  return norm == "help" or norm == "-help" or norm == "--help" or norm == "-h"
-
-### checking out the argument names
-validArgList = ['-s1','-b1','-s2','-b2','-t','-e','-c','-l1','-l2','-exon_s','-intron_s','-o','help','-help','--help','-h'];
-for argIndex in range(1,len(sys.argv)): ## going through the all parameters
-  if(sys.argv[argIndex][0]=='-' and sys.argv[argIndex] not in validArgList): ## incorrect argument
-    print ('Not valid argument: %s' % sys.argv[argIndex]);
-    print ('Please provide valid arguments.');
-    print (helpStr + "\n\n");
-    sys.exit();
-  elif len(sys.argv) == 0 or (len(sys.argv) == 1 and isHelpString(sys.argv[0])) :
-    print (helpStr + "\n\n");
-    sys.exit();
-
-for paramIndex in range(1,len(sys.argv)): ## going through the all parameters
-  if(sys.argv[paramIndex] == '-s1' or sys.argv[paramIndex] == '-b1'):  ## sample_1
-    if (sys.argv[paramIndex] == '-b1'): ## bam file here
-      bamFile=1;
-    paramIndex += 1;  ## increase index
-    s1 = sys.argv[paramIndex];
-  elif (sys.argv[paramIndex] == '-s2' or sys.argv[paramIndex] == '-b2'):  ## sample_2
-    if (sys.argv[paramIndex] == '-b2'): ## bam file here
-      bamFile=1;
-    paramIndex += 1;  ## increase index
-    s2 = sys.argv[paramIndex];
-  elif (sys.argv[paramIndex] == '-t'):  ## event_type
-    paramIndex += 1;  ## increase index
-    event_type = sys.argv[paramIndex];
-  elif (sys.argv[paramIndex] == '-c'  or sys.argv[paramIndex] == '-e'):  ## coordinate or events_file
-    if (sys.argv[paramIndex] == '-e'): ## events file here
-      eventsFile=1;
-    paramIndex += 1;  ## increase index
-    events = sys.argv[paramIndex];
-  elif(sys.argv[paramIndex] == '-l1'):  ## label_1
-    paramIndex += 1;  ## increase index
-    l1 = sys.argv[paramIndex];
-  elif (sys.argv[paramIndex] == '-l2'):  ## label_2
-    paramIndex += 1;  ## increase index
-    l2 = sys.argv[paramIndex];
-  elif(sys.argv[paramIndex] == '-exon_s'):  ## exon_scale
-    paramIndex += 1;  ## increase index
-    exon_s = sys.argv[paramIndex];
-  elif (sys.argv[paramIndex] == '-intron_s'):  ## intron_scale
-    paramIndex += 1;  ## increase index
-    intron_s = sys.argv[paramIndex];
-  elif (sys.argv[paramIndex] == '-o'):  ## coverage
-    paramIndex += 1;  ## increase index
-    outDir = sys.argv[paramIndex];
-
-#  else: ### not valid param.. exit
-#    print("Not a valid param detected: %s" % sys.argv[paramIndex]);
-#    sys.exit();
-
-### checking out the required arguments
-if len(sys.argv) == 0 or (len(sys.argv) == 1 and isHelpString(sys.argv[0])) :
-    print (helpStr + "\n\n");
-    sys.exit();
-elif (s1=='' or  s2=='' or events=='' or l1=='' or  l2=='' or outDir==''): ### at least one required param is missing
-    print ('Not enough arguments!\n');
-    print (helpStr + "\n\n");
-    sys.exit();
-
-outPath = os.path.abspath(outDir);
-sashimiPath = outPath + '/Sashimi_index';
-os.system('mkdir -p '+ sashimiPath);
-
-### setting up the logging format
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(message)s',
-                    filename=outDir+'/log.sashimiPlot_test.'+ str(datetime.datetime.now())+'.txt' ,
-                    filemode='w')
-
-sample_1=s1.split(',');
-sample_2=s2.split(',');
-
-if bamFile==1 and ( ((sample_1[0].split('.'))[-1].strip()).upper() !='BAM' or ((sample_2[0].split('.'))[-1].strip()).upper() !='BAM'):
-  print "Incorrect file type. Need to provide bam file for -b1 and -b2";
-  sys.exit();
-
-if len(sample_1)!=len(sample_2): ## different number of replicates per sample.. wrong!!
-    print("Requires the same number of replicates per sample...");
-    sys.exit();
-
-if eventsFile==1 and ( ((events.split('.'))[-1].strip()).upper() !='TXT'):
-  print "Incorrect events file type. Need to provide rMATS output format txt file for -e";
-  sys.exit();
-
-events_name_level = {}
-
-
-### process input params ####
-#
-### sam files or bam files
-#
-###
-### 0. convert sam to bam and build index..
-###
-logging.debug("convert sam to bam and build index..");
-logging.debug("################### folder names and associated input files #############");
-
-for fki in range(0,len(sample_1)): ## for each replicate of sample_1
-  if bamFile==0:
-    os.system('samtools view -Sbh '+sample_1[fki]+' > '+sample_1[fki].replace(".sam","")+'.bam');
-    os.system('samtools index '+sample_1[fki].replace(".sam","")+'.bam');
-    #logging.debug("sam file is provided"+"\t"+sample_1[fki]);
-  else: ## bam file is provided
-    os.system('samtools index '+sample_1[fki]);
-    #logging.debug("bam file is provided"+"\t"+sample_1[fki]);
-  repTempFolder = "SAMPLE_1\REP_"+str(fki+1);
-  associatedFile = sample_1[fki];
-  logging.debug(repTempFolder+"\t"+associatedFile);
-
-for fki in range(0,len(sample_2)): ## for each replicate of sample_2
-  if bamFile==0:
-    os.system('samtools view -Sbh '+sample_2[fki]+' > '+sample_2[fki].replace(".sam","")+'.bam');
-    os.system('samtools index '+sample_2[fki].replace(".sam","")+'.bam');
-    #logging.debug("sam file is provided"+"\t"+sample_2[fki]);
-  else: ## bam file is provided
-    os.system('samtools index '+sample_2[fki]);
-    #logging.debug("bam file is provided"+"\t"+sample_2[fki]);
-  repTempFolder = "SAMPLE_2\REP_"+str(fki+1);
-  associatedFile = sample_2[fki];
-  logging.debug(repTempFolder+"\t"+associatedFile);
-
-logging.debug("#########################################################################\n");
-
 ########## functions here... ############
 
 ###
@@ -580,38 +390,229 @@ def drawPlotWithCoordinate(): ## coordinate is provided
 
 ################## actual process ##############
 
+def main():
+
+    startTime = time.time();
+
+    s1=''; 		## sample_1
+    s2=''; 		## sample_2
+    l1=''; 		## label_1
+    l2=''; 		## label_2
+    exon_s=1; 		## exon_scale
+    intron_s=1; 		## intron_scale
+    samDir=''; 	## path of sam files
+    outDir=''; 	## path of output files
+    event_type=''; 		## event type
+    bamFile=0; ## by default, no bam file
+    eventsFile=0; ## by default, no events file
+
+    helpStr = "Required parameters:                                                                         \n" +\
+              "-s1 s1_rep1.sam[,s1_rep2.sam]   Mapping results for the sample_1 in sam format.              \n" +\
+              "                                Replicates must be in a comma separated list                 \n" +\
+              "                                (Only if using sam).                                         \n" +\
+              "-s2 s2.rep1.sam[,s2.rep2.sam]   Mapping results for the sample_2 in sam format.              \n" +\
+              "                                Replicates must be in a comma separated list                 \n" +\
+              "                                (Only if using sam).                                         \n" +\
+              "-b1 s1_rep1.bam[,s1_rep2.bam]   Mapping results for the sample_1 in bam format.              \n" +\
+              "                                Replicates must be in a comma separated list                 \n" +\
+              "                                (Only if using bam).                                         \n" +\
+              "-b2 s2.rep1.bam[,s2.rep2.bam]   Mapping results for the sample_2 in bam format.              \n" +\
+              "                                Replicates must be in a comma separated list                 \n" +\
+              "                                (Only if using bam).                                         \n" +\
+              "-t eventType                    Type of event from rMATS result used in the analysis.        \n" +\
+              "                                eventType is \'SE\', \'A5SS\', \'A3SS\', \'MXE\' or \'RI\'.  \n" +\
+              "                                \'SE\' is for skipped exon events, \'A5SS\' is for           \n" +\
+              "                                alternative 5\' splice site events, \'A3SS\' is for          \n" +\
+              "                                alternative 3\' splice site events, \'MXE\' is for           \n" +\
+              "                                mutually exclusive exons events and \'RI\' is for            \n" +\
+              "                                retained intron events (Only if using rMATS format           \n" +\
+              "                                result as event file).                                       \n" +\
+              "-e eventsFile                   The rMATS output event file (Only if using rMATS             \n" +\
+              "                                format result as event file).                                \n" +\
+              "-c coordinate:annotaionFile     The coordinate of genome region and an annotation            \n" +\
+              "                                of genes and transcripts in GFF3 format. Coordinate          \n" +\
+              "                                and annotation file must be colon separated                  \n" +\
+              "                                (Only if using coordinate and annotaion file).               \n" +\
+              "-l1 SampleLabel1                The label for first sample.                                  \n" +\
+              "-l2 SampleLabel2                The label for second sample.                                 \n" +\
+              "-o outDir                       The output directory.                                        \n" +\
+              "                                                                                             \n" +\
+              "Optional:                                                                                    \n" +\
+              "-exon_s <int>                   The size of scale down exons. The default is 1.              \n" +\
+              "intron_s <int>                  The size of scale down introns. For example, if              \n" +\
+              "                                -intron_s is 5, it means the size of intron is 5:1           \n" +\
+              "                                (if the real size of intron is 5, the size in the            \n" +\
+              "                                plot will be scaled down to 1). The default is 1.            \n" +\
+              "-h                              Print this help message and exit (also --help).              \n" +\
+              "                                                                                             \n" +\
+              "Usage (with sam files):\n" +\
+              "rmats2sashimiplot -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
+              "Example (with sam files):\n" +\
+              "rmats2sashimiplot -s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam -s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_events_output  \n\n" +\
+              "Usage (with bam files):\n" +\
+              "rmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
+              "Example (with bam files):\n" +\
+              "rmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output"
+
+    def isHelpString(s) :
+      norm = s.strip().lower()
+      return norm == "help" or norm == "-help" or norm == "--help" or norm == "-h"
+
+    ### checking out the argument names
+    validArgList = ['-s1','-b1','-s2','-b2','-t','-e','-c','-l1','-l2','-exon_s','-intron_s','-o','help','-help','--help','-h'];
+    for argIndex in range(1,len(sys.argv)): ## going through the all parameters
+      if(sys.argv[argIndex][0]=='-' and sys.argv[argIndex] not in validArgList): ## incorrect argument
+        print ('Not valid argument: %s' % sys.argv[argIndex]);
+        print ('Please provide valid arguments.');
+        print (helpStr + "\n\n");
+        sys.exit();
+      elif len(sys.argv) == 0 or (len(sys.argv) == 1 and isHelpString(sys.argv[0])) :
+        print (helpStr + "\n\n");
+        sys.exit();
+
+    for paramIndex in range(1,len(sys.argv)): ## going through the all parameters
+      if(sys.argv[paramIndex] == '-s1' or sys.argv[paramIndex] == '-b1'):  ## sample_1
+        if (sys.argv[paramIndex] == '-b1'): ## bam file here
+          bamFile=1;
+        paramIndex += 1;  ## increase index
+        s1 = sys.argv[paramIndex];
+      elif (sys.argv[paramIndex] == '-s2' or sys.argv[paramIndex] == '-b2'):  ## sample_2
+        if (sys.argv[paramIndex] == '-b2'): ## bam file here
+          bamFile=1;
+        paramIndex += 1;  ## increase index
+        s2 = sys.argv[paramIndex];
+      elif (sys.argv[paramIndex] == '-t'):  ## event_type
+        paramIndex += 1;  ## increase index
+        event_type = sys.argv[paramIndex];
+      elif (sys.argv[paramIndex] == '-c'  or sys.argv[paramIndex] == '-e'):  ## coordinate or events_file
+        if (sys.argv[paramIndex] == '-e'): ## events file here
+          eventsFile=1;
+        paramIndex += 1;  ## increase index
+        events = sys.argv[paramIndex];
+      elif(sys.argv[paramIndex] == '-l1'):  ## label_1
+        paramIndex += 1;  ## increase index
+        l1 = sys.argv[paramIndex];
+      elif (sys.argv[paramIndex] == '-l2'):  ## label_2
+        paramIndex += 1;  ## increase index
+        l2 = sys.argv[paramIndex];
+      elif(sys.argv[paramIndex] == '-exon_s'):  ## exon_scale
+        paramIndex += 1;  ## increase index
+        exon_s = sys.argv[paramIndex];
+      elif (sys.argv[paramIndex] == '-intron_s'):  ## intron_scale
+        paramIndex += 1;  ## increase index
+        intron_s = sys.argv[paramIndex];
+      elif (sys.argv[paramIndex] == '-o'):  ## coverage
+        paramIndex += 1;  ## increase index
+        outDir = sys.argv[paramIndex];
+
+    #  else: ### not valid param.. exit
+    #    print("Not a valid param detected: %s" % sys.argv[paramIndex]);
+    #    sys.exit();
+
+    ### checking out the required arguments
+    if len(sys.argv) == 0 or (len(sys.argv) == 1 and isHelpString(sys.argv[0])) :
+        print (helpStr + "\n\n");
+        sys.exit();
+    elif (s1=='' or  s2=='' or events=='' or l1=='' or  l2=='' or outDir==''): ### at least one required param is missing
+        print ('Not enough arguments!\n');
+        print (helpStr + "\n\n");
+        sys.exit();
+
+    outPath = os.path.abspath(outDir);
+    sashimiPath = outPath + '/Sashimi_index';
+    os.system('mkdir -p '+ sashimiPath);
+
+    ### setting up the logging format
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(message)s',
+                        filename=outDir+'/log.sashimiPlot_test.'+ str(datetime.datetime.now())+'.txt' ,
+                        filemode='w')
+
+    sample_1=s1.split(',');
+    sample_2=s2.split(',');
+
+    if bamFile==1 and ( ((sample_1[0].split('.'))[-1].strip()).upper() !='BAM' or ((sample_2[0].split('.'))[-1].strip()).upper() !='BAM'):
+      print "Incorrect file type. Need to provide bam file for -b1 and -b2";
+      sys.exit();
+
+    if len(sample_1)!=len(sample_2): ## different number of replicates per sample.. wrong!!
+        print("Requires the same number of replicates per sample...");
+        sys.exit();
+
+    if eventsFile==1 and ( ((events.split('.'))[-1].strip()).upper() !='TXT'):
+      print "Incorrect events file type. Need to provide rMATS output format txt file for -e";
+      sys.exit();
+
+    events_name_level = {}
 
 
-if eventsFile==0: #user input coordinate
-    logging.debug("get user input coordinates and convert to gff3 format file..");
-    logging.debug("coordinate is provided"+"\t"+events);
-    try:
-      drawPlotWithCoordinate();
-      pass;
-    except:
-      logging.debug("There is an exception in drawPlotWithCoordinate()");du
-      logging.debug("Exception: %s" % sys.exc_info()[0]);
-      logging.debug("Detail: %s" % sys.exc_info()[1]);
-      sys.exit(-1);
-    logging.debug("done drawPlotWithCoordinate()");
-else: ## events file is provided
-    logging.debug("get AS events from rMATS result and convert to gff3 format file..");
-    logging.debug("events file is provided"+"\t"+events);
-    try:
-      drawPlotWithEventsFile();
-      pass;
-    except:
-      logging.debug("There is an exception in drawPlotWithEventsFile()");
-      logging.debug("Exception: %s" % sys.exc_info()[0]);
-      logging.debug("Detail: %s" % sys.exc_info()[1]);
-      sys.exit(-1);
-    logging.debug("done drawPlotWithEventsFile()");
+    ### process input params ####
+    #
+    ### sam files or bam files
+    #
+    ###
+    ### 0. convert sam to bam and build index..
+    ###
+    logging.debug("convert sam to bam and build index..");
+    logging.debug("################### folder names and associated input files #############");
+
+    for fki in range(0,len(sample_1)): ## for each replicate of sample_1
+      if bamFile==0:
+        os.system('samtools view -Sbh '+sample_1[fki]+' > '+sample_1[fki].replace(".sam","")+'.bam');
+        os.system('samtools index '+sample_1[fki].replace(".sam","")+'.bam');
+        #logging.debug("sam file is provided"+"\t"+sample_1[fki]);
+      else: ## bam file is provided
+        os.system('samtools index '+sample_1[fki]);
+        #logging.debug("bam file is provided"+"\t"+sample_1[fki]);
+      repTempFolder = "SAMPLE_1\REP_"+str(fki+1);
+      associatedFile = sample_1[fki];
+      logging.debug(repTempFolder+"\t"+associatedFile);
+
+    for fki in range(0,len(sample_2)): ## for each replicate of sample_2
+      if bamFile==0:
+        os.system('samtools view -Sbh '+sample_2[fki]+' > '+sample_2[fki].replace(".sam","")+'.bam');
+        os.system('samtools index '+sample_2[fki].replace(".sam","")+'.bam');
+        #logging.debug("sam file is provided"+"\t"+sample_2[fki]);
+      else: ## bam file is provided
+        os.system('samtools index '+sample_2[fki]);
+        #logging.debug("bam file is provided"+"\t"+sample_2[fki]);
+      repTempFolder = "SAMPLE_2\REP_"+str(fki+1);
+      associatedFile = sample_2[fki];
+      logging.debug(repTempFolder+"\t"+associatedFile);
+
+    logging.debug("#########################################################################\n");
 
 
-#############
-## calculate total running time
-#############
-logging.debug("Program ended");
-currentTime = time.time();
-runningTime = currentTime-startTime; ## in seconds
-logging.debug("Program ran %.2d:%.2d:%.2d" % (runningTime/3600, (runningTime%3600)/60, runningTime%60));
+    if eventsFile==0: #user input coordinate
+        logging.debug("get user input coordinates and convert to gff3 format file..");
+        logging.debug("coordinate is provided"+"\t"+events);
+        try:
+          drawPlotWithCoordinate();
+          pass;
+        except:
+          logging.debug("There is an exception in drawPlotWithCoordinate()");du
+          logging.debug("Exception: %s" % sys.exc_info()[0]);
+          logging.debug("Detail: %s" % sys.exc_info()[1]);
+          sys.exit(-1);
+        logging.debug("done drawPlotWithCoordinate()");
+    else: ## events file is provided
+        logging.debug("get AS events from rMATS result and convert to gff3 format file..");
+        logging.debug("events file is provided"+"\t"+events);
+        try:
+          drawPlotWithEventsFile();
+          pass;
+        except:
+          logging.debug("There is an exception in drawPlotWithEventsFile()");
+          logging.debug("Exception: %s" % sys.exc_info()[0]);
+          logging.debug("Detail: %s" % sys.exc_info()[1]);
+          sys.exit(-1);
+        logging.debug("done drawPlotWithEventsFile()");
+
+
+    #############
+    ## calculate total running time
+    #############
+    logging.debug("Program ended");
+    currentTime = time.time();
+    runningTime = currentTime-startTime; ## in seconds
+    logging.debug("Program ran %.2d:%.2d:%.2d" % (runningTime/3600, (runningTime%3600)/60, runningTime%60));
