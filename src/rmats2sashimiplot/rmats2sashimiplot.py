@@ -20,31 +20,31 @@ eventsFile=0; ## by default, no events file
 
 helpStr = "Required parameters:                                                                         \n" +\
           "-s1 s1_rep1.sam[,s1_rep2.sam]   Mapping results for the sample_1 in sam format.              \n" +\
-          "                                Replicates must be in a comma separated list.                \n" +\
-          "                                (Only if using sam)                                          \n" +\
+          "                                Replicates must be in a comma separated list                 \n" +\
+          "                                (Only if using sam).                                         \n" +\
           "-s2 s2.rep1.sam[,s2.rep2.sam]   Mapping results for the sample_2 in sam format.              \n" +\
-          "                                Replicates must be in a comma separated list.                \n" +\
-          "                                (Only if using sam)                                          \n" +\
+          "                                Replicates must be in a comma separated list                 \n" +\
+          "                                (Only if using sam).                                         \n" +\
           "-b1 s1_rep1.bam[,s1_rep2.bam]   Mapping results for the sample_1 in bam format.              \n" +\
-          "                                Replicates must be in a comma separated list.                \n" +\
-          "                                (Only if using bam)                                          \n" +\
+          "                                Replicates must be in a comma separated list                 \n" +\
+          "                                (Only if using bam).                                         \n" +\
           "-b2 s2.rep1.bam[,s2.rep2.bam]   Mapping results for the sample_2 in bam format.              \n" +\
-          "                                Replicates must be in a comma separated list.                \n" +\
-          "                                (Only if using bam)                                          \n" +\
+          "                                Replicates must be in a comma separated list                 \n" +\
+          "                                (Only if using bam).                                         \n" +\
           "-t eventType                    Type of event from rMATS result used in the analysis.        \n" +\
           "                                eventType is \'SE\', \'A5SS\', \'A3SS\', \'MXE\' or \'RI\'.  \n" +\
           "                                \'SE\' is for skipped exon events, \'A5SS\' is for           \n" +\
           "                                alternative 5\' splice site events, \'A3SS\' is for          \n" +\
           "                                alternative 3\' splice site events, \'MXE\' is for           \n" +\
           "                                mutually exclusive exons events and \'RI\' is for            \n" +\
-          "                                retained intron events. (Only if using rMATS format          \n" +\
-          "                                result as event file)                                        \n" +\
-          "-e eventsFile                   The rMATS output event file. (Only if using rMATS            \n" +\
-          "                                format result as event file)                                 \n" +\
+          "                                retained intron events (Only if using rMATS format           \n" +\
+          "                                result as event file).                                       \n" +\
+          "-e eventsFile                   The rMATS output event file (Only if using rMATS             \n" +\
+          "                                format result as event file).                                \n" +\
           "-c coordinate:annotaionFile     The coordinate of genome region and an annotation            \n" +\
           "                                of genes and transcripts in GFF3 format. Coordinate          \n" +\
-          "                                and annotation file must be colon separated.                 \n" +\
-          "                                (Only if using coordinate and annotaion file)                \n" +\
+          "                                and annotation file must be colon separated                  \n" +\
+          "                                (Only if using coordinate and annotaion file).               \n" +\
           "-l1 SampleLabel1                The label for first sample.                                  \n" +\
           "-l2 SampleLabel2                The label for second sample.                                 \n" +\
           "-o outDir                       The output directory.                                        \n" +\
@@ -55,6 +55,7 @@ helpStr = "Required parameters:                                                 
           "                                -intron_s is 5, it means the size of intron is 5:1           \n" +\
           "                                (if the real size of intron is 5, the size in the            \n" +\
           "                                plot will be scaled down to 1). The default is 1.            \n" +\
+          "-h                              Print this help message and exit (also --help).              \n" +\
           "                                                                                             \n" +\
           "Usage (with sam files):\n" +\
           "rmats2sashimiplot -s1 s1_rep1.sam[,s1_rep2.sam]* -s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
