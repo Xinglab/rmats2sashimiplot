@@ -5,15 +5,6 @@ from sets import Set
 import re,os,sys,logging,time,datetime;
 
 if __name__ == '__main__':
-    main()
-
-def isHelpString(s) :
-  norm = s.strip().lower()
-  return norm == "help" or norm == "-help" or norm == "--help" or norm == "-h"
-
-################## actual process ##############
-
-def main():
     startTime = time.time();
 
     s1=''; 		## sample_1
@@ -75,6 +66,16 @@ def main():
               "rmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
               "Example (with bam files):\n" +\
               "rmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output"
+
+    main()
+
+def isHelpString(s) :
+  norm = s.strip().lower()
+  return norm == "help" or norm == "-help" or norm == "--help" or norm == "-h"
+
+################## actual process ##############
+
+def main():
 
     ### checking out the argument names
     validArgList = ['-s1','-b1','-s2','-b2','-t','-e','-c','-l1','-l2','-exon_s','-intron_s','-o','help','-help','--help','-h'];
