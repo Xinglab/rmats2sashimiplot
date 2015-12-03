@@ -4,6 +4,7 @@ Requirements
 ------------
 
 Install Python 2.6.x or Python 2.7.x
+
 Install MISO package
 
 rmats2sashimiplot is intended to be used in a Unix-based environment. It has
@@ -77,6 +78,11 @@ Example of using bam files, drawing sashimiplot by user provided coordinates and
 gff3 format annotation file
 
         $rmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output
+
+### Test Data ###
+Please download and untar the test data from: 
+
+http://www.mimg.ucla.edu/faculty/xing/rmats2sashimiplot/testData.tar
 
 ### Output ###
 All output sashimiplot pdf files are in Sashimi_plot folder
