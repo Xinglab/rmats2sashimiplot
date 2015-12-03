@@ -5,6 +5,15 @@ from sets import Set
 import re,os,sys,logging,time,datetime;
 
 if __name__ == '__main__':
+    main()
+
+def isHelpString(s) :
+  norm = s.strip().lower()
+  return norm == "help" or norm == "-help" or norm == "--help" or norm == "-h"
+
+################## actual process ##############
+
+def main():
     startTime = time.time();
 
     s1=''; 		## sample_1
@@ -66,16 +75,6 @@ if __name__ == '__main__':
               "rmats2sashimiplot -b1 s1_rep1.bam[,s1_rep2.bam]* -b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile -l1 SampleLabel1 -l2 SampleLable2 -exon_s exonScale -intron_s intronScale -o outDir  \n\n" +\
               "Example (with bam files):\n" +\
               "rmats2sashimiplot -b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam -b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:./testData/ensGene.gff3 -l1 PC3E -l2 GS689 -exon_s 1 -intron_s 5 -o test_coordinate_output"
-
-    main()
-
-def isHelpString(s) :
-  norm = s.strip().lower()
-  return norm == "help" or norm == "-help" or norm == "--help" or norm == "-h"
-
-################## actual process ##############
-
-def main():
 
     ### checking out the argument names
     validArgList = ['-s1','-b1','-s2','-b2','-t','-e','-c','-l1','-l2','-exon_s','-intron_s','-o','help','-help','--help','-h'];
@@ -206,331 +205,7 @@ def main():
         logging.debug("get user input coordinates and convert to gff3 format file..");
         logging.debug("coordinate is provided"+"\t"+events);
         try:
-          drawPlotWithCoordinate();
-          pass;
-        except:
-          logging.debug("There is an exception in drawPlotWithCoordinate()");du
-          logging.debug("Exception: %s" % sys.exc_info()[0]);
-          logging.debug("Detail: %s" % sys.exc_info()[1]);
-          sys.exit(-1);
-        logging.debug("done drawPlotWithCoordinate()");
-    else: ## events file is provided
-        logging.debug("get AS events from rMATS result and convert to gff3 format file..");
-        logging.debug("events file is provided"+"\t"+events);
-        try:
-          drawPlotWithEventsFile();
-          pass;
-        except:
-          logging.debug("There is an exception in drawPlotWithEventsFile()");
-          logging.debug("Exception: %s" % sys.exc_info()[0]);
-          logging.debug("Detail: %s" % sys.exc_info()[1]);
-          sys.exit(-1);
-        logging.debug("done drawPlotWithEventsFile()");
 
-
-    #############
-    ## calculate total running time
-    #############
-    logging.debug("Program ended");
-    currentTime = time.time();
-    runningTime = currentTime-startTime; ## in seconds
-    logging.debug("Program ran %.2d:%.2d:%.2d" % (runningTime/3600, (runningTime%3600)/60, runningTime%60));
-
-
-########## functions here... ############
-
-###
-### 1. prepare sashimi plot setting file..
-###
-
-def prepareSettingFile(gene_no_str): ## get AS events from GTF and SAM files
-  logging.debug("prepare sashimi plot setting file..");
-
-  geneSymbol = (gene_no_str.split('_'))[0];
-  settingFile = open(outPath + '/Sashimi_index_'+gene_no_str+'/sashimi_plot_settings.txt', 'w');
-  settingFile.write("[data]\n");
-  settingFile.write("bam_prefix = "+samDir+"\n");
-  settingFile.write("miso_prefix = "+samDir+"\n");
-  ## setting string for replicates ##
-  bam_files_arr1 = [];
-  bam_files_arr2 = [];
-  for rr in range(0,len(sample_1)): ## sample_1
-    if bamFile==0:
-      bam_files_arr1.append('\"'+sample_1[rr].replace(".sam","")+'.bam\"');
-    else: ## bam file is provided
-      bam_files_arr1.append('\"'+sample_1[rr]+'\"');
-  for rr in range(0,len(sample_2)): ## sample_2
-    if bamFile==0:
-      bam_files_arr2.append('\"'+sample_2[rr].replace(".sam","")+'.bam\"');
-    else: ## bam file is provided
-      bam_files_arr2.append('\"'+sample_2[rr]+'\"');
-  setting_bam_str = ','.join(bam_files_arr1)+','+','.join(bam_files_arr2);
-  settingFile.write("bam_files = ["+setting_bam_str+"]\n");
-  settingFile.write("miso_files = ["+setting_bam_str+"]\n");
-  settingFile.write("[plotting]\n");
-  settingFile.write("fig_width = 8\n");
-  if len(sample_1)<5:
-    settingFile.write("fig_height = 7\n");
-  else:
-    settingFile.write("fig_height = 14\n");
-  settingFile.write("exon_scale = "+str(exon_s)+"\n");
-  settingFile.write("intron_scale = "+str(intron_s)+"\n");
-  settingFile.write("logged = False\n");
-  settingFile.write("font_size = 8\n");
-  settingFile.write("bar_posteriors = False\n");
-  settingFile.write("nyticks = 4\n");
-  settingFile.write("nxticks = 6\n");
-  settingFile.write("show_ylabel = False\n");
-  settingFile.write("show_xlabel = True\n");
-  settingFile.write("plot_title = \"gene symbol\"\n");
-  settingFile.write("plot_label = plot_label\n");
-  settingFile.write("show_posteriors = False\n");
-  settingFile.write("number_junctions = True\n");
-  settingFile.write("resolution = .5\n");
-  ## setting string for replicates ##
-  colors_arr1 = [];
-  colors_arr2 = [];
-  for rr in range(0,len(sample_1)): ## sample_1
-    colors_arr1.append('\"#CC0011\"');
-  for rr in range(0,len(sample_2)): ## sample_2
-    colors_arr2.append('\"#FF8800\"');
-  setting_color_str = ','.join(colors_arr1)+','+','.join(colors_arr2);
-  settingFile.write("colors = ["+setting_color_str+"]\n");
-  ## setting string for inclusion levels ##
-  inclever_str = events_name_level.get(geneSymbol);
-  items = inclever_str.split('_');
-  inc_level1 = items[0];
-  inc_level2 = items[1];
-  inc_items1 = inc_level1.split(',');
-  inc_items2 = inc_level2.split(',');
-  sample_labels_arr1 = [];
-  sample_labels_arr2 = [];
-  for rr in range(0,len(sample_1)): ## sample_1
-    file_str1 = sample_1[rr].split('/');
-    inc_1 = "{0:.2f}".format(float(inc_items1[rr]));
-    sample_labels_arr1.append('\"'+geneSymbol+' '+l1+'-'+str(rr+1)+' IncLevel: '+inc_1+'\"');
-  for rr in range(0,len(sample_2)): ## sample_2
-    file_str2 = sample_2[rr].split('/');
-    inc_2 = "{0:.2f}".format(float(inc_items2[rr]));
-    sample_labels_arr2.append('\"'+geneSymbol+' '+l2+'-'+str(rr+1)+' IncLevel: '+inc_2+'\"');
-  setting_labels_str = ','.join(sample_labels_arr1)+','+','.join(sample_labels_arr2);
-  settingFile.write("sample_labels = ["+setting_labels_str+"]\n");
-  settingFile.write("reverse_minus = True");
-  settingFile.close();
-  logging.debug("done prepare sashimi plot setting file"+sashimiPath+"/sashimi_plot_settings.txt");
-
-  return;
-############ end of prepareSettingFile #####
-
-def prepareCoorSettingFile(): ## get AS events from GTF and SAM files
-  logging.debug("prepare sashimi plot setting file..");
-
-  settingFile = open(outPath + '/Sashimi_index/sashimi_plot_settings.txt', 'w');
-  settingFile.write("[data]\n");
-  settingFile.write("bam_prefix = "+samDir+"\n");
-  settingFile.write("miso_prefix = "+samDir+"\n");
-  ## setting string for replicates ##
-  bam_files_arr1 = [];
-  bam_files_arr2 = [];
-  for rr in range(0,len(sample_1)): ## sample_1
-    if bamFile==0:
-      bam_files_arr1.append('\"'+sample_1[rr].replace(".sam","")+'.bam\"');
-    else: ## bam file is provided
-      bam_files_arr1.append('\"'+sample_1[rr]+'\"');
-  for rr in range(0,len(sample_2)): ## sample_2
-    if bamFile==0:
-      bam_files_arr2.append('\"'+sample_2[rr].replace(".sam","")+'.bam\"');
-    else: ## bam file is provided
-      bam_files_arr2.append('\"'+sample_2[rr]+'\"');
-  setting_bam_str = ','.join(bam_files_arr1)+','+','.join(bam_files_arr2);
-  settingFile.write("bam_files = ["+setting_bam_str+"]\n");
-  settingFile.write("miso_files = ["+setting_bam_str+"]\n");
-  settingFile.write("[plotting]\n");
-  settingFile.write("fig_width = 8\n");
-  if len(sample_1)<5:
-    settingFile.write("fig_height = 7\n");
-  else:
-    settingFile.write("fig_height = 14\n");
-  settingFile.write("exon_scale = "+str(exon_s)+"\n");
-  settingFile.write("intron_scale = "+str(intron_s)+"\n");
-  settingFile.write("logged = False\n");
-  settingFile.write("font_size = 8\n");
-  settingFile.write("bar_posteriors = False\n");
-  settingFile.write("nyticks = 4\n");
-  settingFile.write("nxticks = 11\n");
-  settingFile.write("show_ylabel = False\n");
-  settingFile.write("show_xlabel = True\n");
-  settingFile.write("plot_title = \"gene symbol\"\n");
-  settingFile.write("plot_label = plot_label\n");
-  settingFile.write("show_posteriors = False\n");
-  settingFile.write("number_junctions = True\n");
-  settingFile.write("resolution = .5\n");
-  ## setting string for replicates ##
-  colors_arr1 = [];
-  colors_arr2 = [];
-  for rr in range(0,len(sample_1)): ## sample_1
-    colors_arr1.append('\"#CC0011\"');
-  for rr in range(0,len(sample_2)): ## sample_2
-    colors_arr2.append('\"#FF8800\"');
-  setting_color_str = ','.join(colors_arr1)+','+','.join(colors_arr2);
-  settingFile.write("colors = ["+setting_color_str+"]\n");
-  sample_labels_arr1 = [];
-  sample_labels_arr2 = [];
-  for rr in range(0,len(sample_1)): ## sample_1
-    sample_labels_arr1.append('\"'+l1+'-'+str(rr+1)+'\"');
-  for rr in range(0,len(sample_2)): ## sample_2
-    sample_labels_arr1.append('\"'+l2+'-'+str(rr+1)+'\"');
-  setting_labels_str = ','.join(sample_labels_arr1)+','+','.join(sample_labels_arr2);
-  settingFile.write("sample_labels = ["+setting_labels_str+"]\n");
-  settingFile.write("reverse_minus = True");
-  settingFile.close();
-  logging.debug("done prepare sashimi plot setting file"+sashimiPath+"/sashimi_plot_settings.txt");
-
-  return;
-############ end of prepareCoorSettingFile #####
-
-###
-### 2. get AS events from rMATS result or user input coordinates and convert to gff3 format file..
-###
-
-def drawPlotWithEventsFile(): ## events file is provided
-  logging.debug("drawPlotWithEventsFile()");
-
-  fo = open(events,'r');
-  w2 = open(outPath+'/Sashimi_index/SE.event.list.txt','w');
-
-  events_no = 0;
-  for line in fo:
-    geneSymbol = "";
-    gene_no_str = "";
-    id_str = "";
-    if line.startswith('ID'):
-      continue;
-    events_no += 1;
-    items = line.split("\t")
-    geneSymbol = items[2]
-    geneSymbol = geneSymbol.replace('\"','');
-    logging.debug("***** geneSymbol: "+geneSymbol);
-    gene_no_str = geneSymbol+'_'+str(events_no);
-    sashimiPath = outPath + '/Sashimi_index_'+geneSymbol+'_'+str(events_no);
-    os.system('mkdir -p '+ sashimiPath);
-    w1 = open(outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3','w');
-    chr = items[3]
-    strand = items[4]
-    e1st_s = "";
-    e1st_e = "";
-    e2st_s = "";
-    e2st_e = "";
-    se_s = "";
-    se_e = "";
-    up_s = "";
-    up_e = "";
-    dn_s = "";
-    dn_e = "";
-    inc_level1 = "";
-    inc_level2 = "";
-    if event_type!='MXE':
-        se_s = str(int(items[5])+1)
-        se_e = items[6]
-        up_s = str(int(items[7])+1)
-        up_e = items[8]
-        dn_s = str(int(items[9])+1)
-        dn_e = items[10]
-        inc_level1 = items[20] ## IncLevel1
-        inc_level2 = items[21] ## IncLevel2
-    if event_type=='MXE':
-        e1st_s = str(int(items[5])+1)
-        e1st_e = items[6]
-        e2st_s = str(int(items[7])+1)
-        e2st_e = items[8]
-        up_s = str(int(items[9])+1)
-        up_e = items[10]
-        dn_s = str(int(items[11])+1)
-        dn_e = items[12]
-        inc_level1 = items[22] ## IncLevel1
-        inc_level2 = items[23] ## IncLevel2
-    events_name_level[geneSymbol] = inc_level1 +"_"+ inc_level2
-    if strand =='+':
-        id_str = chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
-        name_str = geneSymbol+"_"+chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
-        if event_type!='MXE':
-            w2.write( "%s\n" % (name_str))
-            w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-            w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (chr,se_s,se_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-        if event_type=='MXE':
-            w2.write( "%s\n" % (name_str))
-            w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-            w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (chr,e1st_s,e1st_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (chr,e2st_s,e2st_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-    if strand =='-':
-        id_str = chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
-        name_str = geneSymbol+"_"+chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
-        if event_type!='MXE':
-            w2.write( "%s\n" % (name_str))
-            w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-            w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (chr,se_s,se_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
-        if event_type=='MXE':
-            w2.write( "%s\n" % (name_str))
-            w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-            w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (chr,e1st_s,e1st_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (chr,e2st_s,e2st_e,strand,id_str,id_str))
-            w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
-    w1.close()
-
-    logging.debug("start preparing sashimi plot setting files");
-
-    try:
-      prepareSettingFile(gene_no_str);
-      pass;
-    except:
-      logging.debug("There is an exception in preparing setting file");
-      logging.debug("Exception: %s" % sys.exc_info()[0]);
-      logging.debug("Detail: %s" % sys.exc_info()[1]);
-      sys.exit(-1);
-
-    logging.debug("done making setting file..");
-    logging.debug("use gff3 format file to run index_gff..");
-
-    os.system('index_gff --index '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3 '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/');
-
-    logging.debug("output plot from events set..");
-    os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/ '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
-    new_str = id_str.replace(":","_");
-    os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+geneSymbol+'_'+new_str+'.pdf');
-    logging.debug("*** output plot "+geneSymbol);
-
-  # Close opend file
-  fo.close()
-  w2.close()
-
-  return;
-
-##### end of drawPlotWithEventsFile ####
-
-def drawPlotWithCoordinate(): ## coordinate is provided
   logging.debug("drawPlotWithCoordinate()");
 
   tmp_str = events.split(':');
@@ -591,30 +266,319 @@ def drawPlotWithCoordinate(): ## coordinate is provided
   logging.debug("start preparing sashimi plot setting files");
 
   try:
-    prepareCoorSettingFile();
-    pass;
-  except:
-    logging.debug("There is an exception in preparing coordinate setting file");
-    logging.debug("Exception: %s" % sys.exc_info()[0]);
-    logging.debug("Detail: %s" % sys.exc_info()[1]);
-    sys.exit(-2);
+            logging.debug("prepare sashimi plot setting file..");
 
-  logging.debug("done making setting file..");
-  logging.debug("use gff3 format file to run index_gff..");
-  os.system('index_gff --index '+outPath+'/Sashimi_index/tmp.gff3 '+outPath+'/Sashimi_index/');
+            settingFile = open(outPath + '/Sashimi_index/sashimi_plot_settings.txt', 'w');
+            settingFile.write("[data]\n");
+            settingFile.write("bam_prefix = "+samDir+"\n");
+            settingFile.write("miso_prefix = "+samDir+"\n");
+            ## setting string for replicates ##
+            bam_files_arr1 = [];
+            bam_files_arr2 = [];
+            for rr in range(0,len(sample_1)): ## sample_1
+              if bamFile==0:
+                bam_files_arr1.append('\"'+sample_1[rr].replace(".sam","")+'.bam\"');
+              else: ## bam file is provided
+                bam_files_arr1.append('\"'+sample_1[rr]+'\"');
+            for rr in range(0,len(sample_2)): ## sample_2
+              if bamFile==0:
+                bam_files_arr2.append('\"'+sample_2[rr].replace(".sam","")+'.bam\"');
+              else: ## bam file is provided
+                bam_files_arr2.append('\"'+sample_2[rr]+'\"');
+            setting_bam_str = ','.join(bam_files_arr1)+','+','.join(bam_files_arr2);
+            settingFile.write("bam_files = ["+setting_bam_str+"]\n");
+            settingFile.write("miso_files = ["+setting_bam_str+"]\n");
+            settingFile.write("[plotting]\n");
+            settingFile.write("fig_width = 8\n");
+            if len(sample_1)<5:
+              settingFile.write("fig_height = 7\n");
+            else:
+              settingFile.write("fig_height = 14\n");
+            settingFile.write("exon_scale = "+str(exon_s)+"\n");
+            settingFile.write("intron_scale = "+str(intron_s)+"\n");
+            settingFile.write("logged = False\n");
+            settingFile.write("font_size = 8\n");
+            settingFile.write("bar_posteriors = False\n");
+            settingFile.write("nyticks = 4\n");
+            settingFile.write("nxticks = 11\n");
+            settingFile.write("show_ylabel = False\n");
+            settingFile.write("show_xlabel = True\n");
+            settingFile.write("plot_title = \"gene symbol\"\n");
+            settingFile.write("plot_label = plot_label\n");
+            settingFile.write("show_posteriors = False\n");
+            settingFile.write("number_junctions = True\n");
+            settingFile.write("resolution = .5\n");
+            ## setting string for replicates ##
+            colors_arr1 = [];
+            colors_arr2 = [];
+            for rr in range(0,len(sample_1)): ## sample_1
+              colors_arr1.append('\"#CC0011\"');
+            for rr in range(0,len(sample_2)): ## sample_2
+              colors_arr2.append('\"#FF8800\"');
+            setting_color_str = ','.join(colors_arr1)+','+','.join(colors_arr2);
+            settingFile.write("colors = ["+setting_color_str+"]\n");
+            sample_labels_arr1 = [];
+            sample_labels_arr2 = [];
+            for rr in range(0,len(sample_1)): ## sample_1
+              sample_labels_arr1.append('\"'+l1+'-'+str(rr+1)+'\"');
+            for rr in range(0,len(sample_2)): ## sample_2
+              sample_labels_arr1.append('\"'+l2+'-'+str(rr+1)+'\"');
+            setting_labels_str = ','.join(sample_labels_arr1)+','+','.join(sample_labels_arr2);
+            settingFile.write("sample_labels = ["+setting_labels_str+"]\n");
+            settingFile.write("reverse_minus = True");
+            settingFile.close();
+            logging.debug("done prepare sashimi plot setting file"+sashimiPath+"/sashimi_plot_settings.txt");
+            pass;
+          except:
+            logging.debug("There is an exception in preparing coordinate setting file");
+            logging.debug("Exception: %s" % sys.exc_info()[0]);
+            logging.debug("Detail: %s" % sys.exc_info()[1]);
+            sys.exit(-2);
 
-  logging.debug("output plot from events set..");
-  os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index/ '+outPath+'/Sashimi_index/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
-  new_str = id_str.replace(":","_");
-  os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+new_str+'.pdf');
-  logging.debug("*** output plot "+id_str+".pdf");
+          logging.debug("done making setting file..");
+          logging.debug("use gff3 format file to run index_gff..");
+          os.system('index_gff --index '+outPath+'/Sashimi_index/tmp.gff3 '+outPath+'/Sashimi_index/');
 
-  # Close opend file
-  fo.close()
-  w2.close()
+          logging.debug("output plot from events set..");
+          os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index/ '+outPath+'/Sashimi_index/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
+          new_str = id_str.replace(":","_");
+          os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+new_str+'.pdf');
+          logging.debug("*** output plot "+id_str+".pdf");
 
-  return;
+          # Close opend file
+          fo.close()
+          w2.close()
+          pass;
+        except:
+          logging.debug("There is an exception in drawPlotWithCoordinate()");du
+          logging.debug("Exception: %s" % sys.exc_info()[0]);
+          logging.debug("Detail: %s" % sys.exc_info()[1]);
+          sys.exit(-1);
+        logging.debug("done drawPlotWithCoordinate()");
+    else: ## events file is provided
+        logging.debug("get AS events from rMATS result and convert to gff3 format file..");
+        logging.debug("events file is provided"+"\t"+events);
+        try:
 
-##### end of drawPlotWithCoordinate ####
+          logging.debug("drawPlotWithEventsFile()");
+
+          fo = open(events,'r');
+          w2 = open(outPath+'/Sashimi_index/SE.event.list.txt','w');
+
+          events_no = 0;
+          for line in fo:
+            geneSymbol = "";
+            gene_no_str = "";
+            id_str = "";
+            if line.startswith('ID'):
+              continue;
+            events_no += 1;
+            items = line.split("\t")
+            geneSymbol = items[2]
+            geneSymbol = geneSymbol.replace('\"','');
+            logging.debug("***** geneSymbol: "+geneSymbol);
+            gene_no_str = geneSymbol+'_'+str(events_no);
+            sashimiPath = outPath + '/Sashimi_index_'+geneSymbol+'_'+str(events_no);
+            os.system('mkdir -p '+ sashimiPath);
+            w1 = open(outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3','w');
+            chr = items[3]
+            strand = items[4]
+            e1st_s = "";
+            e1st_e = "";
+            e2st_s = "";
+            e2st_e = "";
+            se_s = "";
+            se_e = "";
+            up_s = "";
+            up_e = "";
+            dn_s = "";
+            dn_e = "";
+            inc_level1 = "";
+            inc_level2 = "";
+            if event_type!='MXE':
+                se_s = str(int(items[5])+1)
+                se_e = items[6]
+                up_s = str(int(items[7])+1)
+                up_e = items[8]
+                dn_s = str(int(items[9])+1)
+                dn_e = items[10]
+                inc_level1 = items[20] ## IncLevel1
+                inc_level2 = items[21] ## IncLevel2
+            if event_type=='MXE':
+                e1st_s = str(int(items[5])+1)
+                e1st_e = items[6]
+                e2st_s = str(int(items[7])+1)
+                e2st_e = items[8]
+                up_s = str(int(items[9])+1)
+                up_e = items[10]
+                dn_s = str(int(items[11])+1)
+                dn_e = items[12]
+                inc_level1 = items[22] ## IncLevel1
+                inc_level2 = items[23] ## IncLevel2
+            events_name_level[geneSymbol] = inc_level1 +"_"+ inc_level2
+            if strand =='+':
+                id_str = chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
+                name_str = geneSymbol+"_"+chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
+                if event_type!='MXE':
+                    w2.write( "%s\n" % (name_str))
+                    w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (chr,se_s,se_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                if event_type=='MXE':
+                    w2.write( "%s\n" % (name_str))
+                    w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (chr,e1st_s,e1st_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (chr,e2st_s,e2st_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+            if strand =='-':
+                id_str = chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
+                name_str = geneSymbol+"_"+chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
+                if event_type!='MXE':
+                    w2.write( "%s\n" % (name_str))
+                    w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (chr,se_s,se_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                if event_type=='MXE':
+                    w2.write( "%s\n" % (name_str))
+                    w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (chr,e1st_s,e1st_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (chr,e2st_s,e2st_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
+            w1.close()
+
+            logging.debug("start preparing sashimi plot setting files");
+
+            try:
+              logging.debug("prepare sashimi plot setting file..");
+
+              geneSymbol = (gene_no_str.split('_'))[0];
+              settingFile = open(outPath + '/Sashimi_index_'+gene_no_str+'/sashimi_plot_settings.txt', 'w');
+              settingFile.write("[data]\n");
+              settingFile.write("bam_prefix = "+samDir+"\n");
+              settingFile.write("miso_prefix = "+samDir+"\n");
+              ## setting string for replicates ##
+              bam_files_arr1 = [];
+              bam_files_arr2 = [];
+              for rr in range(0,len(sample_1)): ## sample_1
+                if bamFile==0:
+                  bam_files_arr1.append('\"'+sample_1[rr].replace(".sam","")+'.bam\"');
+                else: ## bam file is provided
+                  bam_files_arr1.append('\"'+sample_1[rr]+'\"');
+              for rr in range(0,len(sample_2)): ## sample_2
+                if bamFile==0:
+                  bam_files_arr2.append('\"'+sample_2[rr].replace(".sam","")+'.bam\"');
+                else: ## bam file is provided
+                  bam_files_arr2.append('\"'+sample_2[rr]+'\"');
+              setting_bam_str = ','.join(bam_files_arr1)+','+','.join(bam_files_arr2);
+              settingFile.write("bam_files = ["+setting_bam_str+"]\n");
+              settingFile.write("miso_files = ["+setting_bam_str+"]\n");
+              settingFile.write("[plotting]\n");
+              settingFile.write("fig_width = 8\n");
+              if len(sample_1)<5:
+                settingFile.write("fig_height = 7\n");
+              else:
+                settingFile.write("fig_height = 14\n");
+              settingFile.write("exon_scale = "+str(exon_s)+"\n");
+              settingFile.write("intron_scale = "+str(intron_s)+"\n");
+              settingFile.write("logged = False\n");
+              settingFile.write("font_size = 8\n");
+              settingFile.write("bar_posteriors = False\n");
+              settingFile.write("nyticks = 4\n");
+              settingFile.write("nxticks = 6\n");
+              settingFile.write("show_ylabel = False\n");
+              settingFile.write("show_xlabel = True\n");
+              settingFile.write("plot_title = \"gene symbol\"\n");
+              settingFile.write("plot_label = plot_label\n");
+              settingFile.write("show_posteriors = False\n");
+              settingFile.write("number_junctions = True\n");
+              settingFile.write("resolution = .5\n");
+              ## setting string for replicates ##
+              colors_arr1 = [];
+              colors_arr2 = [];
+              for rr in range(0,len(sample_1)): ## sample_1
+                colors_arr1.append('\"#CC0011\"');
+              for rr in range(0,len(sample_2)): ## sample_2
+                colors_arr2.append('\"#FF8800\"');
+              setting_color_str = ','.join(colors_arr1)+','+','.join(colors_arr2);
+              settingFile.write("colors = ["+setting_color_str+"]\n");
+              ## setting string for inclusion levels ##
+              inclever_str = events_name_level.get(geneSymbol);
+              items = inclever_str.split('_');
+              inc_level1 = items[0];
+              inc_level2 = items[1];
+              inc_items1 = inc_level1.split(',');
+              inc_items2 = inc_level2.split(',');
+              sample_labels_arr1 = [];
+              sample_labels_arr2 = [];
+              for rr in range(0,len(sample_1)): ## sample_1
+                file_str1 = sample_1[rr].split('/');
+                inc_1 = "{0:.2f}".format(float(inc_items1[rr]));
+                sample_labels_arr1.append('\"'+geneSymbol+' '+l1+'-'+str(rr+1)+' IncLevel: '+inc_1+'\"');
+              for rr in range(0,len(sample_2)): ## sample_2
+                file_str2 = sample_2[rr].split('/');
+                inc_2 = "{0:.2f}".format(float(inc_items2[rr]));
+                sample_labels_arr2.append('\"'+geneSymbol+' '+l2+'-'+str(rr+1)+' IncLevel: '+inc_2+'\"');
+              setting_labels_str = ','.join(sample_labels_arr1)+','+','.join(sample_labels_arr2);
+              settingFile.write("sample_labels = ["+setting_labels_str+"]\n");
+              settingFile.write("reverse_minus = True");
+              settingFile.close();
+              logging.debug("done prepare sashimi plot setting file"+sashimiPath+"/sashimi_plot_settings.txt");
+              pass;
+            except:
+              logging.debug("There is an exception in preparing setting file");
+              logging.debug("Exception: %s" % sys.exc_info()[0]);
+              logging.debug("Detail: %s" % sys.exc_info()[1]);
+              sys.exit(-1);
+
+            logging.debug("done making setting file..");
+            logging.debug("use gff3 format file to run index_gff..");
+
+            os.system('index_gff --index '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3 '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/');
+
+            logging.debug("output plot from events set..");
+            os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/ '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
+            new_str = id_str.replace(":","_");
+            os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+geneSymbol+'_'+new_str+'.pdf');
+            logging.debug("*** output plot "+geneSymbol);
+
+          # Close opend file
+          fo.close()
+          w2.close()
+          pass;
+        except:
+          logging.debug("There is an exception in drawPlotWithEventsFile()");
+          logging.debug("Exception: %s" % sys.exc_info()[0]);
+          logging.debug("Detail: %s" % sys.exc_info()[1]);
+          sys.exit(-1);
+        logging.debug("done drawPlotWithEventsFile()");
+
+
+    #############
+    ## calculate total running time
+    #############
+    logging.debug("Program ended");
+    currentTime = time.time();
+    runningTime = currentTime-startTime; ## in seconds
+    logging.debug("Program ran %.2d:%.2d:%.2d" % (runningTime/3600, (runningTime%3600)/60, runningTime%60));
 
 ######## end of functions ##############
