@@ -262,8 +262,7 @@ def main():
                   logging.debug("exon: " + line.replace("\n",""));
                   w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
           w1.close()
-
-            logging.debug("start preparing sashimi plot setting files");
+          logging.debug("start preparing sashimi plot setting files");
 
           try:
             logging.debug("prepare sashimi plot setting file..");
