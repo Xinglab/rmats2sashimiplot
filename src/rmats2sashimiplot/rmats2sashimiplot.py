@@ -206,66 +206,66 @@ def main():
         logging.debug("coordinate is provided"+"\t"+events);
         try:
 
-  logging.debug("drawPlotWithCoordinate()");
+          logging.debug("drawPlotWithCoordinate()");
 
-  tmp_str = events.split(':');
-  in_chr = tmp_str[0];
-  in_strand = tmp_str[1];
-  in_coor_s = tmp_str[2];
-  in_coor_e = int(tmp_str[3])+1;
-  id_str = in_chr+":"+in_coor_s+":"+str(in_coor_e)+":"+in_strand; # chr2:10101175:10104171:+
-  gff3_file = tmp_str[4];
-  fo = open(gff3_file,'r');
-  #logging.debug("events " + events);
-  #logging.debug("gff3_file " + gff3_file);
-  w2 = open(outPath + '/Sashimi_index/SE.event.list.txt','w');
-  w1 = open(outPath+'/Sashimi_index/tmp.gff3','w');
-  sashimiPath = outPath + '/Sashimi_index';
+          tmp_str = events.split(':');
+          in_chr = tmp_str[0];
+          in_strand = tmp_str[1];
+          in_coor_s = tmp_str[2];
+          in_coor_e = int(tmp_str[3])+1;
+          id_str = in_chr+":"+in_coor_s+":"+str(in_coor_e)+":"+in_strand; # chr2:10101175:10104171:+
+          gff3_file = tmp_str[4];
+          fo = open(gff3_file,'r');
+          #logging.debug("events " + events);
+          #logging.debug("gff3_file " + gff3_file);
+          w2 = open(outPath + '/Sashimi_index/SE.event.list.txt','w');
+          w1 = open(outPath+'/Sashimi_index/tmp.gff3','w');
+          sashimiPath = outPath + '/Sashimi_index';
 
-  w1.write( "%s\tensGene\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (in_chr,in_coor_s,in_coor_e,in_strand,id_str,id_str))
-  w1.write( "%s\tensGene\tmRNA\t%s\t%s\t.\t%s\t.\tName=ENST00000000000;Parent=%s;ID=ENST00000000000\n" % (in_chr,in_coor_s,in_coor_e,in_strand,id_str))
+          w1.write( "%s\tensGene\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (in_chr,in_coor_s,in_coor_e,in_strand,id_str,id_str))
+          w1.write( "%s\tensGene\tmRNA\t%s\t%s\t.\t%s\t.\tName=ENST00000000000;Parent=%s;ID=ENST00000000000\n" % (in_chr,in_coor_s,in_coor_e,in_strand,id_str))
 
-  events_no = 0;
-  for line in fo:
-    if line.startswith('#'):
-      continue;
-    events_no += 1;
-    items = line.split("\t")
-    chr = items[0];
-    if in_chr!=chr:
-      continue;
-    type = items[2];
-    if (type=='mRNA' or type=='exon'):
-      coor_s = items[3];
-      coor_e = items[4];
-      strand = items[6];
-      annot_str = items[8];
-      annot_items = annot_str.split(";");
-      if strand =='+' and in_strand==strand and int(in_coor_s)<=int(coor_s) and int(coor_e)<=int(in_coor_e):
-        ENST_Name_str = annot_items[0];
-        ENST_Parent_str = annot_items[1];
-        ENST_ID_str = annot_items[2].replace("\n","");
-        if type=='mRNA':
-          logging.debug(line.replace("\n",""));
-          w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,id_str,ENST_ID_str))
-        if type=='exon':
-          logging.debug(line.replace("\n",""));
-          w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
-      if strand =='-' and in_strand==strand and int(in_coor_s)<=int(coor_e) and int(coor_s)<=int(in_coor_e):
-        ENST_Name_str = annot_items[0];
-        ENST_Parent_str = annot_items[1];
-        ENST_ID_str = annot_items[2].replace("\n","");
-        if type=='mRNA':
-          logging.debug(line.replace("\n",""));
-          w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,id_str,ENST_ID_str))
-        if type=='exon':
-          logging.debug("exon: " + line.replace("\n",""));
-          w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
-  w1.close()
+          events_no = 0;
+          for line in fo:
+            if line.startswith('#'):
+              continue;
+            events_no += 1;
+            items = line.split("\t")
+            chr = items[0];
+            if in_chr!=chr:
+              continue;
+            type = items[2];
+            if (type=='mRNA' or type=='exon'):
+              coor_s = items[3];
+              coor_e = items[4];
+              strand = items[6];
+              annot_str = items[8];
+              annot_items = annot_str.split(";");
+              if strand =='+' and in_strand==strand and int(in_coor_s)<=int(coor_s) and int(coor_e)<=int(in_coor_e):
+                ENST_Name_str = annot_items[0];
+                ENST_Parent_str = annot_items[1];
+                ENST_ID_str = annot_items[2].replace("\n","");
+                if type=='mRNA':
+                  logging.debug(line.replace("\n",""));
+                  w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,id_str,ENST_ID_str))
+                if type=='exon':
+                  logging.debug(line.replace("\n",""));
+                  w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
+              if strand =='-' and in_strand==strand and int(in_coor_s)<=int(coor_e) and int(coor_s)<=int(in_coor_e):
+                ENST_Name_str = annot_items[0];
+                ENST_Parent_str = annot_items[1];
+                ENST_ID_str = annot_items[2].replace("\n","");
+                if type=='mRNA':
+                  logging.debug(line.replace("\n",""));
+                  w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,id_str,ENST_ID_str))
+                if type=='exon':
+                  logging.debug("exon: " + line.replace("\n",""));
+                  w1.write( "%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" % (chr,type,coor_s,coor_e,strand,ENST_Name_str,ENST_Parent_str,ENST_ID_str))
+          w1.close()
 
-  logging.debug("start preparing sashimi plot setting files");
+            logging.debug("start preparing sashimi plot setting files");
 
-  try:
+          try:
             logging.debug("prepare sashimi plot setting file..");
 
             settingFile = open(outPath + '/Sashimi_index/sashimi_plot_settings.txt', 'w');
