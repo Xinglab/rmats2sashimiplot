@@ -152,10 +152,13 @@ def main():
     if bamFile==1 and ( ((sample_1[0].split('.'))[-1].strip()).upper() !='BAM' or ((sample_2[0].split('.'))[-1].strip()).upper() !='BAM'):
       print "Incorrect file type. Need to provide bam file for -b1 and -b2";
       sys.exit();
-
-    if len(sample_1)!=len(sample_2): ## different number of replicates per sample.. wrong!!
-        print("Requires the same number of replicates per sample...");
-        sys.exit();
+    ####### -2015-12-29---allowing different number of replicates for
+    ####### each sample. (Only for self-usage)
+    #if len(sample_1)!=len(sample_2): ## different number of replicates per sample.. wrong!!
+    #    print("Requires the same number of replicates per sample...");
+    #    sys.exit();
+    ####### -2015-12-29---allowing different number of replicates for
+    ####### each sample. (Only for self-usage)
 
     if eventsFile==1 and ( ((events.split('.'))[-1].strip()).upper() !='TXT'):
       print "Incorrect events file type. Need to provide rMATS output format txt file for -e";
@@ -180,7 +183,11 @@ def main():
         os.system('samtools index '+sample_1[fki].replace(".sam","")+'.bam');
         #logging.debug("sam file is provided"+"\t"+sample_1[fki]);
       else: ## bam file is provided
-        os.system('samtools index '+sample_1[fki]);
+        #### No index if .bai file exists ####
+        #### Used when debugging and can be suitabke for almost ####
+        #### all situations. ####
+        if not os.path.exists(sample_1[fki]+'.bai'):
+          os.system('samtools index '+sample_1[fki]);
         #logging.debug("bam file is provided"+"\t"+sample_1[fki]);
       repTempFolder = "SAMPLE_1\REP_"+str(fki+1);
       associatedFile = sample_1[fki];
@@ -192,7 +199,12 @@ def main():
         os.system('samtools index '+sample_2[fki].replace(".sam","")+'.bam');
         #logging.debug("sam file is provided"+"\t"+sample_2[fki]);
       else: ## bam file is provided
-        os.system('samtools index '+sample_2[fki]);
+        #### No index if .bai file exists ####
+        #### Used when debugging and can be suitabke for almost ####
+        #### all situations. ####
+        if not os.path.exists(sample_2[fki]+'.bai'):
+          os.system('samtools index '+sample_2[fki]);
+        #os.system('samtools index '+sample_2[fki]);
         #logging.debug("bam file is provided"+"\t"+sample_2[fki]);
       repTempFolder = "SAMPLE_2\REP_"+str(fki+1);
       associatedFile = sample_2[fki];
@@ -374,12 +386,23 @@ def main():
             events_no += 1;
             items = line.split("\t")
             geneSymbol = items[2]
+            #### In case, special symbols appear in gene names. #
+            #### Specially for Drosophila gene name. #
             geneSymbol = geneSymbol.replace('\"','');
+            geneSymbol = geneSymbol.replace('\'','single_quote');
+            geneSymbol = geneSymbol.replace('(','left_br');
+            geneSymbol = geneSymbol.replace('[','left_sq');
+            geneSymbol = geneSymbol.replace(')','right_br');
+            geneSymbol = geneSymbol.replace(']','right_sq');
             logging.debug("***** geneSymbol: "+geneSymbol);
-            gene_no_str = geneSymbol+'_'+str(events_no);
-            sashimiPath = outPath + '/Sashimi_index_'+geneSymbol+'_'+str(events_no);
+            #### Using '___' instead of '_' in case '_' exists in gene
+            #### names.
+            gene_no_str = geneSymbol+'___'+str(events_no);
+            #sashimiPath = outPath + '/Sashimi_index_'+eneSymbol+'_'+str(events_no);
+            sashimiPath = outPath + '/Sashimi_index_'+gene_no_str;
             os.system('mkdir -p '+ sashimiPath);
-            w1 = open(outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3','w');
+            #w1 = open(outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3','w');
+            w1 = open(outPath+'/Sashimi_index_'+gene_no_str+'/tmp.gff3','w');
             chr = items[3]
             strand = items[4]
             e1st_s = "";
@@ -401,6 +424,12 @@ def main():
                 up_e = items[8]
                 dn_s = str(int(items[9])+1)
                 dn_e = items[10]
+                #### Get the minimum and maximum position to represent 
+                #### whole regions.
+                all_pos = [int(se_s), int(se_e), int(up_s),
+                    int(up_e), int(dn_s), int(dn_e)]
+                g_start = str(min(all_pos))
+                g_end   = str(max(all_pos))
                 inc_level1 = items[20] ## IncLevel1
                 inc_level2 = items[21] ## IncLevel2
             if event_type=='MXE':
@@ -412,17 +441,38 @@ def main():
                 up_e = items[10]
                 dn_s = str(int(items[11])+1)
                 dn_e = items[12]
+                #### Get the minimum and maximum position to represent 
+                #### whole regions.
+                all_pos = [int(e1st_s), int(e1st_e), int(e2st_s),
+                    int(e2st_e), int(up_s), int(up_e), int(dn_s), int(dn_e)]
+                g_start = str(min(all_pos))
+                g_end   = str(max(all_pos))
                 inc_level1 = items[22] ## IncLevel1
                 inc_level2 = items[23] ## IncLevel2
             events_name_level[geneSymbol] = inc_level1 +"_"+ inc_level2
             if strand =='+':
-                id_str = chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
-                name_str = geneSymbol+"_"+chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
+                if event_type != 'MXE':
+                    #id_str = chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
+                    id_str = ":".join([chr, up_s, up_e,
+                        strand+"@"+chr, se_s, se_e, strand+"@"+chr,
+                        dn_s, dn_e, strand])
+                else:
+                    id_str = ":".join([chr, up_s, up_e,
+                        strand+"@"+chr, e1st_s, e1st_e, 
+                        strand+"@"+chr, e2st_s, e2st_e, 
+                        strand+"@"+chr, dn_s, dn_e, strand])
+                #name_str = geneSymbol+"_"+chr+":"+up_s+":"+up_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+dn_s+":"+dn_e+":"+strand
+                name_str = geneSymbol+"_"+id_str
                 if event_type!='MXE':
                     w2.write( "%s\n" % (name_str))
-                    w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    #w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #### Get the minimum and maximum position to represent 
+                    #### whole regions.
+                    w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,g_start,g_end,strand,id_str,name_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (chr,se_s,se_e,strand,id_str,id_str))
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
@@ -430,9 +480,14 @@ def main():
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
                 if event_type=='MXE':
                     w2.write( "%s\n" % (name_str))
-                    w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    #w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #### Get the minimum and maximum position to represent 
+                    #### whole regions.
+                    w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,g_start,g_end,strand,id_str,name_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (chr,e1st_s,e1st_e,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
@@ -440,13 +495,29 @@ def main():
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (chr,e2st_s,e2st_e,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
             if strand =='-':
-                id_str = chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
-                name_str = geneSymbol+"_"+chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
+                #id_str = chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
+                #name_str = geneSymbol+"_"+chr+":"+dn_s+":"+dn_e+":"+strand+"@"+chr+":"+se_s+":"+se_e+":"+strand+"@"+chr+":"+up_s+":"+up_e+":"+strand
+                if event_type != 'MXE':
+                    id_str = ":".join([chr, dn_s, dn_e,
+                        strand+"@"+chr, se_s, se_e, 
+                        strand+"@"+chr, up_s, up_e, strand])
+                else:
+                    id_str = ":".join([chr, dn_s, dn_e,
+                        strand+"@"+chr, e2st_s, e2st_e, 
+                        strand+"@"+chr, e1st_s, e1st_e, 
+                        strand+"@"+chr, up_s, up_e, strand])
+                name_str = geneSymbol+"_"+id_str
+
                 if event_type!='MXE':
                     w2.write( "%s\n" % (name_str))
-                    w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,g_start,g_end,strand,id_str,name_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
+                    w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
+                    #### Get the minimum and maximum position to represent 
+                    #### whole regions.
+                    #w1.write( "%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    #w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (chr,se_s,se_e,strand,id_str,id_str))
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
@@ -454,9 +525,12 @@ def main():
                     w1.write( "%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (chr,up_s,up_e,strand,id_str,id_str))
                 if event_type=='MXE':
                     w2.write( "%s\n" % (name_str))
-                    w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
-                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
-                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,up_s,dn_e,strand,id_str,name_str))
+                    #w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    #w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,up_s,dn_e,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (chr,g_start,g_end,strand,id_str,name_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
+                    w1.write( "%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (chr,g_start,g_end,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (chr,dn_s,dn_e,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (chr,e1st_s,e1st_e,strand,id_str,id_str))
                     w1.write( "%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (chr,up_s,up_e,strand,id_str,id_str))
@@ -470,7 +544,7 @@ def main():
             try:
               logging.debug("prepare sashimi plot setting file..");
 
-              geneSymbol = (gene_no_str.split('_'))[0];
+              geneSymbol = (gene_no_str.split('___'))[0];
               settingFile = open(outPath + '/Sashimi_index_'+gene_no_str+'/sashimi_plot_settings.txt', 'w');
               settingFile.write("[data]\n");
               settingFile.write("bam_prefix = "+samDir+"\n");
@@ -552,10 +626,14 @@ def main():
             logging.debug("done making setting file..");
             logging.debug("use gff3 format file to run index_gff..");
 
-            os.system('index_gff --index '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3 '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/');
+            #os.system('index_gff --index '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/tmp.gff3 '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/');
+            os.system('index_gff --index '+outPath+'/Sashimi_index_'+
+                    gene_no_str + '/tmp.gff3 '+outPath+'/Sashimi_index_'+
+                    gene_no_str +'/');
 
             logging.debug("output plot from events set..");
-            os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/ '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
+            #os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/ '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
+            os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index_'+gene_no_str+'/ '+outPath+'/Sashimi_index_'+gene_no_str+'/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
             new_str = id_str.replace(":","_");
             os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+geneSymbol+'_'+new_str+'.pdf');
             logging.debug("*** output plot "+geneSymbol);
