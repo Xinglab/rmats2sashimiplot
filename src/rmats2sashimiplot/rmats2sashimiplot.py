@@ -362,7 +362,7 @@ def main():
           logging.debug("drawPlotWithEventsFile()");
 
           fo = open(events,'r');
-          w2 = open(outPath+'/Sashimi_index/SE.event.list.txt','w');
+          w2 = open(outPath+'/Sashimi_index/'+event_type+'.event.list.txt','w');
 
           events_no = 0;
           for line in fo:
@@ -557,7 +557,7 @@ def main():
             logging.debug("output plot from events set..");
             os.system('sashimi_plot --plot-event \"'+id_str+'\" '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/ '+outPath+'/Sashimi_index_'+geneSymbol+'_'+str(events_no)+'/sashimi_plot_settings.txt --output-dir '+outPath+'/Sashimi_plot');
             new_str = id_str.replace(":","_");
-            os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+geneSymbol+'_'+new_str+'.pdf');
+            os.system('mv '+outPath+'/Sashimi_plot/'+id_str+'.pdf '+outPath+'/Sashimi_plot/'+str(events_no)+'_'+geneSymbol+'_'+new_str+'.pdf');
             logging.debug("*** output plot "+geneSymbol);
 
           # Close opend file
