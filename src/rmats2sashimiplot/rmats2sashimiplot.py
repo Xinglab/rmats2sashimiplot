@@ -153,9 +153,11 @@ def main():
       print "Incorrect file type. Need to provide bam file for -b1 and -b2";
       sys.exit();
 
+    """
     if len(sample_1)!=len(sample_2): ## different number of replicates per sample.. wrong!!
         print("Requires the same number of replicates per sample...");
         sys.exit();
+    """
 
     if eventsFile==1 and ( ((events.split('.'))[-1].strip()).upper() !='TXT'):
       print "Incorrect events file type. Need to provide rMATS output format txt file for -e";
