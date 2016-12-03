@@ -533,11 +533,17 @@ def main():
               sample_labels_arr2 = [];
               for rr in range(0,len(sample_1)): ## sample_1
                 file_str1 = sample_1[rr].split('/');
-                inc_1 = "{0:.2f}".format(float(inc_items1[rr]));
+                try:
+                  inc_1 = "{0:.2f}".format(float(inc_items1[rr]));
+                except ValueError:
+                  inc_1=inc_items1[rr];
                 sample_labels_arr1.append('\"'+geneSymbol+' '+l1+'-'+str(rr+1)+' IncLevel: '+inc_1+'\"');
               for rr in range(0,len(sample_2)): ## sample_2
                 file_str2 = sample_2[rr].split('/');
-                inc_2 = "{0:.2f}".format(float(inc_items2[rr]));
+                try:
+                  inc_2 = "{0:.2f}".format(float(inc_items2[rr]));
+                except ValueError:
+                  inc_2=inc_items2[rr];
                 sample_labels_arr2.append('\"'+geneSymbol+' '+l2+'-'+str(rr+1)+' IncLevel: '+inc_2+'\"');
               setting_labels_str = ','.join(sample_labels_arr1)+','+','.join(sample_labels_arr2);
               settingFile.write("sample_labels = ["+setting_labels_str+"]\n");
@@ -549,7 +555,7 @@ def main():
               logging.debug("There is an exception in preparing setting file");
               logging.debug("Exception: %s" % sys.exc_info()[0]);
               logging.debug("Detail: %s" % sys.exc_info()[1]);
-              sys.exit(-1);
+              continue;
 
             logging.debug("done making setting file..");
             logging.debug("use gff3 format file to run index_gff..");
