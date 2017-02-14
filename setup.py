@@ -23,15 +23,20 @@ import sys, os
 from setuptools import setup, find_packages
 
 setup(name='rmats2sashimiplot',
-      version='1.0.0',
+      version='2.0.0',
       packages = find_packages('src'),  # include all packages under src
 			package_dir = {'':'src'},   # all distutils packages are under src
-      entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main']},
-			description = 'rmats2sashimiplot',
-            author='Yu-Ting Tseng, Emad Bahrami-Samani',
-			author_email = 'ting0514@gmail.com',
-            url='https://github.com/Xinglab/rmats2sashimiplot',
-            download_url='https://github.com/Xinglab/rmats2sashimiplot',
-            keywords = [],
-            classifiers=[],
+      entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main',
+                                        'index_gff=MISO.misopy.index_gff:main',
+                                        'sashimi_plot=MISO.misopy.sashimi_plot.sashimi_plot:main'],},
+	  description = 'rmats2sashimiplot',
+      author='Zhijie Xie, Yukai Jiang',
+	  author_email = 'shiehshiehzhijie@gmail.com',
+      url='https://github.com/Xinglab/rmats2sashimiplot', 
+      download_url='https://github.com/Xinglab/rmats2sashimiplot',
+      keywords = [],
+      classifiers=[],
+      install_requires=[
+          'matplotlib',
+      ],
 )

@@ -1,0 +1,84 @@
+[data]
+# directory where BAM files are
+bam_prefix = ./test-data/bam-data/
+# directory where MISO output is
+miso_prefix = ./test-data/miso-data/
+
+bam_files = [
+    "heartWT1.sorted.bam",
+    "heartWT2.sorted.bam",
+    "heartKOa.sorted.bam",
+    "heartKOb.sorted.bam"]
+
+miso_files = [
+    "heartWT1",
+    "heartWT2",
+    "heartKOa",
+    "heartKOb"]
+
+[plotting]
+# Dimensions of figure to be plotted (in inches)
+fig_width = 7
+fig_height = 5 
+# Factor to scale down introns and exons by
+intron_scale = 30
+exon_scale = 4
+# Whether to use a log scale or not when plotting
+logged = False 
+font_size = 6
+
+bar_posteriors = False
+
+# Max y-axis
+ymax = 150
+
+# Axis tick marks
+nyticks = 3
+nxticks = 4
+
+# Whether to show axis labels
+show_ylabel = True
+show_xlabel = True
+
+# Whether to plot posterior distributions inferred by MISO
+show_posteriors = True 
+
+# Whether to plot the number of reads in each junction
+number_junctions = True
+
+resolution = .5
+posterior_bins = 40
+gene_posterior_ratio = 5
+
+# List of colors for read denisites of each sample
+colors = [
+    "#CC0011",
+    "#CC0011",
+    "#FF8800",
+    "#FF8800"]
+
+# Number of mapped reads in each sample
+# (Used to normalize the read density for RPKM calculation)
+coverages = [
+    6830944,
+    14039751,
+    4449737, 
+    6720151]
+
+# Bar color for Bayes factor distribution
+# plots (--plot-bf-dist)
+# Paint them blue
+bar_color = "b"
+
+# Bayes factors thresholds to use for --plot-bf-dist
+bf_thresholds = [0, 1, 2, 5, 10, 20]
+
+##
+## Names of colors for plotting
+##
+# "b" for blue
+# "k" for black
+# "r" for red
+# "g" for green
+#
+# Hex colors are accepted too.

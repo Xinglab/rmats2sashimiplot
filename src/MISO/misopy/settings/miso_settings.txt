@@ -1,0 +1,13 @@
+[data]
+filter_results = True
+min_event_reads = 20
+
+[cluster]
+cluster_command = qsub
+
+[sampler]
+burn_in = 500
+lag = 10
+num_iters = 5000
+num_chains = 6
+num_processors = 4
