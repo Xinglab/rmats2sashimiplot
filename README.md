@@ -95,7 +95,7 @@ Please download and untar the test data from:
 http://www.mimg.ucla.edu/faculty/xing/rmats2sashimiplot/testData.tar
 
 ### Output ###
-All output sashimiplot pdf files are in -o outDir folder.
+All output sashimiplot pdf files are in -o outDir/Sashimi_plot folder.
 
 Contacts and bug reports
 ------------------------
