@@ -1,6 +1,13 @@
 Change History
 ==============
 
+2.0.0 (2016-2-14)
+------------------
+
+* Removed MISO dependency.
+
+* Refactored rmats2sashimiplot.py.
+
 1.1.0 (Unreleased)
 ------------------
 

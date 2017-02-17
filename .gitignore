@@ -59,6 +59,7 @@ target/
 # Mac
 **/.DS_Store
 **/*.pyc
+**/*.swp
 src/MISO/misopy/test-data/
 src/MISO/misopy/sashimi_plot/test-data/
 src/MISO/misopy/sashimi_plot/test-plot/

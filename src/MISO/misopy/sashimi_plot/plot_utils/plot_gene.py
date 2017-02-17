@@ -408,18 +408,23 @@ def readsToWiggle_pysam(reads, tx_start, tx_end):
             continue
         cigar_str = sam_utils.sam_cigar_to_str(read.cigar)
 
-        if ("N" in cigar_str) and (cigar_str.count("N") > 1):
-            print "Skipping read with multiple junctions crossed: %s" \
-                  %(cigar_str)
-            continue
+        # if ("N" in cigar_str) and (cigar_str.count("N") > 1):
+        #     print "Skipping read with multiple junctions crossed: %s" \
+        #           %(cigar_str)
+        #     continue
 
         # Check if the read contains an insertion (I)
         # or deletion (D) -- if so, skip it
+        skipit = False
         for cigar_part in read.cigar:
             if cigar_part[0] == 1 or \
-               cigar_part[1] == 2:
+               cigar_part[0] == 2:
                 print "Skipping read with CIGAR %s" \
                       %(cigar_str)
+                skipit = True
+        if skipit:
+            continue
+
         aligned_positions = read.positions
         for i, pos in enumerate(aligned_positions):
             if pos < tx_start or pos > tx_end:
