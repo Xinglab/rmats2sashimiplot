@@ -4,10 +4,12 @@
 import os, sys, operator, subprocess
 import math
 import pysam
+import numpy as np
 import glob
 from pylab import *
 from matplotlib.patches import PathPatch 
 from matplotlib.path import Path
+import matplotlib.cm as cm
 
 import misopy
 import misopy.gff_utils as gff_utils
@@ -21,7 +23,7 @@ from misopy.parse_gene import parseGene
 
 def plot_density_single(settings, sample_label,
                         tx_start, tx_end, gene_obj, mRNAs, strand,
-                        graphcoords, graphToGene, bam_filename, axvar, chrom,
+                        graphcoords, graphToGene, bam_group, axvar, chrom,
                         paired_end=False,
                         intron_scale=30,
                         exon_scale=4,
@@ -45,24 +47,32 @@ def plot_density_single(settings, sample_label,
     Plot MISO events using BAM files and posterior distribution files.
     TODO: If comparison files are available, plot Bayes factors too.
     """
-    bamfile = pysam.Samfile(bam_filename, 'rb')
-    try:
-        subset_reads = bamfile.fetch(reference=chrom, start=tx_start,end=tx_end)
-    except ValueError as e:
-        print "Error retrieving files from %s: %s" %(chrom, str(e))
-        print "Are you sure %s appears in your BAM file?" %(chrom)
-        print "Aborting plot..."
-        return axvar
-    wiggle, jxns = readsToWiggle_pysam(subset_reads, tx_start, tx_end)
-    wiggle = 1e3 * wiggle / coverage
-                
+    wiggle = zeros((tx_end - tx_start + 1), dtype='f')
+    jxns = {}
+    bamfile_num = len(bam_group)
+    for i in range(bamfile_num):
+        file_name = os.path.expanduser(bam_group[i])
+        bamfile = pysam.Samfile(file_name, 'rb')
+        try:
+            subset_reads = bamfile.fetch(reference=chrom, start=tx_start,end=tx_end)
+        except ValueError as e:
+            print "Error retrieving files from %s: %s" %(chrom, str(e))
+            print "Are you sure %s appears in your BAM file?" %(chrom)
+            print "Aborting plot..."
+            return axvar
+        # wiggle, jxns = readsToWiggle_pysam(subset_reads, tx_start, tx_end)
+        readsToWiggle_pysam(subset_reads, tx_start, tx_end, wiggle, jxns)
+    wiggle = 1e3 * wiggle / coverage / bamfile_num
+    wiggle = map(lambda(w): round(w, 1), wiggle)
+    for j_key in jxns.keys():
+        jxns[j_key] = round(1.0 * jxns[j_key] / bamfile_num, 1)
     # gene_reads = sam_utils.fetch_bam_reads_in_gene(bamfile, gene_obj.chrom,\
     #     tx_start, tx_end, gene_obj)
     # reads, num_raw_reads = sam_utils.sam_parse_reads(gene_reads,\
     #     paired_end=paired_end)
     # wiggle, jxns = readsToWiggle(reads, tx_start, tx_end)
     #wiggle = 1e3 * wiggle / coverage
- 
+
     if logged:
         wiggle = log10(wiggle + 1)
     
@@ -95,7 +105,8 @@ def plot_density_single(settings, sample_label,
         for s, e in mRNA:
             tmp.extend([s, e])
         sslists.append(tmp)
-
+    min_counts = settings["min_counts"]  # if the jxn is smaller than it, then omit the text plotting
+    show_text_background = settings["text_background"]
     for jxn in jxns:
         leftss, rightss = map(int, jxn.split(":"))
 
@@ -123,15 +134,19 @@ def plot_density_single(settings, sample_label,
                        (ss2, rightdens + h),
                        (ss2, rightdens)]
                 midpt = cubic_bezier(pts, .5)
+            if min_counts == 0 or jxns[jxn] >= min_counts:
+                if number_junctions:
+                    if show_text_background:
+                        text(midpt[0], midpt[1], '%s'%(jxns[jxn]),
+                            fontsize=font_size-2, ha='center', va='center', backgroundcolor='w')
+                    else:
+                        text(midpt[0], midpt[1], '%s' % (jxns[jxn]),
+                            fontsize=font_size-2, ha='center', va='center')
 
-            if number_junctions:
-                text(midpt[0], midpt[1], '%s'%(jxns[jxn]),
-                     fontsize=6, ha='center', va='center', backgroundcolor='w')
-
-            a = Path(pts, [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4])
-            p = PathPatch(a, ec=color, lw=log(jxns[jxn] + 1) /\
-                log(junction_log_base), fc='none')
-            axvar.add_patch(p) 
+                a = Path(pts, [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4])
+                p = PathPatch(a, ec=color, lw=log(jxns[jxn] + 1) /\
+                    log(junction_log_base), fc='none')
+                axvar.add_patch(p)
 
     # Format plot
     # ylim(ymin, ymax)
@@ -168,8 +183,56 @@ def plot_density_single(settings, sample_label,
     return axvar
 
 
+def analyze_group_info(group_info, bam_files, original_labels):
+    """
+    to analyze the group file '*.gf'
+    :return: group_files, sample_labels, sample_colors
+    """
+    inc_levels=[]
+    for label in original_labels:
+        # the orginal label can be '.* IncLevel: 0.78'. The catch the incLevel 0.78
+        inc_levels.append(float(label.split(' ')[-1]))
+    gf_path = os.path.expanduser(group_info)
+    group_file = open(gf_path, 'r')
+    group_files = []
+    sample_labels = []
+    group_num = 0
+    for line in group_file:
+        try:
+            line = line.strip()  # line = 'group 1: 1-3, 4, 5-6'
+            if line == '':
+                continue  # if there are blank lines
+            group_name, file_names = line.split(':')
+            file_names = file_names.split(',')
+            # split the file index and find the corresponding bam_file
+            files = []
+            inc = 0
+            num_file = 0
+            for item in file_names:
+                if '-' in item:
+                    start, end = map(int, item.split('-'))
+                    for i in range(start, end+1):
+                        files.append(bam_files[i-1])  # here we suppose that the index of files begins from 0
+                        inc += inc_levels[i-1]
+                    num_file += end + 1 - start
+                else:
+                    files.append(bam_files[int(item)-1])
+                    inc += inc_levels[int(item)-1]
+                    num_file += 1
+            group_files.append(files)
+            group_name += " IncLevel: {0:.2f}".format(inc/num_file)
+            sample_labels.append(group_name)
+            group_num += 1
+        except:
+            pass
+    sample_colors = cm.rainbow(np.linspace(0, 1, group_num)) * 0.85
+    # the last magic number means the darkness of the rainbow colors
+
+    return group_files, sample_labels, sample_colors
+
+
 # Plot density for a series of bam files.
-def plot_density(sashimi_obj, pickle_filename, event, plot_title=None):
+def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_info=None):
 #                 intron_scale=30, exon_scale=1, gene_posterior_ratio=5, posterior_bins=40,
 #                 colors=None, ymax=None, logged=False, show_posteriors=True, coverages=None,
 #                 number_junctions=True, resolution=.5, fig_width=8.5, fig_height=11,
@@ -214,8 +277,18 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None):
     graphcoords, graphToGene = getScaling(tx_start, tx_end, strand,
                                           exon_starts, exon_ends, intron_scale,
                                           exon_scale, reverse_minus)
+    if group_info is not None:
+        group_files, group_labels, group_colors = analyze_group_info(group_info, bam_files, settings["sample_labels"])
+        settings["sample_labels"] = group_labels
+        colors = settings["colors"] = group_colors
+        nfiles = len(group_files)
+    else:
+        nfiles = len(bam_files)
+        group_files = []
+        # if the group_info is not provided, also produce a group_file = [['bam1'],['bam2'],...]
+        for i in range(nfiles):
+            group_files.append([bam_files[i]])
 
-    nfiles = len(bam_files)
     if plot_title is not None:
         # Use custom title if given
         suptitle(plot_title, fontsize=10)
@@ -236,8 +309,9 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None):
             showXaxis = False 
         else:
             showXaxis = True 
+        bam_group = group_files[i]  # ['./testData/S1.R1.test.bam','./testData/S1.R2.test.bam']
 
-        bam_file = os.path.expanduser(bam_files[i])
+        # bam_file = os.path.expanduser(bam_files[i])
         ax1 = subplot2grid((nfiles + 3, gene_posterior_ratio), (i, 0),
                            colspan=gene_posterior_ratio - 1)
         
@@ -245,11 +319,11 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None):
         sample_label = settings["sample_labels"][i]
 
         print "Reading sample label: %s" %(sample_label)
-        print "Processing BAM: %s" %(bam_file)
+        # print "Processing BAM: %s" %(bam_file)
         
         plotted_ax = plot_density_single(settings, sample_label,
                                          tx_start, tx_end, gene_obj, mRNAs, strand,
-                                         graphcoords, graphToGene, bam_file, ax1, chrom,
+                                         graphcoords, graphToGene, bam_group, ax1, chrom,
                                          paired_end=False, intron_scale=intron_scale,
                                          exon_scale=exon_scale, color=color,
                                          ymax=ymax, logged=logged, coverage=coverage,
@@ -395,12 +469,12 @@ def getScaling(tx_start, tx_end, strand, exon_starts, exon_ends,
     return graphcoords, graphToGene
 
 
-def readsToWiggle_pysam(reads, tx_start, tx_end):
+def readsToWiggle_pysam(reads, tx_start, tx_end, wiggle, jxns):
     """
     Convert reads to wiggles; uses pysam.
     """
-    wiggle = zeros((tx_end - tx_start + 1), dtype='f')
-    jxns = {}
+    # wiggle = zeros((tx_end - tx_start + 1), dtype='f')
+    # jxns = {}
     for read in reads:
         # Skip reads with no CIGAR string
         if read.cigar is None:
@@ -446,7 +520,8 @@ def readsToWiggle_pysam(reads, tx_start, tx_end):
                             jxns[jxn] = 1
             except:
                 pass
-    return wiggle, jxns
+    return
+    # return wiggle, jxns
 
 
 # def readsToWiggle(reads, tx_start, tx_end):
@@ -667,6 +742,7 @@ def cubic_bezier(pts, t):
     
 def plot_density_from_file(settings_f, pickle_filename, event,
                            output_dir,
+                           group_info=None,
                            no_posteriors=False,
                            plot_title=None,
                            plot_label=None):
@@ -693,13 +769,13 @@ def plot_density_from_file(settings_f, pickle_filename, event,
     settings = sashimi_obj.settings
     if no_posteriors:
         settings["show_posteriors"] = False
-    bam_files = settings['bam_files']
-    miso_files = settings['miso_files']
+    # bam_files = settings['bam_files']
+    # miso_files = settings['miso_files']
 
     # Setup the figure
     sashimi_obj.setup_figure()
 
-    plot_density(sashimi_obj, pickle_filename, event,
+    plot_density(sashimi_obj, pickle_filename, event, group_info=group_info,
                  plot_title=plot_title)
 
     # Save figure

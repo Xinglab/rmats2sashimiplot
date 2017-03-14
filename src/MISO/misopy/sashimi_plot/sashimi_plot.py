@@ -112,6 +112,7 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
 
 def plot_event(event_name, pickle_dir, settings_filename,
                output_dir,
+               group_info=None,
                no_posteriors=False,
                plot_title=None,
                plot_label=None):
@@ -153,6 +154,7 @@ def plot_event(event_name, pickle_dir, settings_filename,
 
     plot_density_from_file(settings_filename, pickle_filename, event_name,
                            output_dir,
+                           group_info=group_info,
                            no_posteriors=no_posteriors,
                            plot_title=plot_title,
                            plot_label=plot_label)
@@ -241,6 +243,10 @@ def main():
                       "Example: --plot-label my_gene")
     parser.add_option("--output-dir", dest="output_dir", nargs=1, default=None,
                       help="Output directory.")
+    parser.add_option("--group-info", dest="group_info", nargs=1, default= None,
+                      help="If there is the need to divide bam files into groups, then provided this parameter with the"
+                           " the group files' name. Exemple:"
+                           " \'--group-info gf.gf\'")  # TODO: modify it when the format is determined
     (options, args) = parser.parse_args()
 
     if options.plot_event is None:
@@ -275,7 +281,9 @@ def main():
         event_name = options.plot_event[0]
         pickle_dir = os.path.abspath(os.path.expanduser(options.plot_event[1]))
         settings_filename = os.path.abspath(os.path.expanduser(options.plot_event[2]))
+        group_info = options.group_info
         plot_event(event_name, pickle_dir, settings_filename, output_dir,
+                   group_info=group_info,
                    no_posteriors=no_posteriors,
                    plot_title=plot_title,
                    plot_label=plot_label)

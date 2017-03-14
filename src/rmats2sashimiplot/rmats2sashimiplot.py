@@ -16,10 +16,18 @@ def convert_sam2bam(options):
         for sam in sample_2:
             os.system("samtools view -Sbh " + sam + " > " + sam.replace(".sam", ".bam"))
         options.b2 = options.s2.replace(".sam", ".bam")
+    print('\033[0;33;m')  # change the print color as yellow
     for bam in options.b1.split(","):
-        os.system("samtools index " + bam)
+        if os.path.isfile(bam + '.bai'):  # if the bam file has been indexed.
+            print("\'{0}\' seems to be indexed already. Please Check out this index file \'{0}.bai\'".format(bam))
+        else:
+            os.system("samtools index " + bam)
     for bam in options.b2.split(","):
-        os.system("samtools index " + bam)
+        if os.path.isfile(bam + '.bai'):
+            print("\'{0}\' seems to be indexed already. Please Check out this index file \'{0}.bai\'".format(bam))
+        else:
+            os.system("samtools index " + bam)
+    print('\033[0m')  # set the color as default value
     return
 
 
@@ -66,13 +74,12 @@ def checkout(parser, options):
         parser.error("Incorrect file type. Need to provide rMATS output format txt file for -e")
 
 
-def conf_setting_file(options, gene_no_str=None, events_name_level=None):
+def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_level=None, id_str=None):
     """
     configure the setting files
     the empty of gene_no_str means plotting with events file, otherwise with coordinates
     """
     if gene_no_str is not None:
-        gene_symbol = (gene_no_str.split('_'))[0]
         setting_file = open(os.path.join(options.out_dir, "Sashimi_index_" + gene_no_str,
                                          "sashimi_plot_settings.txt"), 'w')
     else:
@@ -107,7 +114,7 @@ def conf_setting_file(options, gene_no_str=None, events_name_level=None):
     setting["exon_scale"] = str(options.exon_s)
     setting["intron_scale"] = str(options.intron_s)
     setting["logged"] = False
-    setting["font_size"] = 8
+    setting["font_size"] = options.font_size
     setting["bar_posteriors"] = False
     setting["nyticks"] = 4
     if gene_no_str is None:
@@ -119,16 +126,23 @@ def conf_setting_file(options, gene_no_str=None, events_name_level=None):
     setting["plot_title"] = "\"gene symbol\""
     setting["plot_label"] = "plot_label"
     setting["show_posteriors"] = False
-    setting["number_junctions"] = True
+    setting["number_junctions"] = not options.hide_number
     setting["resolution"] = ".5"
     setting["reverse_minus"] = True
+    setting["min_counts"] = max(options.min_counts, 0)
+    setting["text_background"] = options.text_background
     for item in setting:
         setting_file.write("{0} = {1}\n".format(item, setting[item]))
 
     # setting color
-    colors_arr1 = ['\"#CC0011\"'] * len_sample1
-    colors_arr2 = ['\"#FF8800\"'] * len_sample2
-    setting_color_str = ','.join(colors_arr1) + ',' + ','.join(colors_arr2)
+    setting_color_str = ""
+    if options.color is None:
+        colors_arr1 = ['\"#CC0011\"'] * len_sample1
+        colors_arr2 = ['\"#FF8800\"'] * len_sample2
+        setting_color_str = ','.join(colors_arr1) + ',' + ','.join(colors_arr2)
+    else:
+        colors_arr = ["\"{0}\"".format(c) for c in options.color.split(',')]
+        setting_color_str = ','.join(colors_arr)
     setting_file.write("colors = [{0}]\n".format(setting_color_str))
     # setting label
     sample_labels_arr1 = []
@@ -146,14 +160,26 @@ def conf_setting_file(options, gene_no_str=None, events_name_level=None):
         inc_level2 = items[1]
         inc_items1 = inc_level1.split(',')
         inc_items2 = inc_level2.split(',')
+        warning_flag = False
         for rr in range(0, len_sample1):
-            inc_1 = "{0:.2f}".format(float(inc_items1[rr]))
+            try:
+                inc_1 = "{0:.2f}".format(float(inc_items1[rr]))
+            except Exception:
+                inc_1 = "{0:.2f}".format(float('nan'))
+                warning_flag = True
             sample_labels_arr1.append('\"' + gene_symbol + ' ' + options.l1 + '-' + str(rr + 1) + ' IncLevel: '
                                       + inc_1 + '\"')
         for rr in range(0, len_sample2):
-            inc_2 = "{0:.2f}".format(float(inc_items2[rr]))
+            try:
+                inc_2 = "{0:.2f}".format(float(inc_items2[rr]))
+            except Exception:
+                inc_2 = "{0:.2f}".format(float('nan'))
+                warning_flag = True
             sample_labels_arr2.append('\"' + gene_symbol + ' ' + options.l2 + '-' + str(rr + 1) + ' IncLevel: '
                                       + inc_2 + '\"')
+    if warning_flag:
+        print >> sys.stderr, "Warning: The inclusion levels of Event \'{0}\' contains 'NA' value," \
+                             " which could lead to unexpected output.".format(id_str)
     setting_label_str = ','.join(sample_labels_arr1) + ',' + ','.join(sample_labels_arr2)
     setting_file.write("sample_labels = [{0}]\n".format(setting_label_str))
 
@@ -164,8 +190,10 @@ def plot_c(options, id_str):
     """
     the plot part of the coordinate method
     """
-    path_index_gff = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'MISO/misopy/index_gff.py')
-    path_sashimi_plot = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'MISO/misopy/sashimi_plot/sashimi_plot.py')
+    path_index_gff = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  'MISO/misopy/index_gff.py')
+    path_sashimi_plot = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                     'MISO/misopy/sashimi_plot/sashimi_plot.py')
 
     # call python index_gff.py
     tmp_str = os.path.join(options.sashimi_path, "tmp.gff3")
@@ -174,8 +202,13 @@ def plot_c(options, id_str):
     # call python sashimi_plot.py
     setting_str = os.path.join(options.sashimi_path, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
-    os.system("python {0} --plot-event \"{1}\" {2} {3} "
-              "--output-dir {4}".format(path_sashimi_plot, id_str, options.sashimi_path, setting_str, output_path))
+    if options.group_info is not None:
+        os.system("python {0} --plot-event \"{1}\" {2} {3} "
+                  "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, options.sashimi_path,
+                                                             setting_str, output_path, options.group_info))
+    else:
+        os.system("python {0} --plot-event \"{1}\" {2} {3} "
+                  "--output-dir {4}".format(path_sashimi_plot, id_str, options.sashimi_path, setting_str, output_path))
 
     # move pdf file
     new_str = id_str.replace(':', '_')
@@ -189,8 +222,10 @@ def plot_e(options, id_str, gene_symbol, events_no):
     """
     the plot part of the events file method
     """
-    path_index_gff = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'MISO/misopy/index_gff.py')
-    path_sashimi_plot = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'MISO/misopy/sashimi_plot/sashimi_plot.py')
+    path_index_gff = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  'MISO/misopy/index_gff.py')
+    path_sashimi_plot = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                     'MISO/misopy/sashimi_plot/sashimi_plot.py')
 
     # call python index_gff.py
     out_index = os.path.join(options.out_dir, "Sashimi_index_" + gene_symbol + '_' + str(events_no))
@@ -200,8 +235,13 @@ def plot_e(options, id_str, gene_symbol, events_no):
     # call python sashimi_plot.py
     setting_str = os.path.join(out_index, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
-    os.system("python {0} --plot-event \"{1}\" {2} {3} "
-              "--output-dir {4}".format(path_sashimi_plot, id_str, out_index, setting_str, output_path))
+    if options.group_info is not None:
+        os.system("python {0} --plot-event \"{1}\" {2} {3} "
+                  "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
+                                                             output_path, options.group_info))
+    else:
+        os.system("python {0} --plot-event \"{1}\" {2} {3} "
+                  "--output-dir {4}".format(path_sashimi_plot, id_str, out_index, setting_str, output_path))
 
     # move pdf file
     new_str = id_str.replace(':', '_')
@@ -219,7 +259,7 @@ def plot_with_coordinate(options):
     try:
         tmp_str = options.coordinate.split(':')
         in_chr = tmp_str[0]
-        if not in_chr.startswith("chr"): # add 'chr' prefix to the sequence name which is from the input arguement
+        if not in_chr.startswith("chr"):  # add 'chr' prefix to the sequence name which is from the input arguement
             in_chr = "chr" + in_chr
         in_strand = tmp_str[1]
         in_coor_s = tmp_str[2]
@@ -243,7 +283,7 @@ def plot_with_coordinate(options):
             items = line.split("\t")
             if items[0].startswith("chr"):
                 item_chr = items[0]
-            else: # add 'chr' prefix to the seqence name which is from the gff3 file
+            else:  # add 'chr' prefix to the seqence name which is from the gff3 file
                 item_chr = "chr" + items[0]
             if in_chr != item_chr:
                 continue
@@ -326,21 +366,29 @@ class EventCoor(object):
         self.name_str = ''
         self.id_str = ''
 
-    def generate_in_positive_order(self, seq_chr, gene_symbol, strand):
-        self.id_str = (seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" + seq_chr + ":" + self.se_s
-                       + ":" + self.se_e + ":" + strand + "@" + seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":"
-                       + strand)
-        self.name_str = (gene_symbol + "_" + seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" + seq_chr
-                         + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" + seq_chr + ":" + self.dn_s + ":"
-                         + self.dn_e + ":" + strand)
+    def generate_in_positive_order(self, seq_chr, gene_symbol, strand, event_type):
+        if event_type == 'MXE':
+            self.id_str = (seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.e1st_s + ":" + self.e1st_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.e2st_s + ":" + self.e2st_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand)
+        else:
+            self.id_str = (seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand)
+        self.name_str = gene_symbol + "_" + self.id_str
 
-    def generate_in_reversed_order(self, seq_chr, gene_symbol, strand):
-        self.id_str = (seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" + seq_chr + ":" + self.se_s
-                       + ":" + self.se_e + ":" + strand + "@" + seq_chr + ":" + self.up_s + ":" + self.up_e + ":"
-                       + strand)
-        self.name_str = (gene_symbol + "_" + seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" + seq_chr
-                         + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" + seq_chr + ":" + self.up_s + ":"
-                         + self.up_e + ":" + strand)
+    def generate_in_reversed_order(self, seq_chr, gene_symbol, strand, event_type):
+        if event_type == 'MXE':
+            self.id_str = (seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.e2st_s + ":" + self.e2st_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.e1st_s + ":" + self.e1st_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand)
+        else:
+            self.id_str = (seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand)
+        self.name_str = gene_symbol + "_" + self.id_str
 
 
 def plot_with_eventsfile(options):
@@ -371,7 +419,7 @@ def plot_with_eventsfile(options):
             events_name_level[gene_symbol] = coor.inc_level1 + "_" + coor.inc_level2
 
             if strand == '+':
-                coor.generate_in_positive_order(seq_chr, gene_symbol, strand)
+                coor.generate_in_positive_order(seq_chr, gene_symbol, strand, options.event_type)
                 w2.write("%s\n" % coor.name_str)
                 if options.event_type != "MXE":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
@@ -411,7 +459,7 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
 
             elif strand == '-':
-                coor.generate_in_reversed_order(seq_chr, gene_symbol, strand)
+                coor.generate_in_reversed_order(seq_chr, gene_symbol, strand, options.event_type)
                 w2.write("%s\n" % coor.name_str)
                 if options.event_type != "MXE":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
@@ -451,7 +499,7 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
             w1.close()
             try:
-                conf_setting_file(options, gene_no_str, events_name_level)
+                conf_setting_file(options, gene_no_str, gene_symbol, events_name_level, coor.id_str)
             except Exception as e:
                 print(e)
                 print("There is an exception in preparing coordinate setting file")
@@ -534,6 +582,22 @@ def main():
                                      "if -intron_s is 5, it means the size of intron is 5:1"
                                      "if the real size of intron is 5, the size in the "
                                      "plot will be scaled down to 1). The default is 1.")
+    group_optional.add_argument("--group-info", dest="group_info", default=None,
+                                help="If the user wants to divide the bam files manually, "
+                                     "you can provide a \'*.gf\' file.")
+    group_optional.add_argument("--min-counts", dest="min_counts", default=3,
+                                help="If the junction count is smaller than this number, this single junction's count "
+                                     "would be omitted in the plot.")
+    group_optional.add_argument("--color", dest="color", default=None,
+                                help="Set the color in format(\"#CC0011\"[,\"#CC0011\"]). "
+                                     "The number of the colors equal to the total number of bam files in "
+                                     "different samples.")
+    group_optional.add_argument("--font-size", dest="font_size", default=8,
+                                help="Set the font size.")
+    group_optional.add_argument("--hide-number", dest="hide_number", action="store_true")
+    group_optional.set_defaults(hide_number=False)
+    group_optional.add_argument("--no-text-background", dest="text_background", action="store_false")
+    group_optional.set_defaults(text_background=True)
 
     options = parser.parse_args()
 

@@ -37,7 +37,9 @@ def get_default_settings():
                 "show_ylabel": True,
                 "show_xlabel": True,
                 "sans_serif": False,
-                "bar_color": "k"}
+                "bar_color": "k",
+                "min_counts": 0.0,
+                "text_background": True}
     return settings
 
 def parse_plot_settings(settings_filename, event=None, chrom=None,
@@ -49,7 +51,8 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
                                       "fig_width",
                                       "fig_height",
                                       "font_size",
-                                      "junction_log_base"],
+                                      "junction_log_base",
+                                      "min_counts"],
                         # Integer parameters
                         INT_PARAMS=["posterior_bins",
                                     "gene_posterior_ratio",
@@ -59,12 +62,13 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
                         # Boolean parameters
                         BOOL_PARAMS=["logged",
                                      "show_posteriors",
-                                     "number_junctions",
                                      "reverse_minus",
                                      "bar_posteriors",
                                      "show_ylabel",
                                      "show_xlabel",
-                                     "sans_serif"],
+                                     "number_junctions",
+                                     "sans_serif",
+                                     "text_background"],
                         # Parameters to be interpreted as Python lists or
                         # data structures
                         DATA_PARAMS=["miso_files",
@@ -101,7 +105,6 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
 
     # Ensure that bf_thresholds are integers
     settings["bf_thresholds"] = [int(t) for t in settings["bf_thresholds"]]
-    
     if "colors" in settings:
         colors = ast.literal_eval(settings["colors"])
     else:
