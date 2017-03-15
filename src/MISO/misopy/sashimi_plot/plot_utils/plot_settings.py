@@ -39,7 +39,7 @@ def get_default_settings():
                 "sans_serif": False,
                 "bar_color": "k",
                 "min_counts": 0.0,
-                "text_background": True}
+                "text_background": True,}
     return settings
 
 def parse_plot_settings(settings_filename, event=None, chrom=None,
@@ -52,7 +52,7 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
                                       "fig_height",
                                       "font_size",
                                       "junction_log_base",
-                                      "min_counts"],
+                                      "min_counts",],
                         # Integer parameters
                         INT_PARAMS=["posterior_bins",
                                     "gene_posterior_ratio",

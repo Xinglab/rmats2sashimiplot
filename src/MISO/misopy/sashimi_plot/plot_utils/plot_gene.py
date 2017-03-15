@@ -64,6 +64,7 @@ def plot_density_single(settings, sample_label,
         readsToWiggle_pysam(subset_reads, tx_start, tx_end, wiggle, jxns)
     wiggle = 1e3 * wiggle / coverage / bamfile_num
     wiggle = map(lambda(w): round(w, 1), wiggle)
+    # junction_width_scale = settings["junction_width_scale"]
     for j_key in jxns.keys():
         jxns[j_key] = round(1.0 * jxns[j_key] / bamfile_num, 1)
     # gene_reads = sam_utils.fetch_bam_reads_in_gene(bamfile, gene_obj.chrom,\
@@ -145,7 +146,7 @@ def plot_density_single(settings, sample_label,
 
                 a = Path(pts, [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4])
                 p = PathPatch(a, ec=color, lw=log(jxns[jxn] + 1) /\
-                    log(junction_log_base), fc='none')
+                    log(junction_log_base) * (jxns[jxn] + 1)**0.33 * 0.1, fc='none')
                 axvar.add_patch(p)
 
     # Format plot
@@ -188,10 +189,13 @@ def analyze_group_info(group_info, bam_files, original_labels):
     to analyze the group file '*.gf'
     :return: group_files, sample_labels, sample_colors
     """
-    inc_levels=[]
+    inc_levels = []
+    label_prefixs = []
     for label in original_labels:
         # the orginal label can be '.* IncLevel: 0.78'. The catch the incLevel 0.78
-        inc_levels.append(float(label.split(' ')[-1]))
+        label_split = label.split(' ')
+        inc_levels.append(float(label_split[-1]))
+        label_prefixs.append(label_split[0])
     gf_path = os.path.expanduser(group_info)
     group_file = open(gf_path, 'r')
     group_files = []
@@ -203,23 +207,28 @@ def analyze_group_info(group_info, bam_files, original_labels):
             if line == '':
                 continue  # if there are blank lines
             group_name, file_names = line.split(':')
+
             file_names = file_names.split(',')
             # split the file index and find the corresponding bam_file
             files = []
             inc = 0
             num_file = 0
+            prefix = ''
             for item in file_names:
                 if '-' in item:
                     start, end = map(int, item.split('-'))
                     for i in range(start, end+1):
                         files.append(bam_files[i-1])  # here we suppose that the index of files begins from 0
                         inc += inc_levels[i-1]
+                        prefix = label_prefixs[i-1]
                     num_file += end + 1 - start
                 else:
                     files.append(bam_files[int(item)-1])
                     inc += inc_levels[int(item)-1]
+                    prefix = label_prefixs[int(item)-1]
                     num_file += 1
             group_files.append(files)
+            group_name = prefix + ' ' + group_name
             group_name += " IncLevel: {0:.2f}".format(inc/num_file)
             sample_labels.append(group_name)
             group_num += 1

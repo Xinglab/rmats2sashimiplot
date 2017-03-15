@@ -12,7 +12,7 @@ setup.py will automatically install matplotlib which is required to run this pro
 rmats2sashimiplot is intended to be used in a Unix-based environment. It has
 been tested on Mac OS and Linux.
 
-***BAM file must be sorted before visualization.***
+***BAM file must be sorted before visualization/indexing.***
 
 
 Installation
