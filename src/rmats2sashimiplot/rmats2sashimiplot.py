@@ -177,9 +177,9 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
                 warning_flag = True
             sample_labels_arr2.append('\"' + gene_symbol + ' ' + options.l2 + '-' + str(rr + 1) + ' IncLevel: '
                                       + inc_2 + '\"')
-    if warning_flag:
-        print >> sys.stderr, "Warning: The inclusion levels of Event \'{0}\' contains 'NA' value," \
-                             " which could lead to unexpected output.".format(id_str)
+        if warning_flag:
+            print >> sys.stderr, "Warning: The inclusion levels of Event \'{0}\' contains 'NA' value," \
+                                 " which could lead to unexpected output.".format(id_str)
     setting_label_str = ','.join(sample_labels_arr1) + ',' + ','.join(sample_labels_arr2)
     setting_file.write("sample_labels = [{0}]\n".format(setting_label_str))
 
