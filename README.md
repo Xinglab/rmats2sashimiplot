@@ -106,19 +106,19 @@ Example of using sam files, drawing sashimiplot by rMATS format event files
 
     $rmats2sashimiplot --s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam --s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_events_output
 
-![images](https://github.com/Xinglab/rmats2sashimiplot/img/plotwithevent.png)
+![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithevent.png)
 
 Example of using bam files, drawing sashimiplot by user provided coordinates and gff3 format annotation file
 
     $rmats2sashimiplot --b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam --b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10101000:10105500:./testData/ensGene.gff3 --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_coordinate_output
 
-![images](https://github.com/Xinglab/rmats2sashimiplot/img/plotwithcoor.png)
+![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithcoor.png)
 
 Example of using grouping function:
 
     $rmats2sashimiplot --s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam --s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_events_output --group-info grouping.gf
 
-![images](https://github.com/Xinglab/rmats2sashimiplot/img/plotwithcoorgf.png)
+![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithcoorgf.png)
 
 content of grouping.gf:
 
