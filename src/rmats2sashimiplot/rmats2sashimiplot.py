@@ -186,6 +186,63 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     setting_file.close()
 
 
+def parse_gff3_record(record):
+    """TODO: Docstring for parse_gff3_record.
+    :returns: TODO
+
+    """
+    res = {}
+    eles = record.split('\t')
+    res['seqid'] = eles[0]
+    res['source'] = eles[1]
+    res['type'] = eles[2]
+    res['start'] = eles[3]
+    res['end'] = eles[4]
+    res['score'] = eles[5]
+    res['strand'] = eles[6]
+    res['phase'] = eles[7]
+    res['attributes'] = eles[8]
+
+    return res
+
+
+def rm_invalid_record(tmp_gff3_fn, id_str):
+    """TODO: Docstring for rm_invalid_record.
+    :returns: TODO
+
+    """
+    eles = id_str.split(':')
+    start = int(eles[1])
+    end = int(eles[2])
+    filtered = []
+
+    with open(tmp_gff3_fn, 'r') as tmp_gff3_fp:
+        for record in tmp_gff3_fp:
+            res = parse_gff3_record(record)
+
+            if res['type'] == 'gene':
+                pass
+            elif res['type'] == 'mRNA':
+                if int(res['start']) < start:
+                    res['start'] = start
+                if int(res['end']) > end:
+                    res['end'] = end
+            elif res['type'] == 'exon':
+                if int(res['start']) < start:
+                    continue
+                if int(res['end']) > end:
+                    continue
+
+            filtered.append('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' % (res['seqid'], res['source'], res['type'],
+                                                                      res['start'], res['end'], res['score'],
+                                                                      res['strand'], res['phase'], res['attributes'],))
+
+    with open(tmp_gff3_fn, 'w') as tmp_gff3_fp:
+        tmp_gff3_fp.writelines(filtered)
+
+    return
+
+
 def plot_c(options, id_str):
     """
     the plot part of the coordinate method
@@ -272,8 +329,8 @@ def plot_with_coordinate(options):
 
         w1.write("%s\tensGene\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" %
                  (in_chr, in_coor_s, in_coor_e, in_strand, id_str, id_str))
-        w1.write("%s\tensGene\tmRNA\t%s\t%s\t.\t%s\t.\tName=ENST00000000000;Parent=%s;ID=ENST00000000000\n" %
-                 (in_chr, in_coor_s, in_coor_e, in_strand, id_str))
+        # w1.write("%s\tensGene\tmRNA\t%s\t%s\t.\t%s\t.\tName=ENST00000000000;Parent=%s;ID=ENST00000000000\n" %
+        #          (in_chr, in_coor_s, in_coor_e, in_strand, id_str))
 
         events_no = 0
         for line in fo:
@@ -295,8 +352,14 @@ def plot_with_coordinate(options):
                 annot_str = items[8]
                 annot_items = annot_str.split(';')
                 # judge whether the coordinates fit in the item
-                if (strand == '+' and in_strand == strand and
-                            int(in_coor_s) <= int(coor_s) and int(coor_e) <= int(in_coor_e)):
+                if (in_strand == strand) and\
+                        ((item_type == 'exon' and int(in_coor_s) <= int(coor_s) and int(coor_e) <= int(in_coor_e)) or\
+                        (item_type == 'mRNA' and int(coor_s) < int(in_coor_e) and int(coor_e) > int(in_coor_s))):
+                    if item_type == 'mRNA':
+                        if int(coor_s) < in_coor_s:
+                            coor_s = in_coor_s
+                        if int(coor_e) > in_coor_e:
+                            coor_e = in_coor_e
                     ENST_name_str = annot_items[0]
                     ENST_Parent_str = annot_items[1]
                     ENST_ID_str = annot_items[2].replace("\n", "")
@@ -304,18 +367,6 @@ def plot_with_coordinate(options):
                         w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" %
                                  (item_chr, item_type, coor_s, coor_e, strand, ENST_name_str, id_str, ENST_ID_str))
                     if item_type == "exon":
-                        w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" %
-                                 (item_chr, item_type, coor_s, coor_e, strand, ENST_name_str, ENST_Parent_str,
-                                  ENST_ID_str))
-                elif (strand == '-' and in_strand == strand and
-                              int(in_coor_s) <= int(coor_e) and int(coor_s) <= int(in_coor_e)):
-                    ENST_name_str = annot_items[0]
-                    ENST_Parent_str = annot_items[1]
-                    ENST_ID_str = annot_items[2].replace("\n", "")
-                    if item_type == 'mRNA':
-                        w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" %
-                                 (item_chr, item_type, coor_s, coor_e, strand, ENST_name_str, id_str, ENST_ID_str))
-                    if item_type == 'exon':
                         w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" %
                                  (item_chr, item_type, coor_s, coor_e, strand, ENST_name_str, ENST_Parent_str,
                                   ENST_ID_str))
