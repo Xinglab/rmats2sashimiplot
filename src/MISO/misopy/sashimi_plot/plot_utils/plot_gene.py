@@ -189,13 +189,17 @@ def analyze_group_info(group_info, bam_files, original_labels):
     to analyze the group file '*.gf'
     :return: group_files, sample_labels, sample_colors
     """
+    has_inc_level = True
     inc_levels = []
     label_prefixs = []
     for label in original_labels:
         # the orginal label can be '.* IncLevel: 0.78'. The catch the incLevel 0.78
         label_split = label.split(' ')
-        inc_levels.append(float(label_split[-1]))
         label_prefixs.append(label_split[0])
+        if 'IncLevel' not in label:
+            has_inc_level = False
+            continue
+        inc_levels.append(float(label_split[-1]))
     gf_path = os.path.expanduser(group_info)
     group_file = open(gf_path, 'r')
     group_files = []
@@ -219,19 +223,26 @@ def analyze_group_info(group_info, bam_files, original_labels):
                     start, end = map(int, item.split('-'))
                     for i in range(start, end+1):
                         files.append(bam_files[i-1])  # here we suppose that the index of files begins from 0
-                        inc += inc_levels[i-1]
                         prefix = label_prefixs[i-1]
+                        if not has_inc_level:
+                            continue
+                        inc += inc_levels[i-1]
                     num_file += end + 1 - start
                 else:
                     files.append(bam_files[int(item)-1])
-                    inc += inc_levels[int(item)-1]
                     prefix = label_prefixs[int(item)-1]
                     num_file += 1
+                    if not has_inc_level:
+                        continue
+                    inc += inc_levels[int(item)-1]
             group_files.append(files)
-            group_name = prefix + ' ' + group_name
-            group_name += " IncLevel: {0:.2f}".format(inc/num_file)
-            sample_labels.append(group_name)
+            pre_group_name = prefix + ' ' + group_name
             group_num += 1
+            if not has_inc_level:
+                sample_labels.append(group_name)
+                continue
+            group_name += " IncLevel: {0:.2f}".format(inc/num_file)
+            sample_labels.append(pre_group_name)
         except:
             pass
     sample_colors = cm.rainbow(np.linspace(0, 1, group_num)) * 0.85
