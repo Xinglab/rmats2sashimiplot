@@ -241,7 +241,7 @@ def analyze_group_info(group_info, bam_files, original_labels):
             if not has_inc_level:
                 sample_labels.append(group_name)
                 continue
-            group_name += " IncLevel: {0:.2f}".format(inc/num_file)
+            pre_group_name += " IncLevel: {0:.2f}".format(inc/num_file)
             sample_labels.append(pre_group_name)
         except:
             pass
