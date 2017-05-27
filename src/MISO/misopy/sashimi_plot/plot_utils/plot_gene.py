@@ -244,8 +244,11 @@ def analyze_group_info(group_info, bam_files, original_labels):
             pre_group_name += " IncLevel: {0:.2f}".format(inc/num_file)
             sample_labels.append(pre_group_name)
         except:
-            pass
+            print 'read grouping info failed.'
+            group_file.close()
+            sys.exit(1)
     sample_colors = cm.rainbow(np.linspace(0, 1, group_num)) * 0.85
+    group_file.close()
     # the last magic number means the darkness of the rainbow colors
 
     return group_files, sample_labels, sample_colors

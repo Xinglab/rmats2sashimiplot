@@ -123,10 +123,11 @@ Example of using grouping function:
 content of grouping.gf:
 
 ```
-group1name: 1-2 # That means we group ./testData/S1.R1.test.bam and ./testData/S1.R2.test.bam together.
-group2name: 3-6 # That means we group ./testData/S1.R3.test.bam, ./testData/S2.R1.test.bam, ./testData/S2.R2.test.bam and ./testData/S2.R3.test.bam together.
+group1name: 1-2
+group2name: 3-6
 
 ```
+That means we group ./testData/S1.R1.test.bam and ./testData/S1.R2.test.bam together, and group ./testData/S1.R3.test.bam, ./testData/S2.R1.test.bam, ./testData/S2.R2.test.bam and ./testData/S2.R3.test.bam together.
 
 **Group-info**
 
