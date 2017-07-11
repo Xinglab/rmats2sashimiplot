@@ -128,7 +128,7 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     num_colors = len(settings["colors"])
 
     group_info = False
-    if "group_info" in settings:
+    if settings["group_info"]:
         group_info = True
     if not (num_labels == num_bams == num_colors) and not(group_info):
         print "Error: Must provide sample label and color for each entry in bam_files!"
