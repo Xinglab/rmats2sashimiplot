@@ -297,9 +297,6 @@ def plot_e(options, id_str, gene_symbol, events_no):
     setting_str = os.path.join(out_index, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
     if options.group_info is not None:
-        print("python {0} --plot-event \"{1}\" {2} {3} "
-                  "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
-                                                             output_path, options.group_info))
         os.system("python {0} --plot-event \"{1}\" {2} {3} "
                   "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
                                                              output_path, options.group_info))
