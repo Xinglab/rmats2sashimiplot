@@ -131,6 +131,10 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     setting["reverse_minus"] = True
     setting["min_counts"] = max(options.min_counts, 0)
     setting["text_background"] = options.text_background
+    if options.group_info is None:
+        setting["group_info"] = False
+    else:
+        setting["group_info"] = True
     for item in setting:
         setting_file.write("{0} = {1}\n".format(item, setting[item]))
 
@@ -293,6 +297,9 @@ def plot_e(options, id_str, gene_symbol, events_no):
     setting_str = os.path.join(out_index, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
     if options.group_info is not None:
+        print("python {0} --plot-event \"{1}\" {2} {3} "
+                  "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
+                                                             output_path, options.group_info))
         os.system("python {0} --plot-event \"{1}\" {2} {3} "
                   "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
                                                              output_path, options.group_info))

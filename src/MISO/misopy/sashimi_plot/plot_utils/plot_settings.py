@@ -68,7 +68,8 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
                                      "show_xlabel",
                                      "number_junctions",
                                      "sans_serif",
-                                     "text_background"],
+                                     "text_background",
+                                     "group_info"],
                         # Parameters to be interpreted as Python lists or
                         # data structures
                         DATA_PARAMS=["miso_files",
@@ -125,7 +126,11 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     num_labels = len(settings["sample_labels"])
     num_bams = len(settings["bam_files"])
     num_colors = len(settings["colors"])
-    if not (num_labels == num_bams == num_colors):
+
+    group_info = False
+    if "group_info" in settings:
+        group_info = True
+    if not (num_labels == num_bams == num_colors) and not(group_info):
         print "Error: Must provide sample label and color for each entry in bam_files!"
         print "  - Provided %d labels, %d BAMs, %d colors" \
             %(num_labels, num_bams, num_colors)
