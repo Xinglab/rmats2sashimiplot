@@ -131,6 +131,10 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     setting["reverse_minus"] = True
     setting["min_counts"] = max(options.min_counts, 0)
     setting["text_background"] = options.text_background
+    if options.group_info is None:
+        setting["group_info"] = False
+    else:
+        setting["group_info"] = True
     for item in setting:
         setting_file.write("{0} = {1}\n".format(item, setting[item]))
 
