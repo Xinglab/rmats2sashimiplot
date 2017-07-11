@@ -127,13 +127,12 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     num_bams = len(settings["bam_files"])
     num_colors = len(settings["colors"])
 
-    group_info = False
-    if settings["group_info"]:
-        group_info = True
-    if not (num_labels == num_bams == num_colors) and not(group_info):
+    if not (num_labels == num_bams == num_colors) and not(settings["group_info"]):
+        print('\033[0;31;m')  # change the print color as red
         print "Error: Must provide sample label and color for each entry in bam_files!"
         print "  - Provided %d labels, %d BAMs, %d colors" \
             %(num_labels, num_bams, num_colors)
+        print('\033[0m')  # set the color as default value
         sys.exit(1)
 
     if no_posteriors:
@@ -158,7 +157,9 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     settings["coverages"] = coverages
 
     if len(settings["coverages"]) != len(settings["sample_labels"]):
+        print('\033[0;31;m')  # change the print color as red
         print "Error: Must provide a coverage value for each sample or leave coverages unset."
+        print('\033[0m')  # set the color as default value
         sys.exit(1)
     
     return settings

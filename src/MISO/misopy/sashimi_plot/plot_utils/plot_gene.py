@@ -303,7 +303,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
 
         # if the group color is customized by the user
         if len(colors) != len(group_colors):
-            print('\033[0;33;m') # change the print color as yellow
+            print('\033[0;31;m') # change the print color as red
             print("The number of custom colors is {0} which doesn't match the group number {1}. The program uses the "
                   "rainbow color as default.".format(len(colors), len(group_colors)))
             print('\033[0m')  # set the color as default value
