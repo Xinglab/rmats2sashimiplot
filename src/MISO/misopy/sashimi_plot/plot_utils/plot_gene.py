@@ -66,7 +66,7 @@ def plot_density_single(settings, sample_label,
     wiggle = map(lambda(w): round(w, 1), wiggle)
     # junction_width_scale = settings["junction_width_scale"]
     for j_key in jxns.keys():
-        jxns[j_key] = round(1.0 * jxns[j_key] / bamfile_num, 1)
+        jxns[j_key] = int(round(1.0 * jxns[j_key] / bamfile_num, 0))
     # gene_reads = sam_utils.fetch_bam_reads_in_gene(bamfile, gene_obj.chrom,\
     #     tx_start, tx_end, gene_obj)
     # reads, num_raw_reads = sam_utils.sam_parse_reads(gene_reads,\
@@ -108,6 +108,7 @@ def plot_density_single(settings, sample_label,
         sslists.append(tmp)
     min_counts = settings["min_counts"]  # if the jxn is smaller than it, then omit the text plotting
     show_text_background = settings["text_background"]
+    maxy = 0
     for jxn in jxns:
         leftss, rightss = map(int, jxn.split(":"))
 
@@ -138,15 +139,18 @@ def plot_density_single(settings, sample_label,
             if min_counts == 0 or jxns[jxn] >= min_counts:
                 if number_junctions:
                     if show_text_background:
-                        text(midpt[0], midpt[1], '%s'%(jxns[jxn]),
+                        txt = text(midpt[0], midpt[1], '%s'%(jxns[jxn]),
                             fontsize=font_size-2, ha='center', va='center', backgroundcolor='w')
                     else:
-                        text(midpt[0], midpt[1], '%s' % (jxns[jxn]),
+                        txt = text(midpt[0], midpt[1], '%s' % (jxns[jxn]),
                             fontsize=font_size-2, ha='center', va='center')
+                    interval = axvar.get_ylim()[1]*0.05
+                    y = interval + midpt[1]
+                    maxy = max(maxy, y)
 
                 a = Path(pts, [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4])
                 p = PathPatch(a, ec=color, lw=log(jxns[jxn] + 1) /\
-                    log(junction_log_base) * (jxns[jxn] + 1)**0.33 * 0.1, fc='none')
+                    log(junction_log_base) * (jxns[jxn] + 1)**0.33 * 0.1, fc='none', clip_on=False)
                 axvar.add_patch(p)
 
     # Format plot
@@ -181,7 +185,7 @@ def plot_density_single(settings, sample_label,
     
     xlim(0, max(graphcoords))
     # Return modified axis
-    return axvar
+    return axvar, maxy
 
 
 def analyze_group_info(group_info, bam_files, original_labels):
@@ -327,6 +331,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         suptitle(event, fontsize=10)
     plotted_axes = []
     
+    maxys = np.zeros(nfiles)
     for i in range(nfiles):
         if colors is not None:
             color = colors[i]
@@ -352,7 +357,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         print "Reading sample label: %s" %(sample_label)
         # print "Processing BAM: %s" %(bam_file)
         
-        plotted_ax = plot_density_single(settings, sample_label,
+        plotted_ax, maxy = plot_density_single(settings, sample_label,
                                          tx_start, tx_end, gene_obj, mRNAs, strand,
                                          graphcoords, graphToGene, bam_group, ax1, chrom,
                                          paired_end=False, intron_scale=intron_scale,
@@ -364,6 +369,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                                          font_size=font_size,
                                          junction_log_base=junction_log_base)
         plotted_axes.append(plotted_ax)
+        maxys[i] = maxy
 
         if show_posteriors:
             miso_file = os.path.expanduser(miso_files[i])
@@ -453,7 +459,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         else:
             label_ypos = universal_yticks[-1]
         curr_label = settings["sample_labels"][sample_num]
-        curr_ax.text(max(graphcoords), label_ypos,
+        curr_ax.text(max(graphcoords), max(label_ypos, maxys[sample_num]),
                      curr_label,
                      fontsize=font_size,
                      va='bottom',
