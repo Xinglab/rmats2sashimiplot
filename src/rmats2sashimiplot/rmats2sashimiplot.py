@@ -238,8 +238,8 @@ def rm_invalid_record(tmp_gff3_fn, id_str):
                     continue
 
             filtered.append('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' % (res['seqid'], res['source'], res['type'],
-                                                                      res['start'], res['end'], res['score'],
-                                                                      res['strand'], res['phase'], res['attributes'],))
+                                                                    res['start'], res['end'], res['score'],
+                                                                    res['strand'], res['phase'], res['attributes'],))
 
     with open(tmp_gff3_fn, 'w') as tmp_gff3_fp:
         tmp_gff3_fp.writelines(filtered)
@@ -296,6 +296,8 @@ def plot_e(options, id_str, gene_symbol, events_no):
     # call python sashimi_plot.py
     setting_str = os.path.join(out_index, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
+    print("python {0} --plot-event \"{1}\" {2} {3} "
+          "--output-dir {4}".format(path_sashimi_plot, id_str, out_index, setting_str, output_path))
     if options.group_info is not None:
         os.system("python {0} --plot-event \"{1}\" {2} {3} "
                   "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
@@ -356,9 +358,10 @@ def plot_with_coordinate(options):
                 annot_str = items[8]
                 annot_items = annot_str.split(';')
                 # judge whether the coordinates fit in the item
-                if (in_strand == strand) and\
-                        ((item_type == 'exon' and int(in_coor_s) <= int(coor_s) and int(coor_e) <= int(in_coor_e)) or\
-                        (item_type == 'mRNA' and int(coor_s) < int(in_coor_e) and int(coor_e) > int(in_coor_s))):
+                if (in_strand == strand) and \
+                        ((item_type == 'exon' and int(in_coor_s) <= int(coor_s) and int(coor_e) <= int(in_coor_e)) or \
+                                 (item_type == 'mRNA' and int(coor_s) < int(in_coor_e) and int(coor_e) > int(
+                                     in_coor_s))):
                     if item_type == 'mRNA':
                         if int(coor_s) < in_coor_s:
                             coor_s = in_coor_s
@@ -409,7 +412,7 @@ class EventCoor(object):
             self.dn_e = items[12]
             self.inc_level1 = items[22]  # IncLevel1
             self.inc_level2 = items[23]  # IncLevel2
-        else:  # not MXE format
+        elif event_type == "SE" or event_type == "RI":
             self.se_s = str(int(items[5]) + 1)
             self.se_e = items[6]
             self.up_s = str(int(items[7]) + 1)
@@ -418,6 +421,16 @@ class EventCoor(object):
             self.dn_e = items[10]
             self.inc_level1 = items[20]  # IncLevel1
             self.inc_level2 = items[21]  # IncLevel2
+        else:  # A3SS or A5SS
+            self.lo_s = str(int(items[5]) + 1)  # long
+            self.lo_e = items[6]
+            self.sh_s = str(int(items[7]) + 1)  # short
+            self.sh_e = items[8]
+            self.fl_s = str(int(items[9]) + 1)  # flanking
+            self.fl_e = items[10]
+            self.inc_level1 = items[20]  # IncLevel1
+            self.inc_level2 = items[21]  # IncLevel2
+
         self.name_str = ''
         self.id_str = ''
 
@@ -427,10 +440,19 @@ class EventCoor(object):
                            seq_chr + ":" + self.e1st_s + ":" + self.e1st_e + ":" + strand + "@" +
                            seq_chr + ":" + self.e2st_s + ":" + self.e2st_e + ":" + strand + "@" +
                            seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand)
-        else:
+        elif event_type == 'A5SS':
+            self.id_str = (seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand)
+        elif event_type == 'A3SS':
+            self.id_str = (seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand)
+        elif event_type == 'SE' or event_type == 'RI':
             self.id_str = (seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" +
                            seq_chr + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" +
                            seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand)
+
         self.name_str = gene_symbol + "_" + self.id_str
 
     def generate_in_reversed_order(self, seq_chr, gene_symbol, strand, event_type):
@@ -439,7 +461,15 @@ class EventCoor(object):
                            seq_chr + ":" + self.e2st_s + ":" + self.e2st_e + ":" + strand + "@" +
                            seq_chr + ":" + self.e1st_s + ":" + self.e1st_e + ":" + strand + "@" +
                            seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand)
-        else:
+        elif event_type == 'A3SS':  # the same as the positive order in A5SS
+            self.id_str = (seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand)
+        elif event_type == 'A5SS':  # the same as the positive order in A3SS
+            self.id_str = (seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
+                           seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand)
+        elif event_type == 'SE' or event_type == 'RI':
             self.id_str = (seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" +
                            seq_chr + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" +
                            seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand)
@@ -476,7 +506,7 @@ def plot_with_eventsfile(options):
             if strand == '+':
                 coor.generate_in_positive_order(seq_chr, gene_symbol, strand, options.event_type)
                 w2.write("%s\n" % coor.name_str)
-                if options.event_type != "MXE":
+                if options.event_type == "SE" or options.event_type == "RI":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -493,7 +523,44 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
-                else:
+
+                elif options.event_type == "A3SS":  # flanking -- long/short TODO: change the ID name
+                    w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
+                        seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.name_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
+                        seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
+                        seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
+                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+
+                elif options.event_type == "A5SS":  # short/long -- flanking TODO: change the ID name
+                    w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
+                        seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.name_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
+                        seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
+                        seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
+                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
+
+                elif options.event_type == "MXE":
                     w1.write("%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -513,10 +580,11 @@ def plot_with_eventsfile(options):
                     w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
 
+
             elif strand == '-':
                 coor.generate_in_reversed_order(seq_chr, gene_symbol, strand, options.event_type)
                 w2.write("%s\n" % coor.name_str)
-                if options.event_type != "MXE":
+                if options.event_type == "SE" or options.event_type == "RI":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -533,7 +601,44 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
-                else:
+
+                elif options.event_type == "A5SS":  # flanking -- long/short TODO: change the ID name
+                    w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
+                        seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.name_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
+                        seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
+                        seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
+                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+
+                elif options.event_type == "A3SS":  # short/long -- flanking TODO: change the ID name
+                    w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
+                        seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.name_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
+                        seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
+                        seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
+                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
+                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
+
+                elif options.event_type == "MXE":
                     w1.write("%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
