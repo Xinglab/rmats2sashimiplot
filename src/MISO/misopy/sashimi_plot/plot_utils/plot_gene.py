@@ -62,16 +62,20 @@ def plot_density_single(settings, sample_label,
             print "Aborting plot..."
             return axvar
         # wiggle, jxns = readsToWiggle_pysam(subset_reads, tx_start, tx_end)
-        p1 = subprocess.Popen(["samtools", "view", "-F", "0x4", file_name,], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(["cut", "-f", "1",], stdin=p1.stdout, stdout=subprocess.PIPE)
-        p3 = subprocess.Popen(["sort",], stdin=p2.stdout, stdout=subprocess.PIPE)
-        p4 = subprocess.Popen(["uniq",], stdin=p3.stdout, stdout=subprocess.PIPE)
-        p5 = subprocess.Popen(["wc", "-l",], stdin=p4.stdout, stdout=subprocess.PIPE)
-        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-        p2.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-        p3.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-        p4.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-        output,err = p5.communicate()
+        # p1 = subprocess.Popen(["samtools", "view", "-F", "0x4", file_name,], stdout=subprocess.PIPE)
+        # p2 = subprocess.Popen(["cut", "-f", "1",], stdin=p1.stdout, stdout=subprocess.PIPE)
+        # p3 = subprocess.Popen(["sort",], stdin=p2.stdout, stdout=subprocess.PIPE)
+        # p4 = subprocess.Popen(["uniq",], stdin=p3.stdout, stdout=subprocess.PIPE)
+        # p5 = subprocess.Popen(["wc", "-l",], stdin=p4.stdout, stdout=subprocess.PIPE)
+        # p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        # p2.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        # p3.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        # p4.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        # output,err = p5.communicate()
+        p1 = subprocess.Popen(["samtools", "idxstats", file_name,], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["awk", "{s+=$3} END {print s}",], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()
+        output,err = p2.communicate()
         if err:
             print err
             print 'Setting the number of mapped read to 1.'
@@ -82,7 +86,6 @@ def plot_density_single(settings, sample_label,
         readsToWiggle_pysam(subset_reads, tx_start, tx_end, wiggle, jxns)
     coverage = np.mean(all_c)
     wiggle = 1e3 * wiggle / coverage / bamfile_num
-    wiggle = map(lambda(w): round(w, 1), wiggle)
     # junction_width_scale = settings["junction_width_scale"]
     for j_key in jxns.keys():
         jxns[j_key] = int(round(1.0 * jxns[j_key] / bamfile_num, 0))
