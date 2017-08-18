@@ -50,6 +50,7 @@ def plot_density_single(settings, sample_label,
     wiggle = zeros((tx_end - tx_start + 1), dtype='f')
     jxns = {}
     bamfile_num = len(bam_group)
+    all_c = []
     for i in range(bamfile_num):
         file_name = os.path.expanduser(bam_group[i])
         bamfile = pysam.Samfile(file_name, 'rb')
@@ -74,11 +75,13 @@ def plot_density_single(settings, sample_label,
         if err:
             print err
             print 'Setting the number of mapped read to 1.'
-            coverage = 1
+            cover = 1
         else:
-            coverage = int(output)
+            cover = int(output) / 1e6
+        all_c.append(cover)
         readsToWiggle_pysam(subset_reads, tx_start, tx_end, wiggle, jxns)
-    wiggle = 1e9 * wiggle / coverage / bamfile_num
+    coverage = np.mean(all_c)
+    wiggle = 1e3 * wiggle / coverage / bamfile_num
     wiggle = map(lambda(w): round(w, 1), wiggle)
     # junction_width_scale = settings["junction_width_scale"]
     for j_key in jxns.keys():
