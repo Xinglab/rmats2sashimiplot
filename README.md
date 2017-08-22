@@ -22,6 +22,12 @@ Installation
 The package, rmats2sashimiplot is installed by typing:
 
     python setup.py install
+    
+### Update ###
+To update rmats2sashimiplot, please download (or git pull) latest version from Github and type in:
+
+    pip uninstall rmats2sashimiplot
+    python setup.py install
 
 Usage
 -----
@@ -97,7 +103,7 @@ Using grouping function:
 
 ### Grouping
 
-By using this function, user can divide their samples into different groups. Our program will calculate average inclusion level, average read depth and average number of junction-spanning reads of each group and display them in sashimi plot.
+By using this function, user can divide their samples into different groups. rmats2sashimiplot calculates the average inclusion level, the average read depth and the average number of junction-spanning reads of each group and display them in sashimi plot.
 It's extremely helpful when you need to do comparisons between different groups of samples.
 
 
@@ -137,7 +143,7 @@ Each line stand for a group, which consists of *group name* and *index* of bam f
 
 ***Important notes:*** Index starts from 1. And the order of bam files corresponds to the order we specified in --b1/b2/s1/s2, i.e. concatenate --b1 and --b2 (or --s1 and --s2 if you're using them.). User can confirm this order by checking variable `bam_files` in `sashimi_plot_settings.txt`(under Sashimi_index_* folder.)
 
-Index should be seperated by `','`. And use `'-'` to express a sequence.
+Index should be seperated by `','`. And use `'-'` to specify a sequence.
 
 **Eg:**
 
@@ -168,6 +174,19 @@ http://www.mimg.ucla.edu/faculty/xing/rmats2sashimiplot/testData.tar
 ### Output ###
 
 All output sashimiplot pdf files are in Sashimi_plot folder
+
+### FAQ
+
+Q: What does the y-axis represent?
+
+A: MISO is the actual plotting backend of rmats2sashimiplot, so they have almost the same mechanism of plotting. The y-axis represents a modified RPKM value.
+
+![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/RPKM.png)
+
+Q: How does rmats2sashimiplot calculate junction count, read density(modified RPKM) and inclusion level in the grouping mode?
+
+A: rmats2sashimiplot uses a modified Sashimi plot proposed by SplicePlot(Wu, Nance, & Montgomery, 2014). Briefly, rmats2sashimiplot calculates the average read depth and the average number of junction-spanning reads for groups.
+
 
 Contacts and bug reports
 ------------------------
