@@ -745,7 +745,7 @@ def main():
     group_optional.add_argument("--group-info", dest="group_info", default=None,
                                 help="If the user wants to divide the bam files manually, "
                                      "you can provide a \'*.gf\' file.")
-    group_optional.add_argument("--min-counts", dest="min_counts", default=3,
+    group_optional.add_argument("--min-counts", dest="min_counts", default=0,
                                 help="If the junction count is smaller than this number, this single junction's count "
                                      "would be omitted in the plot.")
     group_optional.add_argument("--color", dest="color", default=None,

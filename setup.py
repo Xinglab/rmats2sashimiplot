@@ -18,9 +18,15 @@
 # this program. If not, see http://www.gnu.org/licenses/.
 
 import sys, os
+from os import path
 
 # should be able to safely do this now.
 from setuptools import setup, find_packages
+
+# Get the long description from the README file
+here = path.abspath(path.dirname(__file__))
+with open(path.join(here, 'README.rst')) as f:
+    long_description = f.read()
 
 setup(name='rmats2sashimiplot',
       version='2.0.0',
@@ -29,9 +35,12 @@ setup(name='rmats2sashimiplot',
       entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main',
                                         'index_gff=MISO.misopy.index_gff:main',
                                         'sashimi_plot=MISO.misopy.sashimi_plot.sashimi_plot:main'],},
-	  description = 'rmats2sashimiplot',
-      author='Yu-Ting Tseng, Emad Bahrami-Samani',
-	  author_email = 'ting0514@gmail.com',
+	    description = 'rmats2sashimiplot',
+      long_description = long_description,
+      license='GNU GPL',
+      
+      author='Yu-Ting Tseng, Emad Bahrami-Samani, Zhijie Xie, Yukai Jiang',
+	    author_email = 'shiehshiehzhijie@gmail.com',
       url='https://github.com/Xinglab/rmats2sashimiplot', 
       download_url='https://github.com/Xinglab/rmats2sashimiplot',
       keywords = [],
