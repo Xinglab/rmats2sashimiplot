@@ -121,7 +121,7 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
         setting["nxticks"] = 11
     else:
         setting["nxticks"] = 6
-    setting["show_ylabel"] = False
+    setting["show_ylabel"] = True
     setting["show_xlabel"] = True
     setting["plot_title"] = "\"gene symbol\""
     setting["plot_label"] = "plot_label"
