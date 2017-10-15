@@ -29,7 +29,7 @@ with open(path.join(here, 'README.rst')) as f:
     long_description = f.read()
 
 setup(name='rmats2sashimiplot',
-      version='2.0.0',
+      version='2.0.2',
       packages = find_packages('src'),  # include all packages under src
 			package_dir = {'':'src'},   # all distutils packages are under src
       entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main',
