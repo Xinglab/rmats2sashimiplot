@@ -355,8 +355,7 @@ def plot_with_coordinate(options):
                 coor_s = items[3]
                 coor_e = items[4]
                 strand = items[6]
-                annot_str = items[8]
-                annot_items = annot_str.split(';')
+                annot_str = items[8].strip()
                 # judge whether the coordinates fit in the item
                 if (in_strand == strand) and \
                         ((item_type == 'exon' and int(in_coor_s) <= int(coor_s) and int(coor_e) <= int(in_coor_e)) or \
@@ -367,16 +366,13 @@ def plot_with_coordinate(options):
                             coor_s = in_coor_s
                         if int(coor_e) > in_coor_e:
                             coor_e = in_coor_e
-                    ENST_name_str = annot_items[0]
-                    ENST_Parent_str = annot_items[1]
-                    ENST_ID_str = annot_items[2].replace("\n", "")
                     if item_type == "mRNA":
-                        w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;Parent=%s;%s\n" %
-                                 (item_chr, item_type, coor_s, coor_e, strand, ENST_name_str, id_str, ENST_ID_str))
+                        annot_str = annot_str.replace('Parent', 'Note')
+                        w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\tParent=%s;%s\n" %
+                                 (item_chr, item_type, coor_s, coor_e, strand, id_str, annot_str))
                     if item_type == "exon":
-                        w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s;%s;%s\n" %
-                                 (item_chr, item_type, coor_s, coor_e, strand, ENST_name_str, ENST_Parent_str,
-                                  ENST_ID_str))
+                        w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\t%s\n" %
+                                 (item_chr, item_type, coor_s, coor_e, strand, annot_str))
         w1.close()
 
         try:
@@ -781,3 +777,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
