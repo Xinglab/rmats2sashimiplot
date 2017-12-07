@@ -322,8 +322,8 @@ def plot_with_coordinate(options):
     try:
         tmp_str = options.coordinate.split(':')
         in_chr = tmp_str[0]
-        if not in_chr.startswith("chr"):  # add 'chr' prefix to the sequence name which is from the input arguement
-            in_chr = "chr" + in_chr
+        # if not in_chr.startswith("chr"):  # add 'chr' prefix to the sequence name which is from the input arguement
+        #     in_chr = "chr" + in_chr
         in_strand = tmp_str[1]
         in_coor_s = tmp_str[2]
         in_coor_e = int(tmp_str[3]) + 1
@@ -344,10 +344,11 @@ def plot_with_coordinate(options):
                 continue
             events_no += 1
             items = line.split("\t")
-            if items[0].startswith("chr"):
-                item_chr = items[0]
-            else:  # add 'chr' prefix to the seqence name which is from the gff3 file
-                item_chr = "chr" + items[0]
+            # if items[0].startswith("chr"):
+            #     item_chr = items[0]
+            # else:  # add 'chr' prefix to the seqence name which is from the gff3 file
+            #     item_chr = "chr" + items[0]
+            item_chr = items[0]
             if in_chr != item_chr:
                 continue
             item_type = items[2]
