@@ -21,11 +21,13 @@ def convert_sam2bam(options):
         if os.path.isfile(bam + '.bai'):  # if the bam file has been indexed.
             print("\'{0}\' seems to be indexed already. Please Check out this index file \'{0}.bai\'".format(bam))
         else:
+            print("Indexing \'{0}\'.".format(bam))
             os.system("samtools index " + bam)
     for bam in options.b2.split(","):
         if os.path.isfile(bam + '.bai'):
             print("\'{0}\' seems to be indexed already. Please Check out this index file \'{0}.bai\'".format(bam))
         else:
+            print("Indexing \'{0}\'.".format(bam))
             os.system("samtools index " + bam)
     print('\033[0m')  # set the color as default value
     return
