@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import subprocess
 
 
 def convert_sam2bam(options):
@@ -475,11 +476,55 @@ class EventCoor(object):
         self.name_str = gene_symbol + "_" + self.id_str
 
 
+def create_chr_aware_events_file(options):
+    """
+    The *.MATS.*.txt events file from rmats includes the prefix 'chr'
+    for chromosomes. If the BAM files do not have the 'chr' prefix
+    then remove the prefix from the events file. Consistent presence or
+    absence of 'chr' is needed to search for reads in the BAM files.
+    """
+    orig_events_file_path = options.events_file
+    new_events_file_path = os.path.join(options.sashimi_path, 'events_file.txt')
+    first_bam_path = options.b1.split(',')[0]
+    tmp_sam_file_path = os.path.join(options.sashimi_path, 'tmp_chr_check.sam')
+    with open(tmp_sam_file_path, 'wt') as tmp_sam_file_handle:
+        subprocess.check_call(['samtools', 'view', first_bam_path],
+                              stdout=tmp_sam_file_handle)
+
+    with open(tmp_sam_file_path, 'rt') as tmp_sam_file_handle:
+        first_line_of_sam = tmp_sam_file_handle.readline().rstrip('\n')
+
+    os.remove(tmp_sam_file_path)
+
+    sam_columns = first_line_of_sam.split('\t')
+    sam_chr_column = sam_columns[2]
+    sam_has_chr_prefix = sam_chr_column.startswith('chr')
+
+    with open(orig_events_file_path, 'rt') as orig_handle:
+        with open(new_events_file_path, 'wt') as new_handle:
+            for i, line in enumerate(orig_handle):
+                is_header_line = i == 0
+                columns = line.rstrip('\n').split('\t')
+
+                if is_header_line:
+                    chr_index = columns.index('chr')
+                elif not sam_has_chr_prefix:
+                    orig_chr_column = columns[chr_index]
+                    if orig_chr_column.startswith('chr'):
+                        columns[chr_index] = orig_chr_column[3:]
+
+                new_line = '\t'.join(columns)
+                new_handle.write('{}\n'.format(new_line))
+
+    return new_events_file_path
+
+
 def plot_with_eventsfile(options):
     """
     if the user provides with event files, then plot in this way
     """
     try:
+        options.events_file = create_chr_aware_events_file(options)
         fo = open(options.events_file, 'r')
         w2 = open(os.path.join(options.sashimi_path, options.event_type + ".event.list.txt"), 'w')
         events_name_level = {}
