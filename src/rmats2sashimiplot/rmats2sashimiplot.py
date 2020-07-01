@@ -355,22 +355,26 @@ def plot_with_coordinate(options):
             if in_chr != item_chr:
                 continue
             item_type = items[2]
-            if item_type == "mRNA" or item_type == "exon":
+            is_mrna_or_transcript = item_type in ["mRNA", "transcript"]
+            if is_mrna_or_transcript or item_type == "exon":
                 coor_s = items[3]
                 coor_e = items[4]
                 strand = items[6]
                 annot_str = items[8].strip()
                 # judge whether the coordinates fit in the item
-                if (in_strand == strand) and \
-                        ((item_type == 'exon' and int(in_coor_s) <= int(coor_s) and int(coor_e) <= int(in_coor_e)) or \
-                                 (item_type == 'mRNA' and int(coor_s) < int(in_coor_e) and int(coor_e) > int(
-                                     in_coor_s))):
-                    if item_type == 'mRNA':
+                if (in_strand == strand
+                    and ((item_type == 'exon'
+                          and int(in_coor_s) <= int(coor_s)
+                          and int(coor_e) <= int(in_coor_e))
+                         or (is_mrna_or_transcript
+                             and int(coor_s) < int(in_coor_e)
+                             and int(coor_e) > int(in_coor_s)))):
+                    if is_mrna_or_transcript:
                         if int(coor_s) < in_coor_s:
                             coor_s = in_coor_s
                         if int(coor_e) > in_coor_e:
                             coor_e = in_coor_e
-                    if item_type == "mRNA":
+
                         annot_str = annot_str.replace('Parent', 'Note')
                         w1.write("%s\tensGene\t%s\t%s\t%s\t.\t%s\t.\tParent=%s;%s\n" %
                                  (item_chr, item_type, coor_s, coor_e, strand, id_str, annot_str))
