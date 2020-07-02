@@ -17,7 +17,7 @@ from misopy.parse_csv import *
 from misopy.credible_intervals import *
 import misopy.misc_utils as misc_utils
 
-        
+
 class MISOSamples:
     """
     Representation of MISO samples directory.
@@ -54,7 +54,7 @@ class MISOSamples:
         self.all_event_names = self.get_all_event_names()
         self.num_events = len(self.all_event_names)
 
-        
+
     def get_all_event_names(self):
         """
         Return all event names in current samples dir.
@@ -93,7 +93,7 @@ class MISOSamples:
                     all_event_names.append(event_name_to_use)
                     self.event_names_to_fnames[event_name_to_use] = curr_fname
         return all_event_names
-    
+
 
     def get_event_samples(self, event_name):
         """
@@ -118,7 +118,7 @@ class MISOSamples:
         if samples is None:
             print "WARNING: Could not parse event %s samples" %(event_name)
         return samples
-                                
+
 
 def maxi(l):
     m = max(l)
@@ -126,7 +126,7 @@ def maxi(l):
         if m == v:
             return i
 
-        
+
 def load_samples(samples_in):
     """
     Load a file with samples. Takes in a string of data.
@@ -162,13 +162,13 @@ def parse_sampler_params_from_header(header):
     miso_file is a stream to a MISO file.
     """
     if header[0] == '#':
-	# strip header start
-	header = header[1:]
+        # strip header start
+        header = header[1:]
     fields = header.split('\t')
     params = {}
 
     for field in fields:
-	key, value = field.split('=')
+        key, value = field.split('=')
         params[key] = value
 
     return params
@@ -185,7 +185,7 @@ def get_isoforms_from_header(samples_header):
     isoforms = isoforms.split("isoforms=")[1]
     # Remove brackets, '[', ']'
     isoforms = isoforms[1:-1]
-    
+
     return isoforms
 
 
@@ -201,16 +201,16 @@ def get_counts_from_header(samples_header):
             counts['counts'] = f.split("=")[1]
         elif f.startswith("assigned_counts="):
             counts['assigned_counts'] = f.split("=")[1]
-            
+
     if len(counts.keys()) != 2:
         print "Warning: Could not get counts fields out of " \
               "%s header." %(samples_header)
         counts = {'counts': 'n/a',
                   'assigned_counts': 'n/a'}
-        
+
     return counts
 
-    
+
 def get_gene_info_from_params(params):
     """
     Return gene information from parameters of
@@ -226,7 +226,7 @@ def get_gene_info_from_params(params):
     if "mRNA_ends" in params:
         gene_info["mRNA_ends"] = params["mRNA_ends"]
     return gene_info
-    
+
 
 def get_event_name(miso_filename,
                    use_compressed_map=None):
@@ -258,8 +258,8 @@ def get_event_name(miso_filename,
 #         return None
 #     event_name = basename.split(".miso")[0]
 #     return event_name
-    
-    
+
+
 def summarize_sampler_results(samples_dir, summary_filename,
                               use_compressed=None):
     """
@@ -307,7 +307,7 @@ def summarize_sampler_results(samples_dir, summary_filename,
             continue
         num_samples, num_isoforms = shape(samples)
         output_fields = format_credible_intervals(event_name, samples)
-            
+
         # Add isoforms information to output fields
         isoforms_field = get_isoforms_from_header(header)
         output_fields.append(isoforms_field)
@@ -321,14 +321,14 @@ def summarize_sampler_results(samples_dir, summary_filename,
         output_fields.append(gene_info["strand"])
         output_fields.append(gene_info["mRNA_starts"])
         output_fields.append(gene_info["mRNA_ends"])
-        
+
         output_line = "%s\n" %("\t".join(output_fields))
-	summary_file.write(output_line)
-	num_events += 1
+        summary_file.write(output_line)
+        num_events += 1
     print "  - Summarized a total of %d events." %(num_events)
     summary_file.close()
 
-    
+
 def is_miso_chrom_dir(dirname):
     """
     Return True if a directory contains *.miso files.
@@ -346,8 +346,8 @@ def is_miso_chrom_dir(dirname):
     if len(fnames) >= 1:
         return True
     return False
-    
-    
+
+
 def get_samples_dir_filenames(samples_dir):
     """
     Get all the filenames associated with a samples directory.
@@ -372,7 +372,7 @@ def get_samples_dir_filenames(samples_dir):
     """
     directories = glob.glob(os.path.join(samples_dir, "*"))
     directories = filter(is_miso_chrom_dir, directories)
-    
+
     # Filenames indexed by chromosomes
     filenames = []
 
@@ -409,5 +409,3 @@ def get_samples_dir_filenames(samples_dir):
               %(samples_dir)
     relevant_filenames = miso_filenames + miso_db_filenames
     return relevant_filenames
-
-

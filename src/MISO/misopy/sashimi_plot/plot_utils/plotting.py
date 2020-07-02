@@ -1,5 +1,5 @@
 ##
-## Plotting utils 
+## Plotting utils
 ##
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid.axislines import SubplotZero
@@ -31,7 +31,7 @@ def plot_cumulative_bars(data, bins,
             align='center',
             color=bar_color,
             edgecolor=edgecolor)
-    
+
 
 def make_errorbar_plot(labels, bar_locations,
                        bar_values, bar_errors,
@@ -44,11 +44,11 @@ def make_errorbar_plot(labels, bar_locations,
 
     if colors == None:
         colors = ['k'] * len(bar_locations)
-    
+
     for n, val in enumerate(bar_values):
-	plt.bar([bar_locations[n]], [val], width, yerr=[bar_errors[n]],
-		color=colors[n], align='center', ecolor='k', label=labels[n])\
-                
+        plt.bar([bar_locations[n]], [val], width, yerr=[bar_errors[n]],
+                color=colors[n], align='center', ecolor='k', label=labels[n])\
+
 
 def make_grouped_bar_plot(ax, x_axis_labels, group_labels, group_values,
                           group_errs, width, group_colors=None, x_offset_val=None,
@@ -56,7 +56,7 @@ def make_grouped_bar_plot(ax, x_axis_labels, group_labels, group_values,
     """
     Make grouped bar plot, where group_labels are the labels for each group
     (to appear on x-axis), the group values is a list of N lists, each of length N,
-    where N is the number of groups.  
+    where N is the number of groups.
     """
     all_rects = []
 
@@ -65,15 +65,15 @@ def make_grouped_bar_plot(ax, x_axis_labels, group_labels, group_values,
 
     num_items_on_x_axis = len(x_axis_labels)
     num_groups = len(group_labels)
-    
+
     ind = arange(num_items_on_x_axis)
-    
+
     for group_num, group_vals in enumerate(group_values):
         group_len = len(group_vals)
         gene_rects = ax.bar(ind, group_vals, width, color=group_colors[group_num],
                             yerr=group_errs[group_num], label=group_labels[group_num],
                             ecolor='k')
-        
+
         # Advance x-axis offset
         ind = ind + x_offset_val
         all_rects.append(gene_rects)
@@ -90,7 +90,7 @@ def make_grouped_bar_plot(ax, x_axis_labels, group_labels, group_values,
                   handletextpad=0.3)
 
     return ax
-        
+
 
 def show_spines(ax,spines):
     for loc, spine in ax.spines.iteritems():
@@ -126,7 +126,7 @@ def remove_extra_ticks(ax):
             line.set_visible(False)
 
 def axes_square(plot_handle):
-    plot_handle.axes.set_aspect(1/plot_handle.axes.get_data_ratio()) 
+    plot_handle.axes.set_aspect(1/plot_handle.axes.get_data_ratio())
 
 def setup_two_axes(fig, labelpad=1, invisible=["bottom", "top", "right"]):
     plt.rcParams['xtick.major.pad'] = 0.1
@@ -138,7 +138,7 @@ def setup_two_axes(fig, labelpad=1, invisible=["bottom", "top", "right"]):
     fig.add_subplot(ax)
     # make xzero axis (horizontal axis line through y=0) visible.
     ax.axis["xzero"].set_visible(True)
-    ax.xaxis.labelpad = labelpad    
+    ax.xaxis.labelpad = labelpad
     # make other axis (bottom, top, right) invisible.
     for n in invisible:
         ax.axis[n].set_visible(False)

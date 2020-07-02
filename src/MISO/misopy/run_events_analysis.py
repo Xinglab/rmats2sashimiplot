@@ -34,7 +34,7 @@ def get_ids_passing_filter(gff_index_dir,
     min_reads = 20
     settings = Settings.get()
     min_event_reads = Settings.get_min_event_reads()
-    
+
     # Check that this was indexed with a version that outputs
     # genes.gff file
     genes_gff_fname = os.path.join(gff_index_dir,
@@ -69,7 +69,7 @@ def get_ids_passing_filter(gff_index_dir,
             event_id = attribs["ID"]
             ids_passing_filter.append(event_id)
     return ids_passing_filter
-            
+
 
 def check_gff_and_bam(gff_dir, bam_filename, main_logger,
                       num_genes=10000,
@@ -129,7 +129,7 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
                 main_logger.error(e)
                 sys.exit(1)
         time.sleep(5)
-        
+
     genes_fname = os.path.join(gff_dir, "genes.gff")
     if not os.path.isfile(genes_fname):
         # No genes.gff found - warn user and abort headers check
@@ -193,7 +193,7 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
                             "anyway...")
         time.sleep(15)
 
-        
+
 def compute_psi(sample_filenames, output_dir, event_type,
                 read_len, overhang_len,
                 use_cluster=False,
@@ -211,39 +211,39 @@ def compute_psi(sample_filenames, output_dir, event_type,
       - event_type: 'SE', 'RI', etc.
     """
     misc_utils.make_dir(output_dir)
-    
+
     output_dir = os.path.join(output_dir, event_type)
     output_dir = os.path.abspath(output_dir)
 
     misc_utils.make_dir(output_dir)
-	
+
     print "Computing Psi for events of type %s" %(event_type)
     print "  - samples used: ", sample_filenames.keys()
 
     for sample_label, sample_filename in sample_filenames.iteritems():
-	print "Processing sample: label=%s, filename=%s" \
+        print "Processing sample: label=%s, filename=%s" \
             %(sample_label, sample_filename)
-	results_output_dir = os.path.join(output_dir, sample_label)
+        results_output_dir = os.path.join(output_dir, sample_label)
         misc_utils.make_dir(results_output_dir)
 
-	# Load the set of counts and serialize them into JSON
-	events = \
+        # Load the set of counts and serialize them into JSON
+        events = \
             as_events.load_event_counts(sample_filename,
                                         event_type,
                                         events_info_filename=events_info_filename)
 
-	# Filter events
-	if filter_events:
-	    print "Filtering events..."
-	    events.filter_events(settings=Settings.get())
+        # Filter events
+        if filter_events:
+            print "Filtering events..."
+            events.filter_events(settings=Settings.get())
 
-	print "Running on a total of %d events." %(len(events.events))
-	    
-	events_filename = events.output_file(results_output_dir,
+        print "Running on a total of %d events." %(len(events.events))
+
+        events_filename = events.output_file(results_output_dir,
                                              sample_label)
-	
-	# Run MISO on them
-	miso_cmd = "python %s --compute-two-iso-psi %s %s --event-type %s " \
+
+        # Run MISO on them
+        miso_cmd = "python %s --compute-two-iso-psi %s %s --event-type %s " \
                    "--read-len %d --overhang-len %d " \
                    %(os.path.join(miso_path, 'run_miso.py'),
                      events_filename,
@@ -251,15 +251,15 @@ def compute_psi(sample_filenames, output_dir, event_type,
                      event_type,
                      read_len,
                      overhang_len)
-	if use_cluster:
-	    if chunk_jobs:
-		miso_cmd += ' --use-cluster --chunk-jobs %d' %(chunk_jobs)
-	    else:
-		miso_cmd += ' --use-cluster'
+        if use_cluster:
+            if chunk_jobs:
+                miso_cmd += ' --use-cluster --chunk-jobs %d' %(chunk_jobs)
+            else:
+                miso_cmd += ' --use-cluster'
         print "Executing: %s" %(miso_cmd)
-	if use_cluster:
-	    print " - Using cluster"
-	os.system(miso_cmd)
+        if use_cluster:
+            print " - Using cluster"
+        os.system(miso_cmd)
 
 
 def greeting(parser=None):
@@ -274,7 +274,6 @@ def greeting(parser=None):
 def main():
     print "MISO (Mixture of Isoforms model)"
     print "To run MISO, please use \"miso\" instead."
-		    
+
 if __name__ == '__main__':
     main()
-    

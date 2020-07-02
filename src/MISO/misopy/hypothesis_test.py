@@ -17,13 +17,13 @@ class NullPeakedDensity:
     A density peaked on the null hypothesis
     """
     def __init__(self, dataset):
-	self.dataset = dataset
+        self.dataset = dataset
 
     def evaluate(self, point):
-	if point[0] == 0:
-	    return inf
-	else:
-	    return 0
+        if point[0] == 0:
+            return inf
+        else:
+            return 0
 
 class gaussian_kde_set_covariance(stats.gaussian_kde):
     '''
@@ -37,7 +37,7 @@ class gaussian_kde_set_covariance(stats.gaussian_kde):
     def _compute_covariance(self):
         self.inv_cov = np.linalg.inv(self.covariance)
         self._norm_factor = sqrt(np.linalg.det(2*np.pi*self.covariance)) * self.n
-        
+
 class gaussian_kde_covfact(stats.gaussian_kde):
     def __init__(self, dataset, covfact = 'scotts'):
         self.covfact = covfact
@@ -63,7 +63,7 @@ class gaussian_kde_covfact(stats.gaussian_kde):
         self.covfact = covfact
         self.covariance_factor()
         self._compute_covariance()
-	
+
 def compute_prior_proportion_diff(num_samples):
     """
     Compute the posterior on the difference between two independent proportions (from two
@@ -78,11 +78,11 @@ def compute_prior_proportion_diff(num_samples):
     """
     samples = []
     for n in range(num_samples):
-	# sample probabilities from uniform prior
-	prob_c1 = random.beta(1, 1)
-	prob_c2 = random.beta(1, 1)
-	delta = prob_c1 - prob_c2
-	samples.append(delta)
+        # sample probabilities from uniform prior
+        prob_c1 = random.beta(1, 1)
+        prob_c2 = random.beta(1, 1)
+        delta = prob_c1 - prob_c2
+        samples.append(delta)
     return array(samples)
 
 
@@ -128,16 +128,16 @@ def compute_delta_densities(samples1_results,
     # Posterior samples from MCMC
     densities['samples1'] = posterior_samples1
     densities['samples2'] = posterior_samples2
-    
+
     # Collection of posterior densities (only 1 in two-isoform case)
     densities['posterior_density'] = []
 
     # Collection of Bayes factors (only 1 in two-isoform case)
     densities['bayes_factor'] = []
-    
+
     # For each isoform, compute its Bayes factor and delta posterior
     warning_outputted = False
-    
+
     for iso_num in range(num_isoforms):
         ##
         ## TODO: If distinct number of samples are used
@@ -175,7 +175,7 @@ def compute_delta_densities(samples1_results,
         # as list to be consistent with multi-isoform case
         densities['bayes_factor'].append(bayes_factor)
         densities['posterior_density'].append(posterior_density)
-    
+
     return densities
 
 
@@ -215,11 +215,11 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
     print "Creating comparisons parent directory: %s" %(output_dir)
     # Create parent directory for comparison
     misc_utils.make_dir(output_dir)
-	
+
     # Create directory for Bayes factors
     bf_output_dir = os.path.join(output_dir, 'bayes-factors/')
     misc_utils.make_dir(bf_output_dir)
-    
+
     header_fields = ['event_name',
                      'sample1_posterior_mean',
                      'sample1_ci_low',
@@ -352,37 +352,36 @@ def compute_bayes_factor(prior_density, posterior_density,
     Compute Bayes factor for given fitted densities.
     """
     max_bf = 1e12
-    
+
     # assume prior density is known analytically at delta = 0
     if at_point == 0:
-	diff_prior = 1
+        diff_prior = 1
     else:
-	diff_prior = prior_density.evaluate([at_point])
+        diff_prior = prior_density.evaluate([at_point])
     diff_posterior = posterior_density.evaluate([at_point])
 
     if diff_posterior == 0:
-	bayes_factor = max_bf
+        bayes_factor = max_bf
     elif diff_posterior == inf:
-	bayes_factor = 0
+        bayes_factor = 0
     else:
-	# Compute factor relative to alternative hypothesis
-	bayes_factor = diff_prior / diff_posterior
+        # Compute factor relative to alternative hypothesis
+        bayes_factor = diff_prior / diff_posterior
         bayes_factor = bayes_factor[0]
 
     if print_bayes:
-	print "diff_posterior: %.4f" %(diff_posterior)
-	print "bayes_factor: %.2f" %(bayes_factor)
+        print "diff_posterior: %.4f" %(diff_posterior)
+        print "bayes_factor: %.2f" %(bayes_factor)
 
     # Upper bound on Bayes factor
     if bayes_factor > max_bf:
         bayes_factor = max_bf
-	
+
     return bayes_factor, diff_prior, diff_posterior
 
-    
+
 def main():
     pass
-    
+
 if __name__ == '__main__':
     main()
-

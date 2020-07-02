@@ -76,7 +76,7 @@ class MISOPacker:
                     shutil.rmtree(dir_to_compress)
         t2 = time.time()
         print "Packing took %.2f minutes" %((t2 - t1)/60.)
-        
+
 
 def greeting(parser=None):
     print "MISO (Mixture of Isoforms model)"
@@ -135,7 +135,6 @@ def main():
     if options.view is not None:
         view_miso_db(options.view)
 
-        
+
 if __name__ == "__main__":
     main()
-        

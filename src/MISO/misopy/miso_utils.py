@@ -50,7 +50,7 @@ def get_miso_output_files(event_name, chrom, settings):
     Look recursively in subdirectories of MISO prefix.
     """
     miso_filenames = []
-    
+
     # Apply MISO prefix path if given
     if "miso_prefix" in settings:
         miso_prefix = \

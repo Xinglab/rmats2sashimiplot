@@ -46,4 +46,3 @@ def parseGene(pickle_filename, event):
     mRNAs.sort(key=len)
     return tx_start, tx_end, exon_starts, exon_ends, gene_obj, \
            mRNAs, strand, chrom
-

@@ -31,7 +31,7 @@ def count_aligned_reads(reads, paired_end=False):
     keys.sort()
 
     counts = [(k, counts_dict[k]) for k in keys]
-    
+
     return counts
 
 

@@ -42,7 +42,7 @@ class MISOCompressor:
         # Extension for compressed directory that contains
         # any sort of MISO output within it
         self.comp_ext = ".misozip"
-        
+
 
     def compress(self, output_filename, miso_dirnames):
         """
@@ -93,7 +93,7 @@ class MISOCompressor:
         print "(*.miso) files, simply unzip with the .miso_zip file "
         print "with standard unzip utility:\n"
         print "  unzip %s" %(output_filename)
-        
+
 
     def uncompress(self, compressed_filename, output_dir):
         """
@@ -118,8 +118,8 @@ class MISOCompressor:
             print "Removing the compressed file %s" %(compressed_filename)
             if os.path.isfile(compressed_filename):
                 os.remove(compressed_filename)
-                
-                
+
+
     def collect_miso_dirs(self, path, dirnames):
         """
         Collect raw MISO output directories
@@ -158,7 +158,7 @@ def compress_miso(output_filename, input_dirs,
     t2 = time.time()
     print "Compression took %.2f minutes." %((t2 - t1)/60.)
 
-    
+
 def uncompress_miso(compressed_filename, output_dir):
     """
     Uncompress MISO directory.
@@ -178,7 +178,7 @@ def zipper(dir, zip_file):
     """
     Zip a directory 'dir' recursively, saving result in
     'zip_file'.
-    
+
     by Corey Goldberg.
     """
     # Enable Zip64 to allow creation of large Zip files
@@ -199,7 +199,7 @@ def zipper(dir, zip_file):
 def unzipper(zip_file, outdir):
     """
     Unzip a given 'zip_file' into the output directory 'outdir'.
-    
+
     Return the names of files in the archive.
     """
     zf = zipfile.ZipFile(zip_file, "r",
@@ -216,7 +216,7 @@ def greeting():
     print "To uncompress back into a directory \'outputdir\', use: "
     print "   miso_zip --uncompress outputfile.misozip outputdir"
     print "\nNote: compressed filename must end in \'.misozip\'"
-    
+
 
 def main():
     from optparse import OptionParser
@@ -258,4 +258,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

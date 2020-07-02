@@ -48,7 +48,7 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
 
     # Load BF data
     data, h = csv2dictlist_raw(bf_filename)
-    
+
     plot_name = os.path.basename(bf_filename)
     sashimi_obj = Sashimi(plot_name, output_dir,
                           settings_filename=settings_filename)
@@ -79,7 +79,7 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
 
     print "Loaded %d event comparisons." %(num_events)
 
-    output_filename = sashimi_obj.output_filename 
+    output_filename = sashimi_obj.output_filename
 
     print "Plotting Bayes factors distribution"
     print "  - Output filename: %s" %(output_filename)
@@ -107,7 +107,7 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
     plt.xlabel("Bayes factor thresh.")
     plt.ylabel("No. events")
     sashimi_obj.save_plot()
-    
+
 
 
 def plot_event(event_name, pickle_dir, settings_filename,
@@ -130,7 +130,7 @@ def plot_event(event_name, pickle_dir, settings_filename,
     if not os.path.isdir(pickle_dir):
         print "Error: event pickle directory %s not found." %(pickle_dir)
         sys.exit(1)
-        
+
     # Retrieve the full pickle filename
     genes_filename = os.path.join(pickle_dir,
                                   "genes_to_filenames.shelve")
@@ -140,13 +140,13 @@ def plot_event(event_name, pickle_dir, settings_filename,
         raise Exception, "Cannot find file %s. Are you sure the events " \
                          "were indexed with the latest version of index_gff.py?" \
                          %(genes_filename)
-    
+
     event_to_filenames = shelve.open(genes_filename)
     if event_name not in event_to_filenames:
         raise Exception, "Event %s not found in pickled directory %s. " \
               "Are you sure this is the right directory for the event?" \
               %(event_name, pickle_dir)
-    
+
     pickle_filename = event_to_filenames[event_name]
 
     if no_posteriors:
@@ -177,11 +177,11 @@ def plot_insert_len(insert_len_filename,
     output_filename = sashimi_obj.output_filename
     sashimi_obj.setup_figure()
     s = plt.subplot(1, 1, 1)
-    
+
     print "Plotting insert length distribution..."
     print "  - Distribution file: %s" %(insert_len_filename)
     print "  - Output plot: %s" %(output_filename)
-    
+
     insert_dist, params = pe_utils.load_insert_len(insert_len_filename)
 
     mean, sdev, dispersion, num_pairs \
@@ -209,13 +209,13 @@ def plot_insert_len(insert_len_filename,
     plt.xlabel("Insert length (nt)")
     plt.ylabel("No. read pairs")
     sashimi_obj.save_plot()
-        
+
 def greeting():
     print "Sashimi plot: Visualize spliced RNA-Seq reads along gene models. " \
           "Part of the MISO (Mixture of Isoforms model) framework."
     print "See --help for usage.\n"
     print "Manual available at: http://genes.mit.edu/burgelab/miso/docs/sashimi.html\n"
-    
+
 
 def main():
     from optparse import OptionParser

@@ -79,7 +79,7 @@ class Settings(object):
             if name in cls.global_settings:
                 sampler_params[name] = cls.global_settings[name]
         return sampler_params
-    
+
 
     @classmethod
     def get_cluster_command(cls):
@@ -101,7 +101,7 @@ class Settings(object):
             return cls.global_settings['long_queue_name']
         else:
             return None
-        
+
     @classmethod
     def get_short_queue_name(cls):
         """
@@ -111,7 +111,7 @@ class Settings(object):
             return cls.global_settings['short_queue_name']
         else:
             return None
-        
+
 
     @classmethod
     def get_min_event_reads(cls,
@@ -155,8 +155,8 @@ class Settings(object):
         if "num_processors" in cls.global_settings:
             num_processors = int(cls.global_settings["num_processors"])
         return num_processors
-        
-        
+
+
     @classmethod
     def get_counts_dir(cls, event_type):
         """
@@ -178,7 +178,7 @@ class Settings(object):
     @classmethod
     def get_filters(cls, event_type):
         pass
-        
+
     @classmethod
     def get(cls):
         return cls.global_settings
@@ -187,8 +187,8 @@ class Settings(object):
     def get_miso_exec(cls):
         if 'MISO_SHELL_EXEC' in os.environ:
             return os.environ['MISO_SHELL_EXEC']
-        return sys.executable    
-    
+        return sys.executable
+
 
 def load_settings(settings_filename):
     Settings.load(settings_filename)

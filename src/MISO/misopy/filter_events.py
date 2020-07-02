@@ -43,7 +43,7 @@ def get_counts(counts_str):
 
     if len(fields) == 0:
         return None
-    
+
     for field in fields:
         iso_type, count = field.split(":")
         count = int(count)
@@ -101,8 +101,8 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
         data, h = csv2dictlist_raw(fname)
         total_events.append(len(data))
 
-        filtered = filter_events(data, h, num_total, num_inc, num_exc, num_sum, 
-                                    delta_psi_filter, bf_filter, 
+        filtered = filter_events(data, h, num_total, num_inc, num_exc, num_sum,
+                                    delta_psi_filter, bf_filter,
                                     apply_both_samples=apply_both_samples)
         comp.append(filtered)
 
@@ -146,7 +146,7 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
                     dp_list = dp_list + dp_pass
                     continue
 
-                # adds the result from the current event to the ones from the 
+                # adds the result from the current event to the ones from the
                 # previous events
                 bf_pass = bayes_factor_pass(event['bayes_factor'], bf_filter)
                 bf_list = [sum(x) for x in zip(bf_list, bf_pass)]
@@ -174,7 +174,7 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
                 if event_dict.has_key(event['event_name']):
                     event_list.append(event)
             comp_new.append(event_list)
-    
+
         for i in range(0, len(comp_new)):
             num_pass = len(comp_new[i])
             fname = filter_filename[i]
@@ -224,12 +224,12 @@ def delta_psi_pass(delta_psi, dp_filter):
 
 def fix_bayes_factor(bayes_factor):
     """
-    If one of the bayes factors is 'inf' we get a string instead of a 
+    If one of the bayes factors is 'inf' we get a string instead of a
     tuple back. This is hacky but fixes that.
     """
     # Maximum cut off for Bayes factor value
     max_bf = 1e12
-    
+
     if type(bayes_factor) == str:
         bayes_factor = bayes_factor.split(",")
         bayes_factor = [min(float(x), max_bf) for x in bayes_factor]
@@ -249,7 +249,7 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
     if abs(delta_psi_filter) > 1 or \
        abs(delta_psi_filter) < 0:
-        raise Exception, "Error: delta psi value outside [0, 1]." 
+        raise Exception, "Error: delta psi value outside [0, 1]."
 
     for event in data:
         # Sometimes the bayes factor is not formatted correctly, this fixes that
@@ -300,8 +300,8 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
             if sample2_counts == None:
                 raise Exception, "Incompatible samples."
-            
-            sample2_inc, sample2_exc, sample2_both = sample2_counts            
+
+            sample2_inc, sample2_exc, sample2_both = sample2_counts
 
             sample2_result = filter_event(sample2_inc, sample2_exc, sample2_both,
                                           num_total, num_inc, num_exc, num_sum)
@@ -343,12 +343,12 @@ def greeting():
     print "filter_events: filtering MISO pairwise comparison output.\n"
     print "Note: This utility is only works on MISO output for two-isoform "
     print "event annotations.\n"
-    
-    
+
+
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("--filter", dest="filter_filename", default=None, 
+    parser.add_option("--filter", dest="filter_filename", default=None,
                       action="callback", callback=fname_callback,
                       help="Comparison file to filter or list of replicate files to filter.")
     parser.add_option("--control", dest="control_filename", default=[],
@@ -412,8 +412,8 @@ def main():
     #                  apply_both_samples=options.apply_both)
 
     multi_filter(filter_filename, output_dir, options.num_total, options.num_inc,
-            options.num_exc, options.num_sum, options.delta_psi, 
-            options.bayes_factor, options.vote_thresh, 
+            options.num_exc, options.num_sum, options.delta_psi,
+            options.bayes_factor, options.vote_thresh,
             apply_both_samples=options.apply_both)
 
 if __name__ == '__main__':

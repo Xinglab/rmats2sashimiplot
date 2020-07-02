@@ -13,9 +13,9 @@ def check_module_availability(required_modules):
     print "Checking availability of Python modules for MISO"
     print "Looking for required Python modules.."
     for module_name in required_modules:
-	print "Checking for availability of: %s" %(module_name)
-	try:
-	    __import__(module_name)
+        print "Checking for availability of: %s" %(module_name)
+        try:
+            __import__(module_name)
             # Manually check for correct matplotlib version
             # required for sashimi_plot
             if module_name == "matplotlib":
@@ -25,11 +25,11 @@ def check_module_availability(required_modules):
                           "to use sashimi_plot, you must upgrade your matplotlib " \
                           "to version 1.1.0 or later. This function is *not* required " \
                           "for MISO use."
-	except ImportError:
-	    print "  - Module %s not available!" %(module_name)
+        except ImportError:
+            print "  - Module %s not available!" %(module_name)
             if module_name == "matplotlib":
                 print "matplotlib is required for sashimi_plot"
-	    unavailable_mods += 1
+            unavailable_mods += 1
     if unavailable_mods != 0:
         print "Total of %d modules were not available. " \
               "Please install these and try again." %(unavailable_mods)
@@ -58,8 +58,7 @@ def main():
     required_modules = ['numpy', 'scipy', 'json', 'matplotlib',
                         'pysam']
     check_module_availability(required_modules)
-    
+
 
 if __name__ == '__main__':
     main()
-    

@@ -42,7 +42,7 @@ class TestCluster(unittest.TestCase):
         overhang_len = 4
 
         event_type = "SE"
-        
+
         miso_cmd = "%s --compute-events-psi %s %s --output-dir %s --read-len %d --overhang-len %d " \
                    " --event-type %s --use-cluster " %(self.events_analysis_cmd,
                                                        sample_name,
@@ -77,7 +77,7 @@ class TestCluster(unittest.TestCase):
         os.system(index_cmd)
 
         output_dir = os.path.join(self.tests_output_dir, "gene-psi-output")
-        
+
         miso_cmd = "%s --compute-genes-psi %s %s --output-dir %s --read-len %d " \
                    " --paired-end %d %d --use-cluster" \
                    %(self.events_analysis_cmd,
@@ -90,6 +90,6 @@ class TestCluster(unittest.TestCase):
         print "Executing: %s" %(miso_cmd)
         os.system(miso_cmd)
 
-        
+
 if __name__ == '__main__':
     unittest.main()

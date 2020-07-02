@@ -19,8 +19,8 @@ def dictlist2csv(filename, dictlist, header_fields, delimiter='\t'):
     # write header to file
     output.write(header)
     for row in dictlist:
-	row = "\t".join([str(row[field]) for field in header_fields]) + '\n'
-	output.write(row)
+        row = "\t".join([str(row[field]) for field in header_fields]) + '\n'
+        output.write(row)
     output.close()
 
 def dictlist2dict(dictlist, header_name):
@@ -31,7 +31,7 @@ def dictlist2dict(dictlist, header_name):
     """
     indexed_dict = {}
     for item in dictlist:
-	indexed_dict[item[header_name]] = item
+        indexed_dict[item[header_name]] = item
     return indexed_dict
 
 def dictlist2array(dictlist, header_fields):
@@ -41,10 +41,10 @@ def dictlist2array(dictlist, header_fields):
     """
     data_array = []
     for data_elt in dictlist:
-	data_row = []
-	for field in header_fields:
-	    data_row.append(data_elt[field])
-	data_array.append(data_row)
+        data_row = []
+        for field in header_fields:
+            data_row.append(data_elt[field])
+        data_array.append(data_row)
     return data_array
 
 
@@ -86,15 +86,15 @@ def csv2array(f,
 
 
 def tryEval(s):
-  try:
-    return eval(s, {}, {})
-  except:
-    return s
+    try:
+        return eval(s, {}, {})
+    except:
+        return s
 
 
 def evalDict(d):
     for k, v in d.iteritems():
-	d[k] = tryEval(v)
+        d[k] = tryEval(v)
     return d
 
 
@@ -115,7 +115,7 @@ def file2dictlist(filename, delimiter='\t',
         data = csv.DictReader(f, delimiter=delimiter,
                               quoting=csv.QUOTE_NONE,
                               dialect='excel')
-        
+
     else:
         f = open(filename, "r")
         data = csv.DictReader(f, delimiter=delimiter,
@@ -127,7 +127,7 @@ def dictlist2file(dictrows, filename, fieldnames, delimiter='\t',
                   lineterminator='\n', extrasaction='ignore',
                   write_raw=False):
     out_f = open(filename, 'w')
-    
+
     # Write out header
     if fieldnames != None:
         header = delimiter.join(fieldnames) + lineterminator
@@ -148,8 +148,8 @@ def dictlist2file(dictrows, filename, fieldnames, delimiter='\t',
         for row in dictrows:
             data.writerow(row)
     out_f.close()
-    
-    
+
+
 def csv2dictlist_raw(filename, delimiter='\t'):
     f = open(filename)
     header_line = f.readline().strip()
@@ -157,11 +157,11 @@ def csv2dictlist_raw(filename, delimiter='\t'):
     dictlist = []
     # convert data to list of dictionaries
     for line in f:
-	values = map(tryEval, line.strip().split(delimiter))
-	dictline = dict(zip(header_fields, values))
-	dictlist.append(dictline)
+        values = map(tryEval, line.strip().split(delimiter))
+        dictline = dict(zip(header_fields, values))
+        dictlist.append(dictline)
     return (dictlist, header_fields)
-    
+
 
 def find(val, values):
     """
@@ -179,7 +179,7 @@ def find(val, values):
 def parse_header(line, numeric_vals=True):
     """
     Parse a line of the form:
-    
+
     #param=val\tparam=val\tparam=val...
 
     Return a dictionary of params: vals

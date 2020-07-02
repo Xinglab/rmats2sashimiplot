@@ -83,12 +83,12 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     as the right datatype.
     """
     settings = get_default_settings()
-    
+
     config = ConfigParser.ConfigParser()
 
     print "Reading settings from: %s" %(settings_filename)
     config.read(settings_filename)
-    
+
     for section in config.sections():
         for option in config.options(section):
             print "Parsing %s:%s" %(section, option)
@@ -111,7 +111,7 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     else:
         colors = [None for x in settings["bam_files"]]
     settings["colors"] = colors
-        
+
     if "bam_prefix" in settings:
         bam_files = [os.path.join(settings["bam_prefix"], x) \
                     for x in settings["bam_files"]]
@@ -146,7 +146,7 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     else:
         miso_files = []
     settings["miso_files"] = miso_files
-    
+
     if "coverages" in settings:
         coverages = ast.literal_eval(settings["coverages"])
         coverages = map(float, coverages)
@@ -161,5 +161,5 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
         print "Error: Must provide a coverage value for each sample or leave coverages unset."
         print('\033[0m')  # set the color as default value
         sys.exit(1)
-    
+
     return settings
