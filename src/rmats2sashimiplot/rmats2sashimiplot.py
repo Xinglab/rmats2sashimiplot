@@ -17,36 +17,40 @@ def convert_sam2bam(options):
         for sam in sample_2:
             os.system("samtools view -Sbh " + sam + " > " + sam.replace(".sam", ".bam"))
         options.b2 = options.s2.replace(".sam", ".bam")
-    print('\033[0;33;m')  # change the print color as yellow
     for bam in options.b1.split(","):
         if os.path.isfile(bam + '.bai'):  # if the bam file has been indexed.
-            print("\'{0}\' seems to be indexed already. Please Check out this index file \'{0}.bai\'".format(bam))
+            print("'{0}' is indexed already: '{0}.bai'".format(bam))
         else:
-            print("Indexing \'{0}\'.".format(bam))
+            print("Indexing '{}'.".format(bam))
             os.system("samtools index " + bam)
     for bam in options.b2.split(","):
         if os.path.isfile(bam + '.bai'):
-            print("\'{0}\' seems to be indexed already. Please Check out this index file \'{0}.bai\'".format(bam))
+            print("'{0}' is indexed already: '{0}.bai'".format(bam))
         else:
-            print("Indexing \'{0}\'.".format(bam))
+            print("Indexing '{}'.".format(bam))
             os.system("samtools index " + bam)
-    print('\033[0m')  # set the color as default value
     return
 
 
-def file_check(string, extension):
+def file_check(string, expected_ext):
     """
     check the existence of the files and whether they are with the right extensions
 
     :param string: original string jointed file names by comma
     :param extension: a string like ".bam" in lowercase
-    :return: True or False
+    :return: error message or None
     """
     name_arr = string.split(',')
     for name in name_arr:
-        if not os.path.isfile(name) or os.path.splitext(name)[1].lower() != extension:  # in lowercase
-            return False
-    return True
+        if not os.path.isfile(name):
+            return '{} is not a file'.format(name)
+
+        extension = os.path.splitext(name)[1]
+        if extension.lower() != expected_ext.lower():
+            return '{} has extension {} but expected {} (ignoring case)'.format(
+                name, extension, expected_ext)
+
+    return None
 
 
 def checkout(parser, options):
@@ -65,16 +69,35 @@ def checkout(parser, options):
                      "2) events files together with events type.")
 
     if options.s1 is not None and options.s2 is not None:  # with sam file
-        if not (file_check(options.s1, ".sam") and file_check(options.s2, ".sam")):
-            parser.error("Incorrect file type. Need to provide with the right sam files for --s1 and --s2")
-    elif options.b1 is not None and options.b2 is not None:  # with bam file
-        if not (file_check(options.b1, ".bam") and file_check(options.b2, ".bam")):
-            parser.error("Incorrect file type. Need to provide with the right bam files for --b1 and --b2")
-    else:  # only with s1 and lack s2 or other similar cases
-        parser.error("Incorrect file type. Need to provide with the right sam files or bam files")
+        file_check_error = file_check(options.s1, ".sam")
+        if file_check_error:
+            parser.error("Error checking sam files given as --s1: {}".format(
+                file_check_error))
 
-    if options.events_file and not file_check(options.events_file, ".txt"):
-        parser.error("Incorrect file type. Need to provide rMATS output format txt file for -e")
+        file_check_error = file_check(options.s2, ".sam")
+        if file_check_error:
+            parser.error("Error checking sam files given as --s2: {}".format(
+                file_check_error))
+
+    elif options.b1 is not None and options.b2 is not None:  # with bam file
+        file_check_error = file_check(options.b1, ".bam")
+        if file_check_error:
+            parser.error("Error checking bam files given as --b1: {}".format(
+                file_check_error))
+
+        file_check_error = file_check(options.b2, ".bam")
+        if file_check_error:
+            parser.error("Error checking bam files given as --b2: {}".format(
+                file_check_error))
+
+    else:
+        parser.error("Need to provide either (--s1 and --s2) or (--b1 and --b2)")
+
+    if options.events_file:
+        file_check_error = file_check(options.events_file, ".txt")
+        if file_check_error:
+            parser.error("Error checking rMATS output given as -e: {}".format(
+                file_check_error))
 
 
 def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_level=None, id_str=None):
@@ -388,14 +411,16 @@ def plot_with_coordinate(options):
         except Exception as e:
             print(e)
             print("There is an exception in preparing coordinate setting file")
-            sys.exit(-2)
+            raise
+
         plot_c(options, id_str)
         fo.close()
 
     except Exception as e:
         print(e)
         print("There is an exception in plot_with_coordinate")
-        sys.exit(-1)
+        raise
+
     return
 
 
@@ -711,7 +736,8 @@ def plot_with_eventsfile(options):
             except Exception as e:
                 print(e)
                 print("There is an exception in preparing coordinate setting file")
-                sys.exit(-2)
+                raise
+
             plot_e(options, coor.id_str, gene_symbol, events_no)
         fo.close()
         w2.close()
@@ -719,7 +745,7 @@ def plot_with_eventsfile(options):
     except Exception as e:
         print(e)
         print("There is an exception in plot_with_eventsfile")
-        sys.exit(-1)
+        raise
 
 
 def main():
