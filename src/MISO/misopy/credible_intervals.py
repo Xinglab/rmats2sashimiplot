@@ -36,9 +36,9 @@ def compute_credible_intervals(samples, confidence_level=.95):
     Assumes that samples is an Nx2 vector of posterior samples.
     """
     if samples.ndim == 2:
-	samples = samples[:, 0]
+        samples = samples[:, 0]
     num_samples = len(samples)
-    # confidence percentage is 100(1-alpha)%    
+    # confidence percentage is 100(1-alpha)%
     alpha = 1 - confidence_level
     # compute the lower bound of the interval
     # the lower bound is the (alpha/2)*n-th smallest sample, where n is the
@@ -67,6 +67,5 @@ def compute_multi_iso_credible_intervals(multi_iso_samples,
         ci = compute_credible_intervals(multi_iso_samples[:, iso_num],
                                         confidence_level=confidence_level)
         credible_intervals.append(ci)
-        
+
     return credible_intervals
-        

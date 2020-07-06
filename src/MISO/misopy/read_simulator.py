@@ -7,7 +7,7 @@ def print_reads_summary(reads, gene, paired_end=False):
     num_isoforms = len(gene.isoforms)
     computed_const = False
     num_constitutive_reads = 0
-    
+
     for n in range(num_isoforms):
         unambig_read = zeros(num_isoforms, dtype=int)
         unambig_read[n] = 1
@@ -31,19 +31,19 @@ def print_reads_summary(reads, gene, paired_end=False):
 
 def get_reads_summary(reads):
     if reads.ndim != 2:
-	raise Exception, "get_reads_summary only defined for two-isoform."
+        raise Exception, "get_reads_summary only defined for two-isoform."
     ni = 0
     ne = 0
     nb = 0
     for read in reads:
-	if read[0] == 1 and read[1] == 0:
-	    # NI read
-	    ni += 1
-	elif read[0] == 0 and read[1] == 1:
-	    # NE read
-	    ne += 1
-	elif read[0] == 1 and read[1] == 1:
-	    nb += 1
+        if read[0] == 1 and read[1] == 0:
+            # NI read
+            ni += 1
+        elif read[0] == 0 and read[1] == 1:
+            # NE read
+            ne += 1
+        elif read[0] == 1 and read[1] == 1:
+            nb += 1
     return (ni, ne, nb)
 
 def expected_read_summary(gene, true_psi, num_reads, read_len, overhang_len):
@@ -95,7 +95,7 @@ def simulate_two_iso_reads(gene, true_psi, num_reads, read_len, overhang_len,
     if len(gene.isoforms) != 2:
         raise Exception, "simulate_two_iso_reads requires a gene with only two isoforms."
     if len(true_psi) < 2:
-        raise Exception, "Simulate reads requires a probability vector of size > 2."    
+        raise Exception, "Simulate reads requires a probability vector of size > 2."
     reads_summary = [0, 0, 0]
     all_reads = []
     categories = []
@@ -119,7 +119,7 @@ def simulate_two_iso_reads(gene, true_psi, num_reads, read_len, overhang_len,
             # Check if read was chosen to be noised
             if noisify:
                 # If exclusive isoform was sampled and we decided to noise it, discard the read
-		if (p_ne_loss > 0) and (chosen_iso == 1) and (rand() < p_ne_loss):
+                if (p_ne_loss > 0) and (chosen_iso == 1) and (rand() < p_ne_loss):
                     # Note that in this special case of a gene with two isoforms,
                     # 'reads_sampled' is a read summary tuple of the form (NI, NE, NB)
                     # and not an alignment to the two isoforms.
@@ -189,12 +189,12 @@ def check_paired_end_read_consistency(reads):
     is_consistent = False
     is_consistent = all(frag_lens[nonzero(pe_reads == 1)] != -Inf)
     if not is_consistent:
-	return is_consistent
+        return is_consistent
     is_consistent = all(frag_lens[nonzero(pe_reads == 0)] == -Inf)
     return is_consistent
-	
+
 ##
-## Diffrent fragment length distributions. 
+## Diffrent fragment length distributions.
 ##
 def sample_binomial_frag_len(frag_mean=200, frag_variance=100):
     """
@@ -203,18 +203,18 @@ def sample_binomial_frag_len(frag_mean=200, frag_variance=100):
 
     If frag_variance > frag_mean, use a Negative-Binomial distribution.
     """
-    assert(abs(frag_mean - frag_variance) > 1)  
+    assert(abs(frag_mean - frag_variance) > 1)
     if frag_variance < frag_mean:
-	p = 1 - (frag_variance/float(frag_mean))
-	# N = mu/(1-(sigma^2/mu))
-	n = float(frag_mean) / (1 - (float(frag_variance)/float(frag_mean)))
-	return binomial(n, p)
+        p = 1 - (frag_variance/float(frag_mean))
+        # N = mu/(1-(sigma^2/mu))
+        n = float(frag_mean) / (1 - (float(frag_variance)/float(frag_mean)))
+        return binomial(n, p)
     else:
-	r = -1 * (power(frag_mean, 2)/float(frag_mean - frag_variance))
-	p = frag_mean / float(frag_variance)
-	print "Sampling frag_mean=",frag_mean, " frag_variance=", frag_variance
-	print "r: ",r, "  p: ", p
-	return negative_binomial(r, p)
+        r = -1 * (power(frag_mean, 2)/float(frag_mean - frag_variance))
+        p = frag_mean / float(frag_variance)
+        print "Sampling frag_mean=",frag_mean, " frag_variance=", frag_variance
+        print "r: ",r, "  p: ", p
+        return negative_binomial(r, p)
 
 def compute_rpkc(list_read_counts, const_region_lens, read_len):
     """
@@ -224,7 +224,7 @@ def compute_rpkc(list_read_counts, const_region_lens, read_len):
     num_mappable_pos = 0
 #    assert(len(list_read_counts) == len(const_region_lens))
     for region_len in const_region_lens:
-	num_mappable_pos += region_len - read_len + 1
+        num_mappable_pos += region_len - read_len + 1
     read_counts = sum(list_read_counts)
     rpkc = read_counts / (num_mappable_pos / 1000.)
     return rpkc
@@ -235,9 +235,9 @@ def sample_normal_frag_len(frag_mean, frag_variance):
     """
     frag_len = round(normal(frag_mean, sqrt(frag_variance)))
     return frag_len
-    
+
 def simulate_paired_end_reads(gene, true_psi, num_reads, read_len, overhang_len, mean_frag_len,
-			      frag_variance, bino_sampling=False):
+                              frag_variance, bino_sampling=False):
     """
     Return a list of reads that are aligned to isoforms.
     This list is a pair, where the first element is a list of read alignments
@@ -251,23 +251,23 @@ def simulate_paired_end_reads(gene, true_psi, num_reads, read_len, overhang_len,
     assert(frag_variance != None)
     sampled_frag_lens = []
     for k in range(0, num_reads):
-	# choose a fragment length
-	insert_len = -1
-	while insert_len < 0:
-	    if bino_sampling:
-		frag_len = sample_binomial_frag_len(frag_mean=mean_frag_len, frag_variance=frag_variance)
-	    else:
-		frag_len = sample_normal_frag_len(frag_mean=mean_frag_len, frag_variance=frag_variance)
-	    insert_len = frag_len - (2 * read_len)
-	    if insert_len < 0:
-		raise Exception, "Sampled fragment length that is shorter than 2 * read_len!"
+        # choose a fragment length
+        insert_len = -1
+        while insert_len < 0:
+            if bino_sampling:
+                frag_len = sample_binomial_frag_len(frag_mean=mean_frag_len, frag_variance=frag_variance)
+            else:
+                frag_len = sample_normal_frag_len(frag_mean=mean_frag_len, frag_variance=frag_variance)
+            insert_len = frag_len - (2 * read_len)
+            if insert_len < 0:
+                raise Exception, "Sampled fragment length that is shorter than 2 * read_len!"
                 #print "Sampled fragment length that is shorter than 2 * read_len!"
-	    sampled_frag_lens.append(frag_len)
-	reads_sampled = sample_random_read_pair(gene, true_psi, read_len, overhang_len, insert_len, mean_frag_len)
-	alignment = reads_sampled[0]
-	frag_lens = reads_sampled[1]
-	read_coords.append(reads_sampled[2])
-	reads.append([alignment, frag_lens])
+            sampled_frag_lens.append(frag_len)
+        reads_sampled = sample_random_read_pair(gene, true_psi, read_len, overhang_len, insert_len, mean_frag_len)
+        alignment = reads_sampled[0]
+        frag_lens = reads_sampled[1]
+        read_coords.append(reads_sampled[2])
+        reads.append([alignment, frag_lens])
     return (array(reads), read_coords, sampled_frag_lens)
 
 # def compute_read_pair_position_prob(iso_len, read_len, insert_len):
@@ -278,14 +278,14 @@ def simulate_paired_end_reads(gene, true_psi, num_reads, read_len, overhang_len,
 #     read_start_prob = zeros(iso_len)
 #     # place a 1 in each position if a read could start there (0-based index)
 #     for start_position in range(iso_len):
-# 	# total read length, including insert length and both mates
-# 	paired_read_len = 2*read_len + insert_len
-# 	if start_position + paired_read_len <= iso_len:
-# 	    read_start_prob[start_position] = 1
+#       # total read length, including insert length and both mates
+#       paired_read_len = 2*read_len + insert_len
+#       if start_position + paired_read_len <= iso_len:
+#           read_start_prob[start_position] = 1
 #     # renormalize ones to get a probability vector
 #     possible_positions = nonzero(read_start_prob)[0]
 #     if len(possible_positions) == 0:
-# 	return read_start_prob
+#       return read_start_prob
 #     num_possible_positions = len(possible_positions)
 #     read_start_prob[possible_positions] = 1/float(num_possible_positions)
 #     return read_start_prob
@@ -298,13 +298,13 @@ def compute_read_pair_position_prob(iso_len, read_len, frag_len):
     read_start_prob = zeros(iso_len)
     # place a 1 in each position if a read could start there (0-based index)
     for start_position in range(iso_len):
-	# total read length, including insert length and both mates
-	if start_position + frag_len - 1 <= iso_len - 1:
-	    read_start_prob[start_position] = 1
+        # total read length, including insert length and both mates
+        if start_position + frag_len - 1 <= iso_len - 1:
+            read_start_prob[start_position] = 1
     # renormalize ones to get a probability vector
     possible_positions = nonzero(read_start_prob)[0]
     if len(possible_positions) == 0:
-	return read_start_prob
+        return read_start_prob
     num_possible_positions = len(possible_positions)
     read_start_prob[possible_positions] = 1/float(num_possible_positions)
     return read_start_prob
@@ -337,21 +337,21 @@ def sample_random_read_pair(gene, true_psi, read_len, overhang_len, insert_len, 
     left_read_start = list(multinomial(1, isoform_position_probs)).index(1)
     left_read_end = left_read_start + read_len - 1
     # right read starts after the left read and the insert length
-    right_read_start = left_read_start + read_len + insert_len 
+    right_read_start = left_read_start + read_len + insert_len
     right_read_end = left_read_start + (2*read_len) + insert_len - 1
     # convert read coordinates from coordinates of isoform that generated it to genomic coordinates
     genomic_left_read_start, genomic_left_read_end = \
-			     gene.isoforms[chosen_iso].isoform_coords_to_genomic(left_read_start,
-										 left_read_end)
+                             gene.isoforms[chosen_iso].isoform_coords_to_genomic(left_read_start,
+                                                                                 left_read_end)
 
     genomic_right_read_start, genomic_right_read_end = \
-			      gene.isoforms[chosen_iso].isoform_coords_to_genomic(right_read_start,
-										  right_read_end)
+                              gene.isoforms[chosen_iso].isoform_coords_to_genomic(right_read_start,
+                                                                                  right_read_end)
     # parameterized paired end reads as the start coordinate of the left
     pe_read = (genomic_left_read_start, genomic_left_read_end,
-	       genomic_right_read_start, genomic_right_read_end)
+               genomic_right_read_start, genomic_right_read_end)
     alignment, frag_lens = gene.align_read_pair(pe_read[0], pe_read[1], pe_read[2], pe_read[3],
-					       overhang=overhang_len)
+                                               overhang=overhang_len)
     return (alignment, frag_lens, pe_read)
 
 def sample_random_read(gene, true_psi, read_len, overhang_len):
@@ -382,8 +382,8 @@ def sample_random_read(gene, true_psi, read_len, overhang_len):
     ##
     # convert coordinates to genomic
     genomic_read_start, genomic_read_end = \
-			gene.isoforms[chosen_iso].isoform_coords_to_genomic(sampled_read_start,
-									    sampled_read_end)
+                        gene.isoforms[chosen_iso].isoform_coords_to_genomic(sampled_read_start,
+                                                                            sampled_read_end)
     alignment, category = gene.align_read(genomic_read_start, genomic_read_end, overhang=overhang_len)
     return (tuple(alignment), [sampled_read_start, sampled_read_end], category, chosen_iso)
 
@@ -427,4 +427,3 @@ def read_counts_to_read_list(ni, ne, nb):
 #         seq = gene.isoforms[1]['seq'][sampled_read_start:sampled_read_end]
 #         [n1, n2, nb], category = gene.align_two_isoforms(seq, overhang=overhang_len)
 #         return [[n1, n2, nb], [sampled_read_start, sampled_read_end], category]
-

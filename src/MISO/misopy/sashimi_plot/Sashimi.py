@@ -23,7 +23,7 @@ class Sashimi:
         self.output_ext = ".pdf"
         if png:
             self.output_ext = ".png"
-        
+
         # Plot label, will be used in creating the plot
         # output filename
         self.label = label
@@ -49,7 +49,7 @@ class Sashimi:
         else:
             # Otherwise, use the label and the output directory
             self.set_output_filename()
-        
+
         if dimensions != None:
             self.dimensions = dimensions
         else:
@@ -96,5 +96,3 @@ class Sashimi:
             output_fname = self.output_filename
         print "Saving plot to: %s" %(output_fname)
         plt.savefig(output_fname)
-            
-        

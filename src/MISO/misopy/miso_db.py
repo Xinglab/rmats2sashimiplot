@@ -46,7 +46,7 @@ class MISODatabase:
         self.conn = sqlite3.connect(self.db_fname)
         # Determine event name format
         self.is_db_events_compressed = self.is_event_name_compressed()
-        
+
 
     def is_event_name_compressed(self):
         """
@@ -60,7 +60,7 @@ class MISODatabase:
         event_name = str(first_result[0])
         is_comp = misc_utils.is_compressed_name(event_name)
         return is_comp
-        
+
 
     def get_event_data_as_stream(self, event_name):
         """
@@ -73,28 +73,28 @@ class MISODatabase:
         # given a mapping, this is a major error
         if self.is_db_events_compressed and \
            ((self.comp_to_uncomp is None) or (self.uncomp_to_comp is None)):
-           raise Exception, "The database contains compressed IDs but no " \
-                            "mapping (.shelve) file was given."
+            raise Exception, "The database contains compressed IDs but no " \
+                             "mapping (.shelve) file was given."
         # If we have a compressed event representation in database and
         # the event given is uncompressed, then look at the
         # compressed representation
         if self.is_db_events_compressed and \
            (not misc_utils.is_compressed_name(event_name)):
-           if event_name not in self.uncomp_to_comp:
-               return None
-           event_to_query = self.uncomp_to_comp[event_name]
+            if event_name not in self.uncomp_to_comp:
+                return None
+            event_to_query = self.uncomp_to_comp[event_name]
         # If the event given is compressed and the database representation
         # is *uncompressed*, then uncompress the event
         elif (not self.is_db_events_compressed) and \
            misc_utils.is_compressed_name(event_name):
-           # If there's no compressed mapping, we can't
-           # use this event
-           if self.comp_to_uncomp is None:
-               raise Exception, "Cannot get compressed event %s from " \
-                                "uncompressed database." %(event_name)
-           if event_name not in self.comp_to_uncomp:
-               return None
-           event_to_query = self.comp_to_uncomp[event_name]
+            # If there's no compressed mapping, we can't
+            # use this event
+            if self.comp_to_uncomp is None:
+                raise Exception, "Cannot get compressed event %s from " \
+                                 "uncompressed database." %(event_name)
+            if event_name not in self.comp_to_uncomp:
+                return None
+            event_to_query = self.comp_to_uncomp[event_name]
         c = self.conn.cursor()
         results = \
           c.execute("SELECT * from %s WHERE event_name=\'%s\'" \
@@ -130,7 +130,7 @@ class MISODatabase:
         results = c.execute("SELECT * from %s" %(self.table_name))
         return results
 
-    
+
     def get_all_event_names(self):
         """
         Return all event names
@@ -140,12 +140,12 @@ class MISODatabase:
             event_names.append(result[0])
         return event_names
 
-        
+
 def miso_dir_to_db(dir_to_compress, output_filename):
     """
     Convert MISO directory into MySQL table using sqlite3.
     """
-    print "Converting MISO directory into database" 
+    print "Converting MISO directory into database"
     print "  - MISO dir: %s" %(dir_to_compress)
     print "  - Output file: %s" %(output_filename)
     if not os.path.isdir(dir_to_compress):
@@ -186,11 +186,11 @@ def miso_dir_to_db(dir_to_compress, output_filename):
     conn.commit()
     conn.close()
     return output_filename
-        
+
 
 ##
 ## Misc. helper functions
-## 
+##
 def get_non_miso_files(filenames, miso_ext=".miso"):
     non_miso_files = []
     for fname in filenames:
@@ -250,7 +250,7 @@ def is_miso_unpacked_dir(dirname):
     if len(matches) != 0:
         return True
     return False
-                
+
 
 def strip_miso_ext(filename):
     if filename.endswith(".miso"):

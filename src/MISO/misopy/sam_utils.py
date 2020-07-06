@@ -36,8 +36,8 @@ def single_end_read_to_isoforms(read, gene, read_len, overhang_len=1):
     Align single-end SAM read to gene's isoforms.
     """
     start = read.pos + 1
-    end = cigar_to_end_coord(start, read.cigar)    
-    
+    end = cigar_to_end_coord(start, read.cigar)
+
     assert(start < end)
 
     alignment, isoform_coords = gene.align_read_to_isoforms_with_cigar(read.cigar, start, end, read_len,
@@ -61,14 +61,14 @@ def paired_read_to_isoforms(paired_read, gene, read_len,
     left_end = cigar_to_end_coord(left_start, left_read.cigar)
 
     assert(left_start < left_end)
-    
+
     right_end = cigar_to_end_coord(right_start, right_read.cigar)
 
     assert(right_start < right_end)
 
     alignment = None
     frag_lens = None
-    
+
     # Throw out reads that posit a zero or less than zero fragment
     # length
 #    print "LEFT read start,end: ", left_start, left_end
@@ -77,20 +77,20 @@ def paired_read_to_isoforms(paired_read, gene, read_len,
         return None, None
     else:
         alignment, frag_lens = gene.align_read_pair_with_cigar(
-            left_read.cigar, left_start, left_end, 
+            left_read.cigar, left_start, left_end,
             right_read.cigar, right_start, right_end,
             read_len=read_len, overhang=overhang_len)
-        
-    
+
+
 #    assert(left_start < right_start), "Reads scrambled?"
 #    assert(left_end < right_start), "Reads scrambled: left=(%d, %d), right=(%d, %d)" \
 #                    %(left_start, left_end, right_start, right_end)
-    
+
 #    print "Read: ", (left_start, left_end), " - ", (right_start, right_end)
 #    print "  - Alignment: ", alignment, " frag_lens: ", frag_lens
 #    print "  - Sequences: "
 #    print "  - %s\t%s" %(left_read.seq, right_read.seq)
-    
+
     return alignment, frag_lens
 
 # def paired_read_to_isoforms(paired_read, gene, read_len=36,
@@ -109,14 +109,14 @@ def paired_read_to_isoforms(paired_read, gene, read_len,
 #     left_end = cigar_to_end_coord(left_start, left_read.cigar)
 
 #     assert(left_start < left_end)
-    
+
 #     right_end = cigar_to_end_coord(right_start, right_read.cigar)
 
 #     assert(right_start < right_end)
 
 #     alignment = None
 #     frag_lens = None
-    
+
 #     # Throw out reads that posit a zero or less than zero fragment
 #     # length
 #     if left_start > right_start or left_end > right_start:
@@ -126,19 +126,19 @@ def paired_read_to_isoforms(paired_read, gene, read_len,
 #                                                     right_start, right_end,
 #                                                     read_len=read_len,
 #                                                     overhang=overhang_len)
-        
-    
+
+
 # #    assert(left_start < right_start), "Reads scrambled?"
 # #    assert(left_end < right_start), "Reads scrambled: left=(%d, %d), right=(%d, %d)" \
 # #                    %(left_start, left_end, right_start, right_end)
-    
+
 # #    print "Read: ", (left_start, left_end), " - ", (right_start, right_end)
 # #    print "  - Alignment: ", alignment, " frag_lens: ", frag_lens
 # #    print "  - Sequences: "
 # #    print "  - %s\t%s" %(left_read.seq, right_read.seq)
-    
+
 #     return alignment, frag_lens
-                         
+
 def load_bam_reads(bam_filename,
                    template=None):
     """
@@ -194,7 +194,7 @@ def flag_to_strand(flag):
 def strip_mate_id(read_name):
     """
     Strip canonical mate IDs for paired end reads, e.g.
-    
+
     #1, #2
 
     or:
@@ -206,7 +206,7 @@ def strip_mate_id(read_name):
         read_name = read_name[0:-3]
     return read_name
 
-    
+
 def pair_sam_reads(samfile,
                    filter_reads=True,
                    return_unpaired=False,
@@ -220,9 +220,9 @@ def pair_sam_reads(samfile,
     for read in samfile:
         curr_name = read.qname
 
-        # Strip canonical mate IDs 
+        # Strip canonical mate IDs
         curr_name = strip_mate_id(curr_name)
-        
+
         if filter_reads:
             # Skip reads that failed QC or are unmapped
             if read.is_qcfail or read.is_unmapped or \
@@ -245,7 +245,7 @@ def pair_sam_reads(samfile,
                 if paired_reads[curr_name][0].is_read2 and \
                     paired_reads[curr_name][0].is_reverse:
                     paired_reads[curr_name] = paired_reads[curr_name][::-1]
-                    
+
     to_delete = []
     num_unpaired = 0
     num_total = 0
@@ -267,7 +267,7 @@ def pair_sam_reads(samfile,
             # Skip read pairs that are on the same strand
             to_delete.append(read_name)
             continue
-        
+
         if left_read.pos > right_read.pos:
             print "WARNING: %s left mate starts later than right "\
                   "mate" %(left_read.qname)
@@ -347,7 +347,7 @@ def read_matches_strand(read,
             matches = (flag_to_strand(read.flag) == target_strand)
         else:
             raise Exception, "Unknown strandedness rule."
-    return matches 
+    return matches
 
 
 def sam_parse_reads(samfile,
@@ -369,7 +369,7 @@ def sam_parse_reads(samfile,
     - target_strand: specifies the strand to match, i.e. the
       annotation strand. Can be '+' or '-'.
     - given_read_len: The read length given to MISO by the user.
-    If passed to this function, it will filter out all reads 
+    If passed to this function, it will filter out all reads
     that do not have this length (e.g. in mixed read length
     BAM file.)
     """
@@ -392,7 +392,7 @@ def sam_parse_reads(samfile,
     # violations, if strand-specific
     num_strand_discarded = 0
     if paired_end:
-        # Pair up the reads 
+        # Pair up the reads
         paired_reads = pair_sam_reads(samfile,
                                       strand_rule=strand_rule)
         # Process reads into format required by fastmiso
@@ -417,7 +417,7 @@ def sam_parse_reads(samfile,
             if given_read_len is not None:
                 if (read1.rlen != given_read_len) or \
                    (read2.rlen != given_read_len):
-                   continue
+                    continue
             # Read positions and cigar strings are collected
             read_positions.append(int(read1.pos))
             read_positions.append(int(read2.pos))
@@ -454,7 +454,7 @@ def sam_parse_reads(samfile,
              tuple(read_cigars))
 
     return reads, num_reads
-    
+
 
 def sam_pe_reads_to_isoforms(samfile, gene, read_len, overhang_len):
     """
@@ -475,10 +475,10 @@ def sam_pe_reads_to_isoforms(samfile, gene, read_len, overhang_len):
         if len(read_pair) != 2:
             # Skip reads with no pair
             continue
-        
+
         alignment, frag_lens = paired_read_to_isoforms(read_pair, gene,
                                                        read_len, overhang_len)
-        
+
         # Skip reads that are not consistent with any isoform
         if any(array(alignment) == 1):
             pe_reads.append([alignment, frag_lens])
@@ -501,7 +501,7 @@ def sam_se_reads_to_isoforms(samfile, gene, read_len,
     alignments = []
 
     num_skipped = 0
-    
+
     for read in samfile:
         alignment = single_end_read_to_isoforms(read, gene, read_len,
                                                 overhang_len)
@@ -513,7 +513,7 @@ def sam_se_reads_to_isoforms(samfile, gene, read_len,
             num_skipped += 1
 
     print "Skipped total of %d reads." %(num_skipped)
-        
+
     return alignments, num_reads
 
 
@@ -533,7 +533,7 @@ def sam_reads_to_isoforms(samfile, gene, read_len, overhang_len,
         # Single-end reads
         reads, num_reads = sam_se_reads_to_isoforms(samfile, gene, read_len,
                                                     overhang_len)
-    
+
     t2 = time.time()
     print "Alignment to gene took %.2f seconds (%d reads)." %((t2 - t1),
                                                               num_reads)

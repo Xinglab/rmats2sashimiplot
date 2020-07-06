@@ -41,17 +41,17 @@ def parse_insert_len_params(insert_len_header):
         params[p] = v
     return params
 
-        
+
 def filter_insert_len(interval_to_dists,
                      sd_max):
-    # Get vector of insert lengths 
+    # Get vector of insert lengths
     insert_dist = get_insert_dist_array(interval_to_dists)
-    
+
     mu, sdev, dispersion, num_pairs = \
         compute_insert_len_stats(insert_dist)
 
     filtered_interval_to_dists = defaultdict(list)
-    
+
     min_cutoff = mu - (sd_max * sdev)
     max_cutoff = mu + (sd_max * sdev)
     print "Excluding values < %.2f or > %.2f" \
@@ -63,9 +63,9 @@ def filter_insert_len(interval_to_dists,
         filtered_dists = delete(filtered_dists,
                                 nonzero(dists > max_cutoff)[0])
         filtered_interval_to_dists[interval] = filtered_dists
-                                             
+
     return filtered_interval_to_dists
-               
+
 
 def load_insert_len(insert_dist_filename,
                     delim='\t'):
@@ -73,10 +73,10 @@ def load_insert_len(insert_dist_filename,
     insert_dist_file = open(insert_dist_filename, "r")
     insert_lens = []
     params_header = insert_dist_file.readline().strip()
-    
+
     # Get parameters of distribution from header
     params = parse_insert_len_params(params_header)
-    
+
     for line in insert_dist_file:
         # Skip header
         if line.startswith("#"):
@@ -153,7 +153,7 @@ def compute_inserts_from_paired_mates(paired_reads):
     Return mapping from intervals to distances of read pairs
     that land in them.
     """
-    # Mapping from interval to 
+    # Mapping from interval to
     interval_to_paired_dists = defaultdict(list)
     num_skipped = 0
     num_kept = 0
@@ -166,7 +166,7 @@ def compute_inserts_from_paired_mates(paired_reads):
         left_mate, right_mate = read_pair
         left_mate_intervals = parse_tagBam_intervals(left_mate)
         right_mate_intervals = parse_tagBam_intervals(right_mate)
-        
+
         # If either of the mates lands in more than one set of intervals,
         # discard it.
         if (len(left_mate_intervals) != 1 or \
@@ -203,7 +203,7 @@ def compute_inserts_from_paired_mates(paired_reads):
 
         # Get the current GFF interval string
         curr_gff_interval = left_mate_intervals[0]
-        
+
         # Insert length is right.end - left.start + 1
         insert_len = right_end - left_start + 1
 
@@ -211,7 +211,7 @@ def compute_inserts_from_paired_mates(paired_reads):
             print "WARNING: 0 or negative insert length detected " \
                   "in region %s." %(curr_gff_interval)
             continue
-        
+
         interval_to_paired_dists[curr_gff_interval].append(insert_len)
         num_kept += 1
 
@@ -219,8 +219,8 @@ def compute_inserts_from_paired_mates(paired_reads):
           %(num_kept, num_skipped)
 
     return interval_to_paired_dists
-            
-    
+
+
 def compute_insert_len(bams_to_process,
                        const_exons_gff_filename,
                        output_dir,
@@ -262,7 +262,7 @@ def compute_insert_len(bams_to_process,
         print "Filtering BAM reads"
     else:
         print "Turning off filtering of BAM reads"
-        
+
     for bam_filename in bams_to_process:
         t1 = time.time()
         output_filename = os.path.join(output_dir,
@@ -313,7 +313,7 @@ def compute_insert_len(bams_to_process,
 
 #     - bed_filename: file with BED reads and the region they map to.
 
-#     Returns. 
+#     Returns.
 #     """
 #     return
 
@@ -337,7 +337,7 @@ def compute_insert_len(bams_to_process,
 
 #     # Load BAM file with reads
 #     bamfile = sam_utils.load_bam_reads(bam_filename)
-    
+
 #     # Load the genes from the GFF
 #     print "Loading genes from GFF..."
 #     t1 = time.time()
@@ -350,7 +350,7 @@ def compute_insert_len(bams_to_process,
 #     t1 = time.time()
 
 #     relevant_region = 0
-    
+
 #     for gene_id, gene_info in gff_genes.iteritems():
 #         gene_obj = gene_info["gene_object"]
 
@@ -384,7 +384,7 @@ def compute_insert_len(bams_to_process,
 #                     if len(read_pair) != 2:
 #                         # Skip non-paired reads
 #                         continue
-                    
+
 #                     left_read, right_read = read_pair
 #                     insert_len = right_read.pos - left_read.pos + 1
 
@@ -398,7 +398,7 @@ def compute_insert_len(bams_to_process,
 #     insert_length_str = "\n".join(map(str, insert_lengths))
 #     output_file.write(insert_length_str)
 #     output_file.close()
-                    
+
 #     t2 = time.time()
 #     print "Insert length computation took %.2f seconds." %(t2 - t1)
 
@@ -427,7 +427,7 @@ def compute_insert_len_stats(insert_dist):
     # length distribution
     mu = mean(insert_dist)
     sdev = std(insert_dist)
-    
+
     # Compute dispersion (d), where
     #
     # d = sdev / sqrt(mean)
@@ -436,12 +436,12 @@ def compute_insert_len_stats(insert_dist):
     # the insert length distribution is
     # about the mean
     dispersion = sdev / sqrt(float(mu))
-    
-    # Number of read pairs used 
+
+    # Number of read pairs used
     num_pairs = len(insert_dist)
 
     return mu, sdev, dispersion, num_pairs
-    
+
 
 def summarize_insert_len_dist(interval_to_paired_dists,
                               output_filename,
@@ -471,7 +471,7 @@ def summarize_insert_len_dist(interval_to_paired_dists,
 
     mu, sdev, dispersion, num_pairs = \
         compute_insert_len_stats(filtered_insert_dist)
-        
+
     print "mean\tsdev\tdispersion"
     print "%.1f\t%.1f\t%.1f" \
           %(mu, sdev, dispersion)
@@ -497,7 +497,7 @@ def summarize_insert_len_dist(interval_to_paired_dists,
 def greeting():
     print "Utility for computing insert length distributions from paired-end " \
           "BAM files."
-    print "Part of MISO (Mixture of Isoforms model)\n"    
+    print "Part of MISO (Mixture of Isoforms model)\n"
     print "See --help for usage.\n"
 
 
@@ -530,10 +530,10 @@ def main():
 
     if options.output_dir is None:
         greeting()
-        
+
         print "Error: need --output-dir."
         return
-        
+
     output_dir = os.path.abspath(os.path.expanduser(options.output_dir))
 
     sd_max = options.sd_max

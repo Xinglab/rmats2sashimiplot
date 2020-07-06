@@ -65,7 +65,7 @@ def greeting(parser=None):
     print "Use --help argument to view options.\n"
     if parser is not None:
         parser.print_help()
-    
+
 
 class GenesDispatcher:
     """
@@ -245,7 +245,7 @@ class GenesDispatcher:
                                                chunk=self.chunk_jobs)
             # End SGE case
             return
-        # All cluster jobs 
+        # All cluster jobs
         cluster_jobs = []
         for batch_num, cmd_info in enumerate(all_miso_cmds):
             miso_cmd, batch_size = cmd_info
@@ -283,7 +283,7 @@ class GenesDispatcher:
                     cluster_jobs.append(job_id)
                 time.sleep(delay_constant)
             # Extra delay constant
-            time.sleep(delay_constant)                
+            time.sleep(delay_constant)
         # If ran jobs on cluster, wait for them if there are any
         # to wait on.
         if self.wait_on_jobs:
@@ -308,7 +308,7 @@ class GenesDispatcher:
         # (this will do nothing if we submitted jobs to
         # cluster)
         self.wait_on_threads()
-        
+
 
     def wait_on_threads(self):
         if self.use_cluster:
@@ -359,7 +359,7 @@ def compute_all_genes_psi(gff_dir, bam_filename, read_len,
       Uses bedtools to determine coverage of each event and remove
       events that do not meet the coverage criteria from the run.
     """
-    print "Computing Psi values..." 
+    print "Computing Psi values..."
     print "  - GFF index: %s" %(gff_dir)
     print "  - BAM: %s" %(bam_filename)
     print "  - Read length: %d" %(read_len)
@@ -370,12 +370,12 @@ def compute_all_genes_psi(gff_dir, bam_filename, read_len,
     # Check GFF and BAM for various errors like headers mismatch
     run_events.check_gff_and_bam(gff_dir, bam_filename, main_logger,
                                  given_read_len=read_len)
-    
+
     # Prefilter events that do not meet the coverage criteria
     # If filtering is on, only run on events that meet
     # the filter.
     all_gene_ids = None
-    
+
     if prefilter:
         main_logger.info("Prefiltering on")
         if misc_utils.which("bedtools") is None:
@@ -456,7 +456,7 @@ def main():
     parser.add_option("--settings-filename", dest="settings_filename",
                       default=os.path.join(miso_settings_path,
                                            "settings",
-                                           "miso_settings.txt"),                    
+                                           "miso_settings.txt"),
                       help="Filename specifying MISO settings.")
     parser.add_option("--read-len", dest="read_len", default=None, type="int",
                       help="Length of sequenced reads.")
@@ -478,7 +478,7 @@ def main():
                       "To be used in conjunction with --use-cluster option.")
     parser.add_option("--prefilter", dest="prefilter", default=False,
                       action="store_true",
-                      help="Prefilter events based on coverage. If given as " 
+                      help="Prefilter events based on coverage. If given as "
                       "argument, run will begin by mapping BAM reads to event "
                       "regions (using bedtools), and omit events that do not "
                       "meet coverage criteria from the run. By default, turned "
@@ -516,18 +516,18 @@ def main():
         print "MISO version %s\n" %(misopy.__version__)
 
     ##
-    ## Load the settings file 
+    ## Load the settings file
     ##
     if not os.path.isdir(miso_settings_path):
         print "Error: %s is not a directory containing a default MISO " \
               "settings filename. Please specify a settings filename " \
               "using --settings-filename."
         return
-    
+
     settings_filename = \
         os.path.abspath(os.path.expanduser(options.settings_filename))
     Settings.load(settings_filename)
-    
+
     if (not options.use_cluster) and options.chunk_jobs:
         print "Error: Chunking jobs only applies when using " \
               "the --use-cluster option to run MISO on cluster."
@@ -612,10 +612,10 @@ def main():
             print "mRNA IDs: "
             for mRNA_id in gene_info['hierarchy'][gene_id]['mRNAs']:
                 print "%s" %(mRNA_id)
-            print "=="    
+            print "=="
             print "Exons: "
             for exon in gene_obj.parts:
                 print " - ", exon
-    
+
 if __name__ == "__main__":
     main()

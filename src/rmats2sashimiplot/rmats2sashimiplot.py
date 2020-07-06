@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import sys
 import argparse
@@ -208,8 +210,9 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
             sample_labels_arr2.append('\"' + gene_symbol + ' ' + options.l2 + '-' + str(rr + 1) + ' IncLevel: '
                                       + inc_2 + '\"')
         if warning_flag:
-            print >> sys.stderr, "Warning: The inclusion levels of Event \'{0}\' contains 'NA' value," \
-                                 " which could lead to unexpected output.".format(id_str)
+            print("Warning: The inclusion levels of Event '{}' contains"
+                  " 'NA' value, which could lead to unexpected output."
+                  .format(id_str), file=sys.stderr)
     setting_label_str = ','.join(sample_labels_arr1) + ',' + ','.join(sample_labels_arr2)
     setting_file.write("sample_labels = [{0}]\n".format(setting_label_str))
 
@@ -273,6 +276,20 @@ def rm_invalid_record(tmp_gff3_fn, id_str):
     return
 
 
+def get_python_executable():
+    # Try to get the absolute path of the executable for the running
+    # Python interpreter.
+    python_executable = sys.executable
+    if not python_executable:
+        # Fallback
+        print('Absolute path for current Python interpreter not found.'
+              ' Using "python" without a full path to run scripts',
+              file=sys.stderr)
+        python_executable = 'python'
+
+    return python_executable
+
+
 def plot_c(options, id_str):
     """
     the plot part of the coordinate method
@@ -282,20 +299,26 @@ def plot_c(options, id_str):
     path_sashimi_plot = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                      'MISO/misopy/sashimi_plot/sashimi_plot.py')
 
+    python_executable = get_python_executable()
     # call python index_gff.py
     tmp_str = os.path.join(options.sashimi_path, "tmp.gff3")
-    os.system("python {0} --index {1} {2}".format(path_index_gff, tmp_str, options.sashimi_path))
+    os.system("{} {} --index {} {}".format(python_executable, path_index_gff,
+                                           tmp_str, options.sashimi_path))
 
     # call python sashimi_plot.py
     setting_str = os.path.join(options.sashimi_path, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
     if options.group_info is not None:
-        os.system("python {0} --plot-event \"{1}\" {2} {3} "
-                  "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, options.sashimi_path,
-                                                             setting_str, output_path, options.group_info))
+        os.system("{} {} --plot-event \"{}\" {} {} "
+                  "--output-dir {} --group-info {}".format(
+                      python_executable, path_sashimi_plot, id_str,
+                      options.sashimi_path, setting_str, output_path,
+                      options.group_info))
     else:
-        os.system("python {0} --plot-event \"{1}\" {2} {3} "
-                  "--output-dir {4}".format(path_sashimi_plot, id_str, options.sashimi_path, setting_str, output_path))
+        os.system("{} {} --plot-event \"{}\" {} {} "
+                  "--output-dir {}".format(
+                      python_executable, path_sashimi_plot, id_str,
+                      options.sashimi_path, setting_str, output_path))
 
     # move pdf file
     new_str = id_str.replace(':', '_')
@@ -314,23 +337,29 @@ def plot_e(options, id_str, gene_symbol, events_no):
     path_sashimi_plot = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                      'MISO/misopy/sashimi_plot/sashimi_plot.py')
 
+    python_executable = get_python_executable()
     # call python index_gff.py
     out_index = os.path.join(options.out_dir, "Sashimi_index_" + gene_symbol + '_' + str(events_no))
     tmp_str = os.path.join(out_index, "tmp.gff3")
-    os.system("python {0} --index {1} {2}".format(path_index_gff, tmp_str, out_index))
+    os.system("{} {} --index {} {}".format(python_executable, path_index_gff,
+                                           tmp_str, out_index))
 
     # call python sashimi_plot.py
     setting_str = os.path.join(out_index, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
-    print("python {0} --plot-event \"{1}\" {2} {3} "
-          "--output-dir {4}".format(path_sashimi_plot, id_str, out_index, setting_str, output_path))
+    print("{} {} --plot-event \"{}\" {} {} "
+          "--output-dir {}".format(python_executable, path_sashimi_plot, id_str,
+                                   out_index, setting_str, output_path))
     if options.group_info is not None:
-        os.system("python {0} --plot-event \"{1}\" {2} {3} "
-                  "--output-dir {4} --group-info {5}".format(path_sashimi_plot, id_str, out_index, setting_str,
-                                                             output_path, options.group_info))
+        os.system("{} {} --plot-event \"{}\" {} {} "
+                  "--output-dir {} --group-info {}".format(
+                      python_executable, path_sashimi_plot, id_str, out_index,
+                      setting_str, output_path, options.group_info))
     else:
-        os.system("python {0} --plot-event \"{1}\" {2} {3} "
-                  "--output-dir {4}".format(path_sashimi_plot, id_str, out_index, setting_str, output_path))
+        os.system("{} {} --plot-event \"{}\" {} {} "
+                  "--output-dir {}".format(
+                      python_executable, path_sashimi_plot, id_str, out_index,
+                      setting_str, output_path))
 
     # move pdf file
     new_str = id_str.replace(':', '_')
@@ -393,9 +422,9 @@ def plot_with_coordinate(options):
                              and int(coor_s) < int(in_coor_e)
                              and int(coor_e) > int(in_coor_s)))):
                     if is_mrna_or_transcript:
-                        if int(coor_s) < in_coor_s:
+                        if int(coor_s) < int(in_coor_s):
                             coor_s = in_coor_s
-                        if int(coor_e) > in_coor_e:
+                        if int(coor_e) > int(in_coor_e):
                             coor_e = in_coor_e
 
                         annot_str = annot_str.replace('Parent', 'Note')
@@ -855,4 +884,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

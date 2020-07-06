@@ -28,7 +28,7 @@ def is_exon_in_mRNA(gff_in, exon, mRNA):
     mRNA_id = mRNA.get_id()
     if mRNA_id not in gff_in.exons_by_mRNA:
         return False
-    
+
     for curr_exon in gff_in.exons_by_mRNA[mRNA.get_id()]:
         # Exon in mRNA if it has the same coordinates and strand
         # as one of the mRNA's exons
@@ -37,7 +37,7 @@ def is_exon_in_mRNA(gff_in, exon, mRNA):
            curr_exon.strand == exon.strand:
             return True
     return False
-    
+
 
 def get_const_exons_from_mRNA(gff_in, mRNAs,
                               min_size=0,
@@ -206,7 +206,7 @@ def get_bedtools_coverage_cmd(bam_filename, gff_filename,
     args = {"bam_filename": bam_filename,
             "gff_filename": gff_filename}
     # Do not include strandedness flag since that doesn't handle
-    # paired-end cases 
+    # paired-end cases
     intersect_cmd = "bedtools intersect -abam %(bam_filename)s " \
         "-b %(gff_filename)s -f 1 -ubam " %(args)
     coverage_cmd = "%s | bedtools coverage -abam - -b %s -counts > %s" \
@@ -352,7 +352,7 @@ def main():
         greeting()
         print "Error: need --output-dir."
         return
-        
+
     output_dir = os.path.abspath(os.path.expanduser(options.output_dir))
 
     if options.get_const_exons != None:
@@ -363,7 +363,7 @@ def main():
                                 min_size=options.min_exon_size)
     else:
         greeting()
-        
+
 
 if __name__ == '__main__':
     main()

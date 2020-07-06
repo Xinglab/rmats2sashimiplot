@@ -1,7 +1,7 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
+
+
+
+
 '''subclassing kde
 
 Author: josef pktd

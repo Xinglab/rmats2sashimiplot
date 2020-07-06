@@ -31,17 +31,17 @@ with open(path.join(here, 'README.rst')) as f:
 setup(name='rmats2sashimiplot',
       version='2.0.2',
       packages = find_packages('src'),  # include all packages under src
-			package_dir = {'':'src'},   # all distutils packages are under src
+      package_dir = {'':'src'},   # all distutils packages are under src
       entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main',
                                         'index_gff=MISO.misopy.index_gff:main',
                                         'sashimi_plot=MISO.misopy.sashimi_plot.sashimi_plot:main'],},
-	    description = 'rmats2sashimiplot',
+      description = 'rmats2sashimiplot',
       long_description = long_description,
       license='GNU GPL',
-      
+
       author='Yu-Ting Tseng, Emad Bahrami-Samani, Zhijie Xie, Yukai Jiang',
-	    author_email = 'shiehshiehzhijie@gmail.com',
-      url='https://github.com/Xinglab/rmats2sashimiplot', 
+      author_email = 'shiehshiehzhijie@gmail.com',
+      url='https://github.com/Xinglab/rmats2sashimiplot',
       download_url='https://github.com/Xinglab/rmats2sashimiplot',
       keywords = [],
       classifiers=[],

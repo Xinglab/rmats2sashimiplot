@@ -65,7 +65,7 @@ class TestMISO(unittest.TestCase):
 
         # Read 2 is reverse, on minus strand
         # Has flag 81, i.e. '0b1010001'
-        r_read = pysam.AlignedRead()        
+        r_read = pysam.AlignedRead()
         r_read.qname = "r_read"
         r_read.flag = 81
         r_read.rname = 9
@@ -127,7 +127,7 @@ class TestMISO(unittest.TestCase):
                                              "fr-firststrand",
                                              paired_end=pe) == True), \
             "(+, -) must match -target under fr-firststrand."
-        
+
     def test_z_gene_psi(self):
         """
         Test gene-level Psi inferences using SAM/BAM reads.
@@ -173,7 +173,7 @@ class TestMISO(unittest.TestCase):
 
 def main():
     unittest.main()
-        
-        
+
+
 if __name__ == '__main__':
     main()

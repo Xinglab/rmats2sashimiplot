@@ -11,7 +11,7 @@ def sam_to_bam(sam_filename, output_dir,
     print "Converting SAM to BAM..."
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
-        
+
     t1 = time.time()
     bam_filename = os.path.join(output_dir,
                                 "%s.bam" %(os.path.basename(sam_filename).split(".sam")[0]))
@@ -56,17 +56,14 @@ def main():
         if options.ref != None:
             ref = os.path.abspath(os.path.expanduser(options.ref))
             print "Using ref: %s" %(ref)
-            
+
         sam_filename = os.path.abspath(os.path.expanduser(options.convert[0]))
         output_dir = os.path.abspath(os.path.expanduser(options.convert[1]))
 
         sam_to_bam(sam_filename, output_dir, header_ref=ref)
-        
+
     else:
         print "Need --convert to convert SAM to BAM."
 
 if __name__ == "__main__":
     main()
-    
-
-    
