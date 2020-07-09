@@ -1,221 +1,331 @@
-====================
 rmats2sashimiplot
-====================
+=================
 
-Requirements
+|Latest Release| |Total Bioconda Installs| |PyPI Installs|
+
+About
+-----
+
+rmats2sashimiplot produces a sashimiplot visualization of
+`rMATS <https://github.com/Xinglab/rmats-turbo>`__ output.
+rmats2sashimiplot can also produce plots using an annotation file and
+genomic coordinates. The plotting backend is
+`MISO <https://miso.readthedocs.io>`__.
+
+Table of contents
 -----------------
 
-Install Python 2.6.x or Python 2.7.x
+-  `Dependencies <#dependencies>`__
+-  `Install <#install>`__
+-  `Usage <#usage>`__
 
-Install Samtools.
+   -  `Examples <#examples>`__
 
-**setup.py** will automatically install matplotlib which is required to run this program.
+      -  `SAM files with rMATS event <#sam-files-with-rmats-event>`__
+      -  `BAM files with coordinate and
+         annotation <#bam-files-with-coordinate-and-annotation>`__
+      -  `Using a group file <#using-a-group-file>`__
 
-rmats2sashimiplot is intended to be used in a Unix-based environment. It has
+   -  `Grouping <#grouping>`__
+   -  `FAQ <#faq>`__
+   -  `All arguments <#all-arguments>`__
 
-been tested on Mac OS and Linux.
+-  `Output <#output>`__
+-  `Contacts and bug reports <#contacts-and-bug-reports>`__
+-  `Copyright and License
+   Information <#copyright-and-license-information>`__
 
-**BAM file must be sorted before visualization/indexing.**
+Dependencies
+------------
 
-Installation
-------------------
+-  Python 2.7 (Python 3 can be used after running `2to3.sh <2to3.sh>`__)
+
+   -  numpy
+   -  scipy
+   -  matplotlib
+   -  pysam
+
+-  Samtools
+-  bedtools
+
+rmats2sashimiplot is intended to be used in a Unix-based environment.
 
 Install
-########
+-------
 
-
-The package, rmats2sashimiplot is installed by typing:
-
-::
-    
-    python setup.py install
-
-Update
-########
-
-To update rmats2sashimiplot, please download (or git pull) latest version from Github and type in:
+rmats2sasmimiplot can be run without installing:
 
 ::
 
-    pip uninstall rmats2sashimiplot
+   python ./src/rmats2sashimiplot/rmats2sashimiplot.py
+
+rmats2sashimiplot can be installed with:
 
 ::
 
-    python setup.py install
+   python ./setup.py install
 
+rmats2sashimiplot can be updated with:
+
+::
+
+   pip uninstall rmats2sashimiplot
+   python ./setup.py install
+
+If installed, rmats2sashimiplot can be run with just:
+
+::
+
+   rmats2sashimiplot
 
 Usage
 -----
-The following is a detailed description of the options used with rmats2sashimiplot.
 
-Required Parameters
-###########################
-see README on homepage: https://github.com/Xinglab/rmats2sashimiplot
+**BAM files must be sorted before visualization/indexing.**
 
-Running with sam files:
-::
-
-    $rmats2sashimiplot --s1 s1_rep1.sam[,s1_rep2.sam]* --s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile --l1 SampleLabel1 --l2 SampleLabel2 --exon_s exonScale --intron_s intronScale -o outDir
-
-Running with bam files:
-::
-
-    $rmats2sashimiplot --b1 s1_rep1.bam[,s1_rep2.bam]* --b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile --l1 SampleLabel1 --l2 SampleLabel2 --exon_s exonScale --intron_s intronScale -o outDir
-
-Using grouping function:
-::
-
-    $rmats2sashimiplot --b1 s1_rep1.bam[,s1_rep2.bam]* --b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile --l1 SampleLabel1 --l2 SampleLabel2 --exon_s exonScale --intron_s intronScale -o outDir --group-info gf.gf
-
-Grouping
-###########################
-
-By using this function, user can divide their samples into different groups. rmats2sashimiplot calculates the average inclusion level, the average read depth and the average number of junction-spanning reads of each group and display them in sashimi plot.
-
-It's extremely helpful when you need to do comparisons between different groups of samples.
+The test data used in the examples is available at
+https://sourceforge.net/projects/rnaseq-mats/files/rmats2sashimiplot/rmats2sashimiplot_test_data.tar.gz/download
 
 Examples
-###########################
+~~~~~~~~
 
-
-Example of using sam files, drawing sashimiplot by rMATS format event files
-::
-
-    $rmats2sashimiplot --s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam --s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_events_output
-
-    
-.. image:: plotwithevent.png
-        :target: https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithevent.png
-
-
-Example of using bam files, drawing sashimiplot by user provided coordinates and gff3 format annotation file
-::
-
-    $rmats2sashimiplot --b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam --b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr16:-:24944500:24955500:./testData/ensGene.gff3 --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_coordinate_output
-
-.. image:: plotwithcoor.png
-        :target: https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithcoor.png
-
-Example of using grouping function:
-::
-
-    $rmats2sashimiplot --b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam --b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_events_output --group-info grouping.gf
-
-.. image:: plotwitheventgf.png
-        :target: https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwitheventgf.png
-
-
-content of grouping.gf:
+SAM files with rMATS event
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-    group1name: 1-2
-    group2name: 3-6
+   rmats2sashimiplot --s1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.sam,./rmats2sashimiplot_test_data/sample_1_replicate_2.sam,./rmats2sashimiplot_test_data/sample_1_replicate_3.sam --s2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.sam,./rmats2sashimiplot_test_data/sample_2_replicate_2.sam,./rmats2sashimiplot_test_data/sample_2_replicate_3.sam -t SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_events_output
 
-That means we group ./testData/S1.R1.test.bam and ./testData/S1.R2.test.bam together, and group ./testData/S1.R3.test.bam, ./testData/S2.R1.test.bam, ./testData/S2.R2.test.bam and ./testData/S2.R3.test.bam together.
+.. figure:: img/plotwithevent.png
+   :alt: img/plotwithevent.png
 
-Group-info
-<<<<<<<<<<<<
+   img/plotwithevent.png
 
-This section describes the format of `*.gf` file.
+BAM files with coordinate and annotation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each line stand for a group, which consists of group name and index of bam files.
-
-**Important notes**: Index starts from 1. And the order of bam files corresponds to the order we specified in --b1/b2/s1/s2, i.e. concatenate --b1 and --b2 (or --s1 and --s2 if you're using them.). User can confirm this order by checking variable `bam_files` in `sashimi_plot_settings.txt` (under Sashimi_index_* folder.)
-
-Index should be seperated by `','`. And use `'-'` to specify a sequence.
-
-**Eg:**
 ::
 
-    group1: 1,2
-    group2: 3
-    group3: 4-5
-    group4: 4-5,6
-    
-    or
-    
-    group1:1,2
-    group2:3
-    group3:4-5
-    group4:4-5,6
+   rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam -c chr16:+:9000:25000:./rmats2sashimiplot_test_data/annotation.gff3 --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_coordinate_output
 
-*(White space allowed.)*
+.. figure:: img/plotwithcoor.png
+   :alt: img/plotwithcoor.png
 
-Test Data
-##########
+   img/plotwithcoor.png
 
-Please download and untar the test data from: 
+Using a group file
+^^^^^^^^^^^^^^^^^^
 
-http://www.mimg.ucla.edu/faculty/xing/rmats2sashimiplot/testData.tar
+Input mapping files can be divided into different groups for plotting.
+rmats2sashimiplot calculates the average inclusion level, the average
+read depth and the average number of junction-spanning reads of each
+group and displays them in a sashimi plot. This provides the flexibility
+to compare different groups of samples.
 
-Output
-##########
-All output sashimiplot pdf files are in Sashimi_plot folder
+::
+
+   rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam -t SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_grouped_output --group-info grouping.gf
+
+.. figure:: img/plotwitheventgf.png
+   :alt: img/plotwitheventgf.png
+
+   img/plotwitheventgf.png
+
+Where grouping.gf has:
+
+::
+
+   group1name: 1-2
+   group2name: 3-6
+
+Grouping
+~~~~~~~~
+
+Each line in the \*.gf file used with –group-info defines a group. Each
+line has the format:
+
+::
+
+   groupname: indices of mapping files
+
+The indices can be a comma (``,``) separated list of
+
+-  individual numbers
+-  ranges specified with dash (``-``)
+
+**Important:** One-based indexing is used. The order of mapping files
+corresponds to the order from (–b1 –b2) or (–s1 –s2). Index **i**
+corresponds to the one-based **i**\ th index of the concatenation of
+either (–b1 and –b2) or (–s1 and –s2).
+
+As an example: –b1 a.bam,b.bam,c.bam –b2 d.bam,e.bam,f.bam with this
+grouping file
+
+::
+
+   firstGroup: 1,4
+   secondGroup: 1-3,5,6
+
+Defines firstGroup=a.bam,d.bam and
+secondGroup=a.bam,b.bam,c.bam,e.bam,f.bam
 
 FAQ
-##########
-- Q: What does the y-axis represent?
+~~~
 
-- A: MISO is the actual plotting backend of rmats2sashimiplot, so they have almost the same mechanism of plotting. The y-axis represents a modified RPKM value.
-    
-     .. image:: PRKM.png
-             :target: https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/RPKM.png
+Q: What does the y-axis represent?
 
----------
+A: MISO is the actual plotting backend of rmats2sashimiplot, so they
+have almost the same mechanism of plotting. The y-axis represents a
+modified RPKM value.
 
-- Q: How does rmats2sashimiplot calculate junction count, read density(modified RPKM) and inclusion level in the grouping mode?
+.. figure:: https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/RPKM.png
+   :alt: images
 
-- A: rmats2sashimiplot uses a modified Sashimi plot proposed by SplicePlot(Wu, Nance, & Montgomery, 2014). Briefly, rmats2sashimiplot calculates the average read depth and the average number of junction-spanning reads for groups.
+   images
 
+Q: How does rmats2sashimiplot calculate junction count, read density
+(modified RPKM) and inclusion level in the grouping mode?
+
+A: rmats2sashimiplot uses a modified Sashimi plot proposed by
+SplicePlot(Wu, Nance, & Montgomery, 2014). Briefly, rmats2sashimiplot
+calculates the average read depth and the average number of
+junction-spanning reads for groups.
+
+All Arguments
+~~~~~~~~~~~~~
+
+::
+
+   python src/rmats2sashimiplot/rmats2sashimiplot.py -h
+
+   usage: rmats2sashimiplot [-h] --l1 L1 --l2 L2 -o OUT_DIR
+                            [-t {SE,A5SS,A3SS,MXE,RI}] [-e EVENTS_FILE]
+                            [-c COORDINATE] [--s1 S1] [--s2 S2] [--b1 B1]
+                            [--b2 B2] [--exon_s EXON_S] [--intron_s INTRON_S]
+                            [--group-info GROUP_INFO] [--min-counts MIN_COUNTS]
+                            [--color COLOR] [--font-size FONT_SIZE]
+                            [--hide-number] [--no-text-background]
+
+   optional arguments:
+     -h, --help            show this help message and exit
+
+   Required:
+     --l1 L1               The label for first sample.
+     --l2 L2               The label for second sample.
+     -o OUT_DIR            The output directory.
+
+   rMATS event input:
+     Use either (rMATS event input) or (Coordinate and annotation input)
+
+     -t {SE,A5SS,A3SS,MXE,RI}
+                           Type of event from rMATS result used in the analysis.
+                           'SE': skipped exon, 'A5SS': alternative 5' splice
+                           site, 'A3SS' alternative 3' splice site, 'MXE':
+                           mutually exclusive exons, 'RI': retained intron. (Only
+                           if using rMATS event input)
+     -e EVENTS_FILE        The rMATS output event file (Only if using rMATS event
+                           input)
+
+   Coordinate and annotation input:
+     Use either (Coordinate and annotation input) or (rMATS event input)
+
+     -c COORDINATE         The genome region coordinates and a GFF3 annotation
+                           file of genes and transcripts. The format is -c
+                           {chromosome}:{strand}:{start}:{end}:{/path/to/gff3}
+                           (Only if using Coordinate and annotation input)
+
+   SAM Files:
+     Mapping results for sample_1 & sample_2 in SAM format. Replicates must be
+     in a comma separated list. (Only if using SAM)
+
+     --s1 S1               sample_1 sam files: s1_rep1.sam[,s1_rep2.sam]
+     --s2 S2               sample_2 sam files: s2_rep1.sam[,s2_rep2.sam]
+
+   BAM Files:
+     Mapping results for sample_1 & sample_2 in BAM format. Replicates must be
+     in a comma separated list. (Only if using BAM)
+
+     --b1 B1               sample_1 bam files: s1_rep1.bam[,s1_rep2.bam]
+     --b2 B2               sample_2 bam files: s2_rep1.bam[,s2_rep2.bam]
+
+   Optional:
+     --exon_s EXON_S       How much to scale down exons. Default: 1
+     --intron_s INTRON_S   How much to scale down introns. For example,
+                           --intron_s 5 results in an intron with real length of
+                           100 being plotted as 100/5 = 20. Default: 1
+     --group-info GROUP_INFO
+                           The path to a *.gf file which groups the replicates.
+                           One sashimi plot will be generated for each group
+                           instead of the default behavior of one plot per
+                           replicate
+     --min-counts MIN_COUNTS
+                           Individual junctions with read count below --min-
+                           counts will be omitted from the plot. Default: 0
+     --color COLOR         Specify a list of colors with one color per plot.
+                           Without grouping there is one plot per replicate. With
+                           grouping there is one plot per group: --color
+                           #CC0011[,#FF8800]
+     --font-size FONT_SIZE
+                           Set the font size. Default: 8
+     --hide-number         Do not display the read count on the junctions
+     --no-text-background  Do not put a white box behind the junction read count
+
+Output
+------
+
+All output is written to the directory specified by ``-o``. Under that
+directory:
+
+-  ``Sashimi_index/``: contains intermediate files used to create the
+   plot
+-  ``Sashimi_index_{Gene}_{event_id}/``: like ``Sashimi_index/`` but one
+   directory for each rMATS event plotted
+-  ``Sashimi_plot/``: contains the generated sashimi plots in .pdf
+   format
 
 Contacts and bug reports
-----------------------------------
+------------------------
 
-Yi Xing
+Yi Xing yxing@ucla.edu
 
-yxing@ucla.edu
+Zhijie Xie shiehshiehzhijie@gmail.com
 
-Zhijie Xie
+If you found a bug or mistake in this project, we would like to know
+about it. Before you send us the bug report though, please check the
+following:
 
-shiehshiehzhijie@gmail.com
-
-If you found a bug or mistake in this project, we would like to know about it.
-
-Before you send us the bug report though, please check the following:
-
-1. Are you using the latest version? The bug you found may already have been
-   fixed.
-2. Check that your input is in the correct format and you have selected the
-   correct options.
-3. Please reduce your input to the smallest possible size that still produces
-   the bug; we will need your input data to reproduce the problem, and the
-   smaller you can make it, the easier it will be.
-
+1. Are you using the latest version? The bug you found may already have
+   been fixed.
+2. Check that your input is in the correct format and you have selected
+   the correct options.
+3. Please reduce your input to the smallest possible size that still
+   produces the bug; we will need your input data to reproduce the
+   problem, and the smaller you can make it, the easier it will be.
 
 Copyright and License Information
---------------------------------------------
-Copyright (C) 2015 University of California, Los Angeles (UCLA)
+---------------------------------
+
+Copyright (C) 2015 University of California, Los Angeles (UCLA) Zhijie
+Xie, Yu-Ting Tseng, Yi Xing
 
 Zhijie Xie, Yu-Ting Tseng, Yi Xing
 
-Zhijie Xie, Yu-Ting Tseng, Yi Xing
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
 
-This program is free software: you can redistribute it and/or modify it under
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
 
-the terms of the GNU General Public License as published by the Free Software
+You should have received a copy of the GNU General Public License along
+with this program. If not, see http://www.gnu.org/licenses/.
 
-Foundation, either version 3 of the License, or (at your option) any later
-
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-
-FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-
-this program. If not, see http://www.gnu.org/licenses/.
-
+.. |Latest Release| image:: https://img.shields.io/github/release/Xinglab/rmats2sashimiplot.svg?label=Latest%20Release
+   :target: https://github.com/Xinglab/rmats2sashimiplot/releases/latest
+.. |Total Bioconda Installs| image:: https://img.shields.io/conda/dn/bioconda/rmats2sashimiplot.svg?label=Total%20Bioconda%20Installs
+   :target: https://anaconda.org/bioconda/rmats2sashimiplot
+.. |PyPI Installs| image:: https://img.shields.io/pypi/dm/rmats2sashimiplot.svg?label=PyPI%20Installs
+   :target: https://pypi.org/project/rmats2sashimiplot/

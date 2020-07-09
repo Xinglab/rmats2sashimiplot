@@ -239,43 +239,6 @@ def parse_gff3_record(record):
     return res
 
 
-def rm_invalid_record(tmp_gff3_fn, id_str):
-    """TODO: Docstring for rm_invalid_record.
-    :returns: TODO
-
-    """
-    eles = id_str.split(':')
-    start = int(eles[1])
-    end = int(eles[2])
-    filtered = []
-
-    with open(tmp_gff3_fn, 'r') as tmp_gff3_fp:
-        for record in tmp_gff3_fp:
-            res = parse_gff3_record(record)
-
-            if res['type'] == 'gene':
-                pass
-            elif res['type'] == 'mRNA':
-                if int(res['start']) < start:
-                    res['start'] = start
-                if int(res['end']) > end:
-                    res['end'] = end
-            elif res['type'] == 'exon':
-                if int(res['start']) < start:
-                    continue
-                if int(res['end']) > end:
-                    continue
-
-            filtered.append('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' % (res['seqid'], res['source'], res['type'],
-                                                                    res['start'], res['end'], res['score'],
-                                                                    res['strand'], res['phase'], res['attributes'],))
-
-    with open(tmp_gff3_fn, 'w') as tmp_gff3_fp:
-        tmp_gff3_fp.writelines(filtered)
-
-    return
-
-
 def get_python_executable():
     # Try to get the absolute path of the executable for the running
     # Python interpreter.
@@ -778,94 +741,107 @@ def plot_with_eventsfile(options):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="rmats2sashimiplot",
-                                     usage="\n"
-                                           "Usage(with sam files):\n"
-                                           "%(prog)s --s1 s1_rep1.sam[,s1_rep2.sam]* --s2 s2.rep1.sam[,s2.rep2.sam]*"
-                                           " -t eventType -e eventsFile --l1 SampleLabel1 --l2 SampleLable2 --exon_s "
-                                           "exonScale --intron_s intronScale -o outDir\n\n"
-                                           "Example (with sam files):\n"
-                                           "%(prog)s --s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,"
-                                           "./testData/S1.R3.test.sam --s2 ./testData/S2.R1.test.sam,./testData/"
-                                           "S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/"
-                                           "test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 "
-                                           "--intron_s 5 -o test_events_output  \n\n"
-                                           "Usage (with bam files):\n"
-                                           "%(prog)s --b1 s1_rep1.bam[,s1_rep2.bam]* --b2 s2.rep1.bam[,s2.rep2.bam]* "
-                                           "-c coordinate:annotaionFile --l1 SampleLabel1 --l2 SampleLable2 --exon_s "
-                                           "exonScale --intron_s intronScale -o outDir  \n\n"
-                                           "Example (with bam files):\n"
-                                           "%(prog)s --b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,"
-                                           "./testData/S1.R3.test.bam --b2 ./testData/S2.R1.test.bam,./testData/"
-                                           "S2.R2.test.bam,./testData/S2.R3.test.bam -c chr2:+:10090000:10110000:"
-                                           "./testData/ensGene.gff3 --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 "
-                                           "-o test_coordinate_output\n",
-                                     )
-    parser.add_argument("-t", dest="event_type", choices=['SE', 'A5SS', 'A3SS', 'MXE', 'RI'],
-                        help="Type of event from rMATS result used in the analysis."
-                             "eventType is \'SE\', \'A5SS\', \'A3SS\', \'MXE\' or \'RI\'."
-                             "\'SE\' is for skipped exon events,"
-                             "\'A5SS\' is for alternative 5\' splice site events,"
-                             "\'A3SS\' is for alternative 3\' splice site events,"
-                             "\'MXE\' is for mutually exclusive exons events "
-                             "and \'RI\' is for retained intron events "
-                             "(Only if using rMATS format result as event file).")
-    parser.add_argument("-e", dest="events_file", help="The rMATS output event file "
-                                                       "(Only if using rMATS format result as event file).")
-    parser.add_argument("-c", dest="coordinate", help="The coordinate of genome region and an annotation "
-                                                      "of genes and transcripts in GFF3 format. Coordinate"
-                                                      "and annotation file must be colon separated"
-                                                      "(Only if using coordinate and annotation file).")
-    parser.add_argument("--l1", dest="l1", help="The label for first sample.", required=True)
-    parser.add_argument("--l2", dest="l2", help="The label for second sample.", required=True)
-    parser.add_argument("-o", dest="out_dir", help="The output directory.", required=True)
+    parser = argparse.ArgumentParser(prog="rmats2sashimiplot")
 
-    group_sam = parser.add_argument_group("Sam Files", "Mapping results for the sample_1 & sample_2 in sam format"
-                                                       "Replicates must be in a comma separated list"
-                                                       "(Only if using sam).")
-    group_sam.add_argument("--s1", action="store", dest="s1",
-                           help="sample_1 in sam format (s1_rep1.sam[,s1_rep2.sam])")
-    group_sam.add_argument("--s2", action="store", dest="s2",
-                           help="sample_2 in sam format (s2_rep1.sam[,s2_rep2.sam])")
+    required_group = parser.add_argument_group('Required')
+    required_group.add_argument("--l1", dest="l1", required=True,
+                                help="The label for first sample.")
+    required_group.add_argument("--l2", dest="l2", required=True,
+                                help="The label for second sample.")
+    required_group.add_argument("-o", dest="out_dir", required=True,
+                                help="The output directory.")
 
-    group_bam = parser.add_argument_group("Bam Files", "Mapping results for the sample_1 & sample_2 in bam format"
-                                                       "Replicates must be in a comma separated list"
-                                                       "(Only if using bam).")
-    group_bam.add_argument("--b1", action="store", dest="b1",
-                           help="sample_1 in bam format(s1_rep1.bam[,s1_rep2.bam])")
-    group_bam.add_argument("--b2", action="store", dest="b2",
-                           help="sample_2 in bam format(s2_rep1.bam[,s2_rep2.bam])")
+    rmats_group_str = 'rMATS event input'
+    coord_group_str = 'Coordinate and annotation input'
+    rmats_group = parser.add_argument_group(
+        rmats_group_str,
+        'Use either ({}) or ({})'.format(rmats_group_str, coord_group_str))
+    coordinate_group = parser.add_argument_group(
+        coord_group_str,
+        'Use either ({}) or ({})'.format(coord_group_str, rmats_group_str))
 
-    group_optional = parser.add_argument_group("Optional Parameters",
-                                               "These parameters have their default values.")
-    group_optional.add_argument("--exon_s", dest="exon_s", type=int, default=1,
-                                help="The size of scale down exons. The default is 1.")
-    group_optional.add_argument("--intron_s", dest="intron_s", type=int, default=1,
-                                help="The size of scale down introns. For example,"
-                                     "if -intron_s is 5, it means the size of intron is 5:1"
-                                     "if the real size of intron is 5, the size in the "
-                                     "plot will be scaled down to 1). The default is 1.")
-    group_optional.add_argument("--group-info", dest="group_info", default=None,
-                                help="If the user wants to divide the bam files manually, "
-                                     "you can provide a \'*.gf\' file.")
-    group_optional.add_argument("--min-counts", dest="min_counts", default=0,
-                                help="If the junction count is smaller than this number, this single junction's count "
-                                     "would be omitted in the plot.")
-    group_optional.add_argument("--color", dest="color", default=None,
-                                help="Set the color in format(\"#CC0011\"[,\"#CC0011\"]). "
-                                     "The number of the colors equal to the total number of bam files in "
-                                     "different samples.")
-    group_optional.add_argument("--font-size", dest="font_size", default=8,
-                                help="Set the font size.")
-    group_optional.add_argument("--hide-number", dest="hide_number", action="store_true")
-    group_optional.set_defaults(hide_number=False)
-    group_optional.add_argument("--no-text-background", dest="text_background", action="store_false")
-    group_optional.set_defaults(text_background=True)
+    rmats_group.add_argument(
+        "-t", dest="event_type", choices=['SE', 'A5SS', 'A3SS', 'MXE', 'RI'],
+        help=("Type of event from rMATS result used in the analysis."
+              " 'SE': skipped exon,"
+              " 'A5SS': alternative 5' splice site,"
+              " 'A3SS' alternative 3' splice site,"
+              " 'MXE': mutually exclusive exons,"
+              " 'RI': retained intron."
+              " (Only if using " + rmats_group_str + ")"))
+    rmats_group.add_argument(
+        "-e", dest="events_file",
+        help=("The rMATS output event file (Only if using "
+              + rmats_group_str + ")"))
+
+    coordinate_group.add_argument(
+        "-c", dest="coordinate",
+        help=("The genome region coordinates and a GFF3 annotation file of"
+              " genes and transcripts. The format is"
+              " -c {chromosome}:{strand}:{start}:{end}:{/path/to/gff3}"
+              " (Only if using " + coord_group_str + ")"))
+
+    sam_bam_group_str_template = '{} Files'
+    sam_bam_group_desc_template = (
+        'Mapping results for sample_1 & sample_2 in {0} format.'
+        ' Replicates must be in a comma separated list.'
+        ' (Only if using {0})')
+    sam_bam_sample_arg_desc_template = (
+        'sample_{num} {kind} files: s{num}_rep1.{kind}[,s{num}_rep2.{kind}]')
+    group_sam = parser.add_argument_group(
+        sam_bam_group_str_template.format('SAM'),
+        sam_bam_group_desc_template.format('SAM'))
+    group_sam.add_argument(
+        "--s1", dest="s1",
+        help=sam_bam_sample_arg_desc_template.format(num=1, kind='sam'))
+    group_sam.add_argument(
+        "--s2", dest="s2",
+        help=sam_bam_sample_arg_desc_template.format(num=2, kind='sam'))
+
+    group_bam = parser.add_argument_group(
+        sam_bam_group_str_template.format('BAM'),
+        sam_bam_group_desc_template.format('BAM'))
+    group_bam.add_argument(
+        "--b1", dest="b1",
+        help=sam_bam_sample_arg_desc_template.format(num=1, kind='bam'))
+    group_bam.add_argument(
+        "--b2", dest="b2",
+        help=sam_bam_sample_arg_desc_template.format(num=2, kind='bam'))
+
+    optional_group = parser.add_argument_group('Optional')
+    optional_group.add_argument(
+        "--exon_s", dest="exon_s", type=int, default=1,
+        help="How much to scale down exons. Default: %(default)s")
+    optional_group.add_argument(
+        "--intron_s", dest="intron_s", type=int, default=1,
+        help=("How much to scale down introns. For example, --intron_s 5"
+              " results in an intron with real length of 100 being plotted as"
+              " 100/5 = 20. Default: %(default)s"))
+    optional_group.add_argument(
+        "--group-info", dest="group_info",
+        help=('The path to a *.gf file which groups the replicates. One'
+              ' sashimi plot will be generated for each group instead of'
+              ' the default behavior of one plot per replicate'))
+    optional_group.add_argument(
+        "--min-counts", dest="min_counts", default=0,
+        help=("Individual junctions with read count below --min-counts will"
+              " be omitted from the plot. Default: %(default)s"))
+    optional_group.add_argument(
+        "--color", dest="color",
+        help=('Specify a list of colors with one color per plot. Without'
+              ' grouping there is one plot per replicate. With grouping there'
+              ' is one plot per group: --color #CC0011[,#FF8800]'))
+    optional_group.add_argument("--font-size", dest="font_size", default=8,
+                                help="Set the font size. Default: %(default)s")
+    optional_group.add_argument(
+        "--hide-number", dest="hide_number", action="store_true",
+        help='Do not display the read count on the junctions')
+    optional_group.add_argument(
+        "--no-text-background", dest="text_background", action="store_false",
+        help='Do not put a white box behind the junction read count')
 
     options = parser.parse_args()
-
     out_path = os.path.abspath(os.path.expanduser(options.out_dir))
-
     checkout(parser, options)  # 0.check out the arguments
 
     sashimi_path = os.path.join(out_path, "Sashimi_index")

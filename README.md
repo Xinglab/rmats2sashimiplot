@@ -1,179 +1,127 @@
 # rmats2sashimiplot
 
+[![Latest Release](https://img.shields.io/github/release/Xinglab/rmats2sashimiplot.svg?label=Latest%20Release)](https://github.com/Xinglab/rmats2sashimiplot/releases/latest)
+[![Total Bioconda Installs](https://img.shields.io/conda/dn/bioconda/rmats2sashimiplot.svg?label=Total%20Bioconda%20Installs)](https://anaconda.org/bioconda/rmats2sashimiplot)
+[![PyPI Installs](https://img.shields.io/pypi/dm/rmats2sashimiplot.svg?label=PyPI%20Installs)](https://pypi.org/project/rmats2sashimiplot/)
 
-Requirements
-------------
+## About
 
-Install Python 2.6.x or Python 2.7.x
-Install Samtools.
+rmats2sashimiplot produces a sashimiplot visualization of [rMATS](https://github.com/Xinglab/rmats-turbo) output. rmats2sashimiplot can also produce plots using an annotation file and genomic coordinates. The plotting backend is [MISO](https://miso.readthedocs.io).
 
-setup.py will automatically install matplotlib which is required to run this program.
+## Table of contents
 
-rmats2sashimiplot is intended to be used in a Unix-based environment. It has
-been tested on Mac OS and Linux.
+- [Dependencies](#dependencies)
+- [Install](#install)
+- [Usage](#usage)
+  * [Examples](#examples)
+    + [SAM files with rMATS event](#sam-files-with-rmats-event)
+    + [BAM files with coordinate and annotation](#bam-files-with-coordinate-and-annotation)
+    + [Using a group file](#using-a-group-file)
+  * [Grouping](#grouping)
+  * [FAQ](#faq)
+  * [All arguments](#all-arguments)
+- [Output](#output)
+- [Contacts and bug reports](#contacts-and-bug-reports)
+- [Copyright and License Information](#copyright-and-license-information)
 
-***BAM file must be sorted before visualization/indexing.***
+## Dependencies
 
+- Python 2.7 (Python 3 can be used after running [2to3.sh](2to3.sh))
+  * numpy
+  * scipy
+  * matplotlib
+  * pysam
+- Samtools
+- bedtools
 
-Installation
-------------
+rmats2sashimiplot is intended to be used in a Unix-based environment.
 
-### Install ###
-The package, rmats2sashimiplot is installed by typing:
+## Install
 
-    python setup.py install
-    
-### Update ###
-To update rmats2sashimiplot, please download (or git pull) latest version from Github and type in:
+rmats2sasmimiplot can be run without installing:
+```
+python ./src/rmats2sashimiplot/rmats2sashimiplot.py
+```
 
-    pip uninstall rmats2sashimiplot
-    python setup.py install
+rmats2sashimiplot can be installed with:
+```
+python ./setup.py install
+```
 
-Usage
------
-The following is a detailed description of the options used with rmats2sashimiplot.
+rmats2sashimiplot can be updated with:
+```
+pip uninstall rmats2sashimiplot
+python ./setup.py install
+```
 
-### Required Parameters ###
-        --s1 s1_rep1.sam[,s1_rep2.sam]	Mapping results for the sample_1 in sam format.
-                                        Replicates must be in a comma separated list
-                                        (Only if using sam).
-        --s2 s2.rep1.sam[,s2.rep2.sam]	Mapping results for the sample_2 in sam format.
-                                        Replicates must be in a comma separated list
-                                        (Only if using sam).
-        --b1 s1_rep1.bam[,s1_rep2.bam]	Mapping results for the sample_1 in bam format.
-                                        Replicates must be in a comma separated list
-                                        (Only if using bam).
-        --b2 s2.rep1.bam[,s2.rep2.bam]	Mapping results for the sample_2 in bam format.
-                                        Replicates must be in a comma separated list
-                                        (Only if using bam).
-        -t eventType	                Type of event from rMATS result used in the 											analysis.
-                                        eventType is 'SE', 'A5SS', 'A3SS', 'MXE' or 'RI'.
-                                        'SE' is for skipped exon events, 'A5SS' is for
-                                        alternative 5' splice site events, 'A3SS' is for
-                                        alternative 3' splice site events, 'MXE' is for
-                                        mutually exclusive exons events and 'RI' is for
-                                        retained intron events (Only if using rMATS format
-                                        result as event file).
-        -e eventsFile	                The rMATS output event file (Only if using rMATS
-                                        format result as event file).
-        -c coordinate:annotaionFile	    The coordinate of genome region and an annotation
-                                        of genes and transcripts in GFF3 format. Coordinate
-                                        and annotation file must be colon separated
-                                        (Only if using coordinate and annotaion file).
-        --l1 SampleLabel1	            The label for first sample.
-        --l2 SampleLabel2	            The label for second sample.
-        -o outDir	                    The output directory.
-    
-        Optional:
-        --exon_s <int>	                The size of scale down exons. The default is 1.
-        --intron_s <int>	            The size of scale down introns. For example, if
-                                        -intron_s is 5, it means the size of intron is 5:1
-                                        (if the real size of intron is 5, the size in the
-                                        plot will be scaled down to 1). The default is 1.
-        --group-info                    If user want to divide samples into groups,
-        								they can specify this parameter with a "*.gf" file.
-        								Format specification can be found in following
-                                        section.
-        --min-counts                    If the junction count is smaller(<) than this float   
-        								number, then this junction would be omitted. The 
-        								default value is 3. If you want to display all the 
-        								numbers, then set it as 0.
-        --color 						User can customerize the colors of the plot using a
-        								sequence of color. The number of the colors are
-                                        supposed to be corresponding to that of bam_files. 
-                                        eg: --color #FFCC99,#99CC99,#99CC99
-        --font-size                     Change the default font size which equals to 8.
-        --no-text-background            Transparent text background.
-        --hide-number 					Hide the numbers of junction.
-        
-        -h 								Print this help message and exit(also --help).
+If installed, rmats2sashimiplot can be run with just:
+```
+rmats2sashimiplot
+```
 
-Running with sam files:
+## Usage
 
-    $rmats2sashimiplot --s1 s1_rep1.sam[,s1_rep2.sam]* --s2 s2.rep1.sam[,s2.rep2.sam]* -t eventType -e eventsFile --l1 SampleLabel1 --l2 SampleLabel2 --exon_s exonScale --intron_s intronScale -o outDir
+**BAM files must be sorted before visualization/indexing.**
 
-Running with bam files:
+The test data used in the examples is available at [https://sourceforge.net/projects/rnaseq-mats/files/rmats2sashimiplot/rmats2sashimiplot_test_data.tar.gz/download](https://sourceforge.net/projects/rnaseq-mats/files/rmats2sashimiplot/rmats2sashimiplot_test_data.tar.gz/download)
 
-    $rmats2sashimiplot --b1 s1_rep1.bam[,s1_rep2.bam]* --b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile --l1 SampleLabel1 --l2 SampleLabel2 --exon_s exonScale --intron_s intronScale -o outDir
+### Examples
 
-Using grouping function:
+#### SAM files with rMATS event
 
-    $rmats2sashimiplot --b1 s1_rep1.bam[,s1_rep2.bam]* --b2 s2.rep1.bam[,s2.rep2.bam]* -c coordinate:annotaionFile --l1 SampleLabel1 --l2 SampleLabel2 --exon_s exonScale --intron_s intronScale -o outDir --group-info gf.gf
+```
+rmats2sashimiplot --s1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.sam,./rmats2sashimiplot_test_data/sample_1_replicate_2.sam,./rmats2sashimiplot_test_data/sample_1_replicate_3.sam --s2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.sam,./rmats2sashimiplot_test_data/sample_2_replicate_2.sam,./rmats2sashimiplot_test_data/sample_2_replicate_3.sam -t SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_events_output
+```
 
+![img/plotwithevent.png](img/plotwithevent.png)
 
-### Grouping
+#### BAM files with coordinate and annotation
 
-By using this function, user can divide their samples into different groups. rmats2sashimiplot calculates the average inclusion level, the average read depth and the average number of junction-spanning reads of each group and display them in sashimi plot.
-It's extremely helpful when you need to do comparisons between different groups of samples.
+```
+rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam -c chr16:+:9000:25000:./rmats2sashimiplot_test_data/annotation.gff3 --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_coordinate_output
+```
 
+![img/plotwithcoor.png](img/plotwithcoor.png)
 
-### Examples ###
-Example of using sam files, drawing sashimiplot by rMATS format event files
+#### Using a group file
 
-    $rmats2sashimiplot --s1 ./testData/S1.R1.test.sam,./testData/S1.R2.test.sam,./testData/S1.R3.test.sam --s2 ./testData/S2.R1.test.sam,./testData/S2.R2.test.sam,./testData/S2.R3.test.sam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_events_output
+Input mapping files can be divided into different groups for plotting. rmats2sashimiplot calculates the average inclusion level, the average read depth and the average number of junction-spanning reads of each group and displays them in a sashimi plot. This provides the flexibility to compare different groups of samples.
 
-![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithevent.png)
+```
+rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam -t SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_grouped_output --group-info grouping.gf
+```
 
-Example of using bam files, drawing sashimiplot by user provided coordinates and gff3 format annotation file
+![img/plotwitheventgf.png](img/plotwitheventgf.png)
 
-    $rmats2sashimiplot --b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam --b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -c chr16:-:24944500:24955500:./testData/ensGene.gff3 --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_coordinate_output
-
-![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwithcoor.png)
-
-Example of using grouping function:
-
-    $rmats2sashimiplot --b1 ./testData/S1.R1.test.bam,./testData/S1.R2.test.bam,./testData/S1.R3.test.bam --b2 ./testData/S2.R1.test.bam,./testData/S2.R2.test.bam,./testData/S2.R3.test.bam -t SE -e ./testData/MATS_output/test_PC3E_GS689.SE.MATS.events.txt --l1 PC3E --l2 GS689 --exon_s 1 --intron_s 5 -o test_events_output --group-info grouping.gf
-
-![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/plotwitheventgf.png)
-
-content of grouping.gf:
+Where grouping.gf has:
 
 ```
 group1name: 1-2
 group2name: 3-6
 
 ```
-That means we group ./testData/S1.R1.test.bam and ./testData/S1.R2.test.bam together, and group ./testData/S1.R3.test.bam, ./testData/S2.R1.test.bam, ./testData/S2.R2.test.bam and ./testData/S2.R3.test.bam together.
 
-**Group-info**
+### Grouping
 
-This section describes the format of '*.gf' file.
-
-Each line stand for a group, which consists of *group name* and *index* of bam files.
-
-***Important notes:*** Index starts from 1. And the order of bam files corresponds to the order we specified in --b1/b2/s1/s2, i.e. concatenate --b1 and --b2 (or --s1 and --s2 if you're using them.). User can confirm this order by checking variable `bam_files` in `sashimi_plot_settings.txt`(under Sashimi_index_* folder.)
-
-Index should be seperated by `','`. And use `'-'` to specify a sequence.
-
-**Eg:**
-
+Each line in the \*.gf file used with --group-info defines a group. Each line has the format:
 ```
-group1: 1,2
-group2: 3
-group3: 4-5
-group4: 4-5,6
-
-or
-
-group1:1,2
-group2:3
-group3:4-5
-group4:4-5,6
+groupname: indices of mapping files
 ```
 
-*(White space allowed.)*
+The indices can be a comma (`,`) separated list of
 
+- individual numbers
+- ranges specified with dash (`-`)
 
-### Test Data ###
+**Important:** One-based indexing is used. The order of mapping files corresponds to the order from (--b1 --b2) or (--s1 --s2). Index **i** corresponds to the one-based **i**th index of the concatenation of either (--b1 and --b2) or (--s1 and --s2).
 
-Please download and untar the test data from: 
+As an example: --b1 a.bam,b.bam,c.bam --b2 d.bam,e.bam,f.bam with this grouping file
+```
+firstGroup: 1,4
+secondGroup: 1-3,5,6
+```
 
-http://www.mimg.ucla.edu/faculty/xing/rmats2sashimiplot/testData.tar
-
-
-### Output ###
-
-All output sashimiplot pdf files are in Sashimi_plot folder
+Defines firstGroup=a.bam,d.bam and secondGroup=a.bam,b.bam,c.bam,e.bam,f.bam
 
 ### FAQ
 
@@ -183,13 +131,99 @@ A: MISO is the actual plotting backend of rmats2sashimiplot, so they have almost
 
 ![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/RPKM.png)
 
-Q: How does rmats2sashimiplot calculate junction count, read density(modified RPKM) and inclusion level in the grouping mode?
+Q: How does rmats2sashimiplot calculate junction count, read density (modified RPKM) and inclusion level in the grouping mode?
 
 A: rmats2sashimiplot uses a modified Sashimi plot proposed by SplicePlot(Wu, Nance, & Montgomery, 2014). Briefly, rmats2sashimiplot calculates the average read depth and the average number of junction-spanning reads for groups.
 
+### All Arguments
 
-Contacts and bug reports
-------------------------
+```
+python src/rmats2sashimiplot/rmats2sashimiplot.py -h
+
+usage: rmats2sashimiplot [-h] --l1 L1 --l2 L2 -o OUT_DIR
+                         [-t {SE,A5SS,A3SS,MXE,RI}] [-e EVENTS_FILE]
+                         [-c COORDINATE] [--s1 S1] [--s2 S2] [--b1 B1]
+                         [--b2 B2] [--exon_s EXON_S] [--intron_s INTRON_S]
+                         [--group-info GROUP_INFO] [--min-counts MIN_COUNTS]
+                         [--color COLOR] [--font-size FONT_SIZE]
+                         [--hide-number] [--no-text-background]
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+Required:
+  --l1 L1               The label for first sample.
+  --l2 L2               The label for second sample.
+  -o OUT_DIR            The output directory.
+
+rMATS event input:
+  Use either (rMATS event input) or (Coordinate and annotation input)
+
+  -t {SE,A5SS,A3SS,MXE,RI}
+                        Type of event from rMATS result used in the analysis.
+                        'SE': skipped exon, 'A5SS': alternative 5' splice
+                        site, 'A3SS' alternative 3' splice site, 'MXE':
+                        mutually exclusive exons, 'RI': retained intron. (Only
+                        if using rMATS event input)
+  -e EVENTS_FILE        The rMATS output event file (Only if using rMATS event
+                        input)
+
+Coordinate and annotation input:
+  Use either (Coordinate and annotation input) or (rMATS event input)
+
+  -c COORDINATE         The genome region coordinates and a GFF3 annotation
+                        file of genes and transcripts. The format is -c
+                        {chromosome}:{strand}:{start}:{end}:{/path/to/gff3}
+                        (Only if using Coordinate and annotation input)
+
+SAM Files:
+  Mapping results for sample_1 & sample_2 in SAM format. Replicates must be
+  in a comma separated list. (Only if using SAM)
+
+  --s1 S1               sample_1 sam files: s1_rep1.sam[,s1_rep2.sam]
+  --s2 S2               sample_2 sam files: s2_rep1.sam[,s2_rep2.sam]
+
+BAM Files:
+  Mapping results for sample_1 & sample_2 in BAM format. Replicates must be
+  in a comma separated list. (Only if using BAM)
+
+  --b1 B1               sample_1 bam files: s1_rep1.bam[,s1_rep2.bam]
+  --b2 B2               sample_2 bam files: s2_rep1.bam[,s2_rep2.bam]
+
+Optional:
+  --exon_s EXON_S       How much to scale down exons. Default: 1
+  --intron_s INTRON_S   How much to scale down introns. For example,
+                        --intron_s 5 results in an intron with real length of
+                        100 being plotted as 100/5 = 20. Default: 1
+  --group-info GROUP_INFO
+                        The path to a *.gf file which groups the replicates.
+                        One sashimi plot will be generated for each group
+                        instead of the default behavior of one plot per
+                        replicate
+  --min-counts MIN_COUNTS
+                        Individual junctions with read count below --min-
+                        counts will be omitted from the plot. Default: 0
+  --color COLOR         Specify a list of colors with one color per plot.
+                        Without grouping there is one plot per replicate. With
+                        grouping there is one plot per group: --color
+                        #CC0011[,#FF8800]
+  --font-size FONT_SIZE
+                        Set the font size. Default: 8
+  --hide-number         Do not display the read count on the junctions
+  --no-text-background  Do not put a white box behind the junction read count
+```
+
+## Output
+
+All output is written to the directory specified by `-o`. Under that directory:
+
+- `Sashimi_index/`: contains intermediate files used to create the plot
+- `Sashimi_index_{Gene}_{event_id}/`: like `Sashimi_index/` but one directory for each rMATS event plotted
+- `Sashimi_plot/`: contains the generated sashimi plots in .pdf format
+
+
+## Contacts and bug reports
+
 Yi Xing
 yxing@ucla.edu
 
@@ -207,9 +241,8 @@ Before you send us the bug report though, please check the following:
    the bug; we will need your input data to reproduce the problem, and the
    smaller you can make it, the easier it will be.
 
+## Copyright and License Information
 
-Copyright and License Information
----------------------------------
 Copyright (C) 2015 University of California, Los Angeles (UCLA)
 Zhijie Xie, Yu-Ting Tseng, Yi Xing
 
