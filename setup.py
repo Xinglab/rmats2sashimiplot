@@ -17,32 +17,41 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
 
-import sys, os
 from os import path
-
-# should be able to safely do this now.
 from setuptools import setup, find_packages
 
 # Get the long description from the README file
 here = path.abspath(path.dirname(__file__))
-with open(path.join(here, 'README.rst')) as f:
+with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
-setup(name='rmats2sashimiplot',
-      version='2.0.2',
-      packages = find_packages('src'),  # include all packages under src
-      package_dir = {'':'src'},   # all distutils packages are under src
-      entry_points={'console_scripts': ['rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main',
-                                        'index_gff=MISO.misopy.index_gff:main',
-                                        'sashimi_plot=MISO.misopy.sashimi_plot.sashimi_plot:main'],},
-      description = 'rmats2sashimiplot',
-      long_description = long_description,
-      license='GNU GPL',
+setup(
+    name='rmats2sashimiplot',
+    version='2.0.4',
+    # 'find_packages' finds just the package name without the full path.
+    # 'package_dir' is needed in combination with 'packages' to get the
+    # full path of each package.
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    entry_points={
+        'console_scripts': [
+            'rmats2sashimiplot=rmats2sashimiplot.rmats2sashimiplot:main',
+            'index_gff=MISO.misopy.index_gff:main',
+            'sashimi_plot=MISO.misopy.sashimi_plot.sashimi_plot:main'
+        ]
+    },
+    description='rmats2sashimiplot',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    licence='GNU GPLv2',
 
-      author='Yu-Ting Tseng, Emad Bahrami-Samani, Zhijie Xie, Yukai Jiang',
-      author_email = 'shiehshiehzhijie@gmail.com',
-      url='https://github.com/Xinglab/rmats2sashimiplot',
-      download_url='https://github.com/Xinglab/rmats2sashimiplot',
-      keywords = [],
-      classifiers=[],
+    author='Yu-Ting Tseng, Emad Bahrami-Samani, Zhijie Xie, Yukai Jiang',
+    author_email='shiehshiehzhijie@gmail.com',
+    url='https://github.com/Xinglab/rmats2sashimiplot',
+    download_url='https://github.com/Xinglab/rmats2sashimiplot',
+    classifiers=[
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)'
+    ],
 )
