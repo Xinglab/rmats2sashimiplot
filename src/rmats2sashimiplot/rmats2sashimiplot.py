@@ -508,9 +508,12 @@ def create_chr_aware_events_file(options):
     new_events_file_path = os.path.join(options.sashimi_path, 'events_file.txt')
     first_bam_path = options.b1.split(',')[0]
     tmp_sam_file_path = os.path.join(options.sashimi_path, 'tmp_chr_check.sam')
+
     with open(tmp_sam_file_path, 'wt') as tmp_sam_file_handle:
-        subprocess.check_call(['samtools', 'view', first_bam_path],
-                              stdout=tmp_sam_file_handle)
+        p1 = subprocess.Popen(['samtools', 'view', first_bam_path],
+                              stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(['head'], stdin=p1.stdout, stdout=subprocess.PIPE)
+        tmp_sam_file_handle.write(p2.communicate()[0])
 
     with open(tmp_sam_file_path, 'rt') as tmp_sam_file_handle:
         first_line_of_sam = tmp_sam_file_handle.readline().rstrip('\n')
