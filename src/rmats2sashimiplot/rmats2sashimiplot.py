@@ -33,12 +33,13 @@ def prepare_bams(options):
     convert sam files to bam files and store the filename in options.b1 & options.b2.
     Ensure bams are indexed.
     """
-    if options.s1:  # input with sam file
+    if options.s1:
         options.b1 = convert_sams2bams(options.s1)
-        if options.s2:
-            options.b2 = convert_sams2bams(options.s2)
+    if options.s2:
+        options.b2 = convert_sams2bams(options.s2)
 
-    index_bams(options.b1)
+    if options.b1:
+        index_bams(options.b1)
     if options.b2:
         index_bams(options.b2)
 
@@ -72,8 +73,10 @@ def checkout(parser, options):
     """
     # bam files and sam files are alternative, the same for the case of events_file and coordinate
     # events_file should be provided together with event_type
-    if options.s1 is None and options.b1 is None:
-        parser.error("Not enough arguments! Please provide either --s1 or --b1")
+    if ((options.s1 is None and options.b1 is None
+         and options.s2 is None and options.b2 is None)):
+        parser.error("Not enough arguments! Please provide at least one of"
+                     " --s1, --b1, --s2, --b2")
     if (((options.s1 is not None or options.s2 is not None)
          and (options.b1 is not None or options.b2 is not None))):
         parser.error("Specify either sam files or bam files not both")
@@ -82,29 +85,29 @@ def checkout(parser, options):
                      "1) coordinates with gff3 files. or "
                      "2) events files together with events type.")
 
-    if options.s1 is not None:  # with sam file
+    if options.s1 is not None:
         file_check_error = file_check(options.s1, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s1: {}".format(
                 file_check_error))
 
-        if options.s2 is not None:
-            file_check_error = file_check(options.s2, ".sam")
-            if file_check_error:
-                parser.error("Error checking sam files given as --s2: {}".format(
-                    file_check_error))
+    if options.s2 is not None:
+        file_check_error = file_check(options.s2, ".sam")
+        if file_check_error:
+            parser.error("Error checking sam files given as --s2: {}".format(
+                file_check_error))
 
-    elif options.b1 is not None:  # with bam file
+    if options.b1 is not None:
         file_check_error = file_check(options.b1, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b1: {}".format(
                 file_check_error))
 
-        if options.b2 is not None:
-            file_check_error = file_check(options.b2, ".bam")
-            if file_check_error:
-                parser.error("Error checking bam files given as --b2: {}".format(
-                    file_check_error))
+    if options.b2 is not None:
+        file_check_error = file_check(options.b2, ".bam")
+        if file_check_error:
+            parser.error("Error checking bam files given as --b2: {}".format(
+                file_check_error))
 
     if options.events_file:
         file_check_error = file_check(options.events_file, ".txt")
@@ -130,19 +133,20 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     # setting string for replicates
     bam_files_arr1 = []
     bam_files_arr2 = []
-    sample_1 = options.b1.split(',')  # sam files has already been converted into bam files and stored in options.b1&b2
+    sample_1 = list()
+    sample_2 = list()
+    # sam files have already been converted into bam files and stored in options.b1&b2
+    if options.b1:
+        sample_1 = options.b1.split(',')
     if options.b2:
         sample_2 = options.b2.split(',')
-    else:
-        sample_2 = list()
 
     for s in sample_1:  # sample1
         bam_files_arr1.append('\"' + s + '\"')
     for s in sample_2:  # sample2
         bam_files_arr2.append('\"' + s + '\"')
-    setting_bam_str = ','.join(bam_files_arr1)
-    if bam_files_arr2:
-        setting_bam_str += ',' + ','.join(bam_files_arr2)
+
+    setting_bam_str = ','.join(bam_files_arr1 + bam_files_arr2)
 
     len_sample1 = len(sample_1)
     len_sample2 = len(sample_2)
@@ -189,7 +193,7 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     if options.color is None:
         colors_arr1 = ['\"#CC0011\"'] * len_sample1
         colors_arr2 = ['\"#FF8800\"'] * len_sample2
-        setting_color_str = ','.join(colors_arr1) + ',' + ','.join(colors_arr2)
+        setting_color_str = ','.join(colors_arr1 + colors_arr2)
     else:
         colors_arr = ["\"{0}\"".format(c) for c in options.color.split(',')]
         setting_color_str = ','.join(colors_arr)
@@ -231,7 +235,7 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
             print("Warning: The inclusion levels of Event '{}' contains"
                   " 'NA' value, which could lead to unexpected output."
                   .format(id_str), file=sys.stderr)
-    setting_label_str = ','.join(sample_labels_arr1) + ',' + ','.join(sample_labels_arr2)
+    setting_label_str = ','.join(sample_labels_arr1 + sample_labels_arr2)
     setting_file.write("sample_labels = [{0}]\n".format(setting_label_str))
 
     setting_file.close()
@@ -524,7 +528,11 @@ def create_chr_aware_events_file(options):
     """
     orig_events_file_path = options.events_file
     new_events_file_path = os.path.join(options.sashimi_path, 'events_file.txt')
-    first_bam_path = options.b1.split(',')[0]
+    if options.b1:
+        first_bam_path = options.b1.split(',')[0]
+    else:
+        first_bam_path = options.b2.split(',')[0]
+
     tmp_sam_file_path = os.path.join(options.sashimi_path, 'tmp_chr_check.sam')
     with open(tmp_sam_file_path, 'wt') as tmp_sam_file_handle:
         subprocess.check_call(['samtools', 'view', first_bam_path],
