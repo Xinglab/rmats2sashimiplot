@@ -3,7 +3,8 @@ from __future__ import print_function
 import os
 import sys
 import argparse
-import subprocess
+
+import pysam
 
 
 def convert_sams2bams(sams):
@@ -533,19 +534,11 @@ def create_chr_aware_events_file(options):
     else:
         first_bam_path = options.b2.split(',')[0]
 
-    tmp_sam_file_path = os.path.join(options.sashimi_path, 'tmp_chr_check.sam')
-    with open(tmp_sam_file_path, 'wt') as tmp_sam_file_handle:
-        subprocess.check_call(['samtools', 'view', first_bam_path],
-                              stdout=tmp_sam_file_handle)
-
-    with open(tmp_sam_file_path, 'rt') as tmp_sam_file_handle:
-        first_line_of_sam = tmp_sam_file_handle.readline().rstrip('\n')
-
-    os.remove(tmp_sam_file_path)
-
-    sam_columns = first_line_of_sam.split('\t')
-    sam_chr_column = sam_columns[2]
-    sam_has_chr_prefix = sam_chr_column.startswith('chr')
+    with pysam.AlignmentFile(first_bam_path, 'rb') as bam_file:
+        for alignment in bam_file.fetch(until_eof=True):
+            ref_name = alignment.reference_name
+            sam_has_chr_prefix = ref_name.startswith('chr')
+            break  # only check first alignment
 
     with open(orig_events_file_path, 'rt') as orig_handle:
         with open(new_events_file_path, 'wt') as new_handle:
