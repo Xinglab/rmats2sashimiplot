@@ -7,32 +7,42 @@ import argparse
 import pysam
 
 
-def convert_sam2bam(options):
-    """
-    convert sam files to bam files and store the filename in options.b1 & options.b2
-    """
-    if options.s1:  # input with sam file
-        sample_1 = options.s1.split(",")
-        for sam in sample_1:
-            os.system("samtools view -Sbh " + sam + " > " + sam.replace(".sam", ".bam"))
-        options.b1 = options.s1.replace(".sam", ".bam")
-        sample_2 = options.s2.split(",")
-        for sam in sample_2:
-            os.system("samtools view -Sbh " + sam + " > " + sam.replace(".sam", ".bam"))
-        options.b2 = options.s2.replace(".sam", ".bam")
-    for bam in options.b1.split(","):
+def convert_sams2bams(sams):
+    separator = ","
+    split_sams = sams.split(separator)
+    bams = list()
+    for sam in split_sams:
+        bam = sam.replace(".sam", ".bam")
+        bams.append(bam)
+        os.system("samtools view -Sbh {} > {}".format(sam, bam))
+
+    return separator.join(bams)
+
+
+def index_bams(bams):
+    split_bams = bams.split(",")
+    for bam in split_bams:
         if os.path.isfile(bam + '.bai'):  # if the bam file has been indexed.
             print("'{0}' is indexed already: '{0}.bai'".format(bam))
         else:
             print("Indexing '{}'.".format(bam))
             os.system("samtools index " + bam)
-    for bam in options.b2.split(","):
-        if os.path.isfile(bam + '.bai'):
-            print("'{0}' is indexed already: '{0}.bai'".format(bam))
-        else:
-            print("Indexing '{}'.".format(bam))
-            os.system("samtools index " + bam)
-    return
+
+
+def prepare_bams(options):
+    """
+    convert sam files to bam files and store the filename in options.b1 & options.b2.
+    Ensure bams are indexed.
+    """
+    if options.s1:
+        options.b1 = convert_sams2bams(options.s1)
+    if options.s2:
+        options.b2 = convert_sams2bams(options.s2)
+
+    if options.b1:
+        index_bams(options.b1)
+    if options.b2:
+        index_bams(options.b2)
 
 
 def file_check(string, expected_ext):
@@ -64,37 +74,41 @@ def checkout(parser, options):
     """
     # bam files and sam files are alternative, the same for the case of events_file and coordinate
     # events_file should be provided together with event_type
-    if (options.s1 is None and options.b1 is None) or (options.s2 is None and options.b2 is None):
-        parser.error("Not enough arguments! Please provide sam or bam files.")
+    if ((options.s1 is None and options.b1 is None
+         and options.s2 is None and options.b2 is None)):
+        parser.error("Not enough arguments! Please provide at least one of"
+                     " --s1, --b1, --s2, --b2")
+    if (((options.s1 is not None or options.s2 is not None)
+         and (options.b1 is not None or options.b2 is not None))):
+        parser.error("Specify either sam files or bam files not both")
     if (options.events_file is None or options.event_type is None) and options.coordinate is None:
         parser.error("Not enough arguments! Please provide "
                      "1) coordinates with gff3 files. or "
                      "2) events files together with events type.")
 
-    if options.s1 is not None and options.s2 is not None:  # with sam file
+    if options.s1 is not None:
         file_check_error = file_check(options.s1, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s1: {}".format(
                 file_check_error))
 
+    if options.s2 is not None:
         file_check_error = file_check(options.s2, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s2: {}".format(
                 file_check_error))
 
-    elif options.b1 is not None and options.b2 is not None:  # with bam file
+    if options.b1 is not None:
         file_check_error = file_check(options.b1, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b1: {}".format(
                 file_check_error))
 
+    if options.b2 is not None:
         file_check_error = file_check(options.b2, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b2: {}".format(
                 file_check_error))
-
-    else:
-        parser.error("Need to provide either (--s1 and --s2) or (--b1 and --b2)")
 
     if options.events_file:
         file_check_error = file_check(options.events_file, ".txt")
@@ -120,13 +134,21 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     # setting string for replicates
     bam_files_arr1 = []
     bam_files_arr2 = []
-    sample_1 = options.b1.split(',')  # sam files has already been converted into bam files and stored in options.b1&b2
-    sample_2 = options.b2.split(',')
+    sample_1 = list()
+    sample_2 = list()
+    # sam files have already been converted into bam files and stored in options.b1&b2
+    if options.b1:
+        sample_1 = options.b1.split(',')
+    if options.b2:
+        sample_2 = options.b2.split(',')
+
     for s in sample_1:  # sample1
         bam_files_arr1.append('\"' + s + '\"')
     for s in sample_2:  # sample2
         bam_files_arr2.append('\"' + s + '\"')
-    setting_bam_str = ','.join(bam_files_arr1) + ',' + ','.join(bam_files_arr2)
+
+    setting_bam_str = ','.join(bam_files_arr1 + bam_files_arr2)
+
     len_sample1 = len(sample_1)
     len_sample2 = len(sample_2)
 
@@ -172,7 +194,7 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     if options.color is None:
         colors_arr1 = ['\"#CC0011\"'] * len_sample1
         colors_arr2 = ['\"#FF8800\"'] * len_sample2
-        setting_color_str = ','.join(colors_arr1) + ',' + ','.join(colors_arr2)
+        setting_color_str = ','.join(colors_arr1 + colors_arr2)
     else:
         colors_arr = ["\"{0}\"".format(c) for c in options.color.split(',')]
         setting_color_str = ','.join(colors_arr)
@@ -214,7 +236,7 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
             print("Warning: The inclusion levels of Event '{}' contains"
                   " 'NA' value, which could lead to unexpected output."
                   .format(id_str), file=sys.stderr)
-    setting_label_str = ','.join(sample_labels_arr1) + ',' + ','.join(sample_labels_arr2)
+    setting_label_str = ','.join(sample_labels_arr1 + sample_labels_arr2)
     setting_file.write("sample_labels = [{0}]\n".format(setting_label_str))
 
     setting_file.close()
@@ -507,7 +529,10 @@ def create_chr_aware_events_file(options):
     """
     orig_events_file_path = options.events_file
     new_events_file_path = os.path.join(options.sashimi_path, 'events_file.txt')
-    first_bam_path = options.b1.split(',')[0]
+    if options.b1:
+        first_bam_path = options.b1.split(',')[0]
+    else:
+        first_bam_path = options.b2.split(',')[0]
 
     with pysam.AlignmentFile(first_bam_path, 'rb') as bam_file:
         for alignment in bam_file.fetch(until_eof=True):
@@ -770,8 +795,8 @@ def main():
 
     coordinate_group.add_argument(
         "-c", dest="coordinate",
-        help=("The genome region coordinates and a GFF3 annotation file of"
-              " genes and transcripts. The format is"
+        help=("The genome region coordinates and a GFF3 (not GTF) annotation"
+              " file of genes and transcripts. The format is"
               " -c {chromosome}:{strand}:{start}:{end}:{/path/to/gff3}"
               " (Only if using " + coord_group_str + ")"))
 
@@ -824,7 +849,7 @@ def main():
         "--color", dest="color",
         help=('Specify a list of colors with one color per plot. Without'
               ' grouping there is one plot per replicate. With grouping there'
-              ' is one plot per group: --color #CC0011[,#FF8800]'))
+              ' is one plot per group: --color \'#CC0011[,#FF8800]\''))
     optional_group.add_argument("--font-size", dest="font_size", default=8,
                                 help="Set the font size. Default: %(default)s")
     optional_group.add_argument(
@@ -844,7 +869,7 @@ def main():
     options.out_dir = out_path
     options.sashimi_path = sashimi_path
 
-    convert_sam2bam(options)  # 1.convert sam to bam format
+    prepare_bams(options)  # 1.convert sam to bam format
 
     if options.events_file is None:  # 2.setting and plot
         plot_with_coordinate(options)

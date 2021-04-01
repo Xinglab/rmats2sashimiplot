@@ -129,11 +129,25 @@ Q: What does the y-axis represent?
 
 A: MISO is the actual plotting backend of rmats2sashimiplot, so they have almost the same mechanism of plotting. The y-axis represents a modified RPKM value.
 
-![images](https://github.com/Xinglab/rmats2sashimiplot/blob/master/img/RPKM.png)
+![img/RPKM.png](img/RPKM.png)
+
+In rmats2sashimiplot each read distributes its read count evenly over the coordinates it was mapped to. If the read is length 50 then each individual coordinate gets 1/50 added to its value. The value at each coordinate is aggregated across all reads. Then the value is normalized by the total number of reads and the two constants (1,000 and 1,000,000).
 
 Q: How does rmats2sashimiplot calculate junction count, read density (modified RPKM) and inclusion level in the grouping mode?
 
 A: rmats2sashimiplot uses a modified Sashimi plot proposed by SplicePlot(Wu, Nance, & Montgomery, 2014). Briefly, rmats2sashimiplot calculates the average read depth and the average number of junction-spanning reads for groups.
+
+Q: Can I use a GTF file?
+
+A: No a GFF3 file is needed. You can convert a GTF to a GFF3 with [gffread](https://github.com/gpertea/gffread): `gffread --keep-genes ./some_file.gtf -o ./some_file.gff3`
+
+Q: Why might the junction counts shown in the sashimiplot differ from the counts in the rMATS output?
+
+A: There are several differences in the counting procedure between rmats2sashimiplot and rMATS. Please refer to [issue 33](https://github.com/Xinglab/rmats2sashimiplot/issues/33) for more details.
+
+Q: What can I do to reduce the running time of rmats2sashimiplot?
+
+A: rmats2sashimiplot is single threaded, but you can run multiple instances of rmats2sashimiplot concurrently on different inputs. For a single instance of rmats2sashimiplot, if an event file is given as input with `-e` it will plot all the events in that file. Instead of using an rMATS output file directly (like SE.MATS.JC.txt), you could make a copy of that file and filter it down so that it only contains the events that you want to plot.
 
 ### All Arguments
 
@@ -171,8 +185,9 @@ rMATS event input:
 Coordinate and annotation input:
   Use either (Coordinate and annotation input) or (rMATS event input)
 
-  -c COORDINATE         The genome region coordinates and a GFF3 annotation
-                        file of genes and transcripts. The format is -c
+  -c COORDINATE         The genome region coordinates and a GFF3 (not GTF)
+                        annotation file of genes and transcripts. The format
+                        is -c
                         {chromosome}:{strand}:{start}:{end}:{/path/to/gff3}
                         (Only if using Coordinate and annotation input)
 
@@ -206,7 +221,7 @@ Optional:
   --color COLOR         Specify a list of colors with one color per plot.
                         Without grouping there is one plot per replicate. With
                         grouping there is one plot per group: --color
-                        #CC0011[,#FF8800]
+                        '#CC0011[,#FF8800]'
   --font-size FONT_SIZE
                         Set the font size. Default: 8
   --hide-number         Do not display the read count on the junctions
