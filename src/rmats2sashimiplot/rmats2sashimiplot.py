@@ -802,8 +802,8 @@ def main():
 
     coordinate_group.add_argument(
         "-c", dest="coordinate",
-        help=("The genome region coordinates and a GFF3 annotation file of"
-              " genes and transcripts. The format is"
+        help=("The genome region coordinates and a GFF3 (not GTF) annotation"
+              " file of genes and transcripts. The format is"
               " -c {chromosome}:{strand}:{start}:{end}:{/path/to/gff3}"
               " (Only if using " + coord_group_str + ")"))
 
@@ -856,7 +856,7 @@ def main():
         "--color", dest="color",
         help=('Specify a list of colors with one color per plot. Without'
               ' grouping there is one plot per replicate. With grouping there'
-              ' is one plot per group: --color #CC0011[,#FF8800]'))
+              ' is one plot per group: --color \'#CC0011[,#FF8800]\''))
     optional_group.add_argument("--font-size", dest="font_size", default=8,
                                 help="Set the font size. Default: %(default)s")
     optional_group.add_argument(
