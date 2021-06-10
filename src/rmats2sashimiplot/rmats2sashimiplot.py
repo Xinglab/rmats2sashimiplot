@@ -22,11 +22,14 @@ def convert_sams2bams(sams):
 def index_bams(bams):
     split_bams = bams.split(",")
     for bam in split_bams:
-        if os.path.isfile(bam + '.bai'):  # if the bam file has been indexed.
-            print("'{0}' is indexed already: '{0}.bai'".format(bam))
-        else:
-            print("Indexing '{}'.".format(bam))
-            os.system("samtools index " + bam)
+        index_files = [bam + '.bai', bam + '.csi']
+        for index_file in index_files:
+            if os.path.isfile(index_file):  # if the bam file has been indexed.
+                print("'{}' is indexed already: '{}'".format(bam, index_file))
+                return
+
+        print("Indexing '{}'.".format(bam))
+        os.system("samtools index " + bam)
 
 
 def prepare_bams(options):
