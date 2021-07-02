@@ -309,11 +309,6 @@ def plot_c(options, id_str):
                       python_executable, path_sashimi_plot, id_str,
                       options.sashimi_path, setting_str, output_path))
 
-    # move pdf file
-    new_str = id_str.replace(':', '_')
-    old_file = os.path.join(options.out_dir, "Sashimi_plot", id_str + '.pdf')
-    new_file = os.path.join(options.out_dir, "Sashimi_plot", new_str + '.pdf')
-    os.system("mv {0} {1}".format(old_file, new_file))
     return
 
 
@@ -351,10 +346,9 @@ def plot_e(options, id_str, gene_symbol, events_no):
                       setting_str, output_path))
 
     # move pdf file
-    new_str = id_str.replace(':', '_')
     old_file = os.path.join(options.out_dir, "Sashimi_plot", id_str + '.pdf')
     new_file = os.path.join(options.out_dir, "Sashimi_plot",
-                            str(events_no) + '_' + gene_symbol + '_' + new_str + '.pdf')
+                            str(events_no) + '_' + gene_symbol + '_' + id_str + '.pdf')
     os.system("mv {0} {1}".format(old_file, new_file))
     return
 
@@ -371,7 +365,7 @@ def plot_with_coordinate(options):
         in_strand = tmp_str[1]
         in_coor_s = tmp_str[2]
         in_coor_e = int(tmp_str[3]) + 1
-        id_str = in_chr + ":" + in_coor_s + ":" + str(in_coor_e) + ":" + in_strand  # chr2:10101175:10104171:+
+        id_str = in_chr + "_" + in_coor_s + "_" + str(in_coor_e) + "_" + in_strand  # chr2_10101175_10104171_+
         gff3_file = tmp_str[4]
         fo = open(gff3_file, 'r')
         w2 = open(os.path.join(options.sashimi_path, "SE.event.list.txt"), 'w')
@@ -483,43 +477,43 @@ class EventCoor(object):
 
     def generate_in_positive_order(self, seq_chr, gene_symbol, strand, event_type):
         if event_type == 'MXE':
-            self.id_str = (seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.e1st_s + ":" + self.e1st_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.e2st_s + ":" + self.e2st_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.up_s + "_" + self.up_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.e1st_s + "_" + self.e1st_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.e2st_s + "_" + self.e2st_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.dn_s + "_" + self.dn_e + "_" + strand)
         elif event_type == 'A5SS':
-            self.id_str = (seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.sh_s + "_" + self.sh_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.lo_s + "_" + self.lo_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.fl_s + "_" + self.fl_e + "_" + strand)
         elif event_type == 'A3SS':
-            self.id_str = (seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.fl_s + "_" + self.fl_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.lo_s + "_" + self.lo_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.sh_s + "_" + self.sh_e + "_" + strand)
         elif event_type == 'SE' or event_type == 'RI':
-            self.id_str = (seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.up_s + "_" + self.up_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.se_s + "_" + self.se_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.dn_s + "_" + self.dn_e + "_" + strand)
 
         self.name_str = gene_symbol + "_" + self.id_str
 
     def generate_in_reversed_order(self, seq_chr, gene_symbol, strand, event_type):
         if event_type == 'MXE':
-            self.id_str = (seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.e2st_s + ":" + self.e2st_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.e1st_s + ":" + self.e1st_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.dn_s + "_" + self.dn_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.e2st_s + "_" + self.e2st_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.e1st_s + "_" + self.e1st_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.up_s + "_" + self.up_e + "_" + strand)
         elif event_type == 'A3SS':  # the same as the positive order in A5SS
-            self.id_str = (seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.sh_s + "_" + self.sh_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.lo_s + "_" + self.lo_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.fl_s + "_" + self.fl_e + "_" + strand)
         elif event_type == 'A5SS':  # the same as the positive order in A3SS
-            self.id_str = (seq_chr + ":" + self.fl_s + ":" + self.fl_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.lo_s + ":" + self.lo_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.sh_s + ":" + self.sh_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.fl_s + "_" + self.fl_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.lo_s + "_" + self.lo_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.sh_s + "_" + self.sh_e + "_" + strand)
         elif event_type == 'SE' or event_type == 'RI':
-            self.id_str = (seq_chr + ":" + self.dn_s + ":" + self.dn_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.se_s + ":" + self.se_e + ":" + strand + "@" +
-                           seq_chr + ":" + self.up_s + ":" + self.up_e + ":" + strand)
+            self.id_str = (seq_chr + "_" + self.dn_s + "_" + self.dn_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.se_s + "_" + self.se_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.up_s + "_" + self.up_e + "_" + strand)
         self.name_str = gene_symbol + "_" + self.id_str
 
 
