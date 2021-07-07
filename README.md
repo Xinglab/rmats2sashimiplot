@@ -161,6 +161,7 @@ usage: rmats2sashimiplot [-h] --l1 L1 --l2 L2 -o OUT_DIR
                          [--group-info GROUP_INFO] [--min-counts MIN_COUNTS]
                          [--color COLOR] [--font-size FONT_SIZE]
                          [--hide-number] [--no-text-background]
+                         [--keep-event-chr-prefix] [--remove-event-chr-prefix]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -226,6 +227,12 @@ Optional:
                         Set the font size. Default: 8
   --hide-number         Do not display the read count on the junctions
   --no-text-background  Do not put a white box behind the junction read count
+  --keep-event-chr-prefix
+                        force the contig name in the provided events file to
+                        be used
+  --remove-event-chr-prefix
+                        remove any leading "chr" from contig names in the
+                        provided events file
 ```
 
 ## Output
