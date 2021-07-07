@@ -89,29 +89,47 @@ def checkout(parser, options):
                      "1) coordinates with gff3 files. or "
                      "2) events files together with events type.")
 
+    used_sample_1 = False
+    used_sample_2 = False
     if options.s1 is not None:
+        used_sample_1 = True
         file_check_error = file_check(options.s1, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s1: {}".format(
                 file_check_error))
 
     if options.s2 is not None:
+        used_sample_2 = True
         file_check_error = file_check(options.s2, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s2: {}".format(
                 file_check_error))
 
     if options.b1 is not None:
+        used_sample_1 = True
         file_check_error = file_check(options.b1, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b1: {}".format(
                 file_check_error))
 
     if options.b2 is not None:
+        used_sample_2 = True
         file_check_error = file_check(options.b2, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b2: {}".format(
                 file_check_error))
+
+    if options.l1 is None:
+        if used_sample_1:
+            parser.error('Must provide --l1 if using --s1 or --b1')
+        else:
+            options.l1 = 'DefaultLabel1'
+
+    if options.l2 is None:
+        if used_sample_2:
+            parser.error('Must provide --l2 if using --s2 or --b2')
+        else:
+            options.l2 = 'DefaultLabel2'
 
     if options.events_file:
         file_check_error = file_check(options.events_file, ".txt")
@@ -760,12 +778,14 @@ def main():
     parser = argparse.ArgumentParser(prog="rmats2sashimiplot")
 
     required_group = parser.add_argument_group('Required')
-    required_group.add_argument("--l1", dest="l1", required=True,
-                                help="The label for first sample.")
-    required_group.add_argument("--l2", dest="l2", required=True,
-                                help="The label for second sample.")
     required_group.add_argument("-o", dest="out_dir", required=True,
                                 help="The output directory.")
+
+    label_group = parser.add_argument_group('Labels')
+    label_group.add_argument("--l1", dest="l1",
+                             help="The label for the first sample.")
+    label_group.add_argument("--l2", dest="l2",
+                             help="The label for the second sample.")
 
     rmats_group_str = 'rMATS event input'
     coord_group_str = 'Coordinate and annotation input'

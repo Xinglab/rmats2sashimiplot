@@ -154,7 +154,7 @@ A: rmats2sashimiplot is single threaded, but you can run multiple instances of r
 ```
 python src/rmats2sashimiplot/rmats2sashimiplot.py -h
 
-usage: rmats2sashimiplot [-h] --l1 L1 --l2 L2 -o OUT_DIR
+usage: rmats2sashimiplot [-h] -o OUT_DIR [--l1 L1] [--l2 L2]
                          [-t {SE,A5SS,A3SS,MXE,RI}] [-e EVENTS_FILE]
                          [-c COORDINATE] [--s1 S1] [--s2 S2] [--b1 B1]
                          [--b2 B2] [--exon_s EXON_S] [--intron_s INTRON_S]
@@ -166,9 +166,11 @@ optional arguments:
   -h, --help            show this help message and exit
 
 Required:
-  --l1 L1               The label for first sample.
-  --l2 L2               The label for second sample.
   -o OUT_DIR            The output directory.
+
+Labels:
+  --l1 L1               The label for the first sample.
+  --l2 L2               The label for the second sample.
 
 rMATS event input:
   Use either (rMATS event input) or (Coordinate and annotation input)
