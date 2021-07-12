@@ -555,6 +555,9 @@ def create_chr_aware_events_file(options):
             sam_has_chr_prefix = ref_name.startswith('chr')
             break  # only check first alignment
 
+    remove_chr_prefix = (not options.keep_event_chr_prefix
+                         and (options.remove_event_chr_prefix
+                              or not sam_has_chr_prefix))
     with open(orig_events_file_path, 'rt') as orig_handle:
         with open(new_events_file_path, 'wt') as new_handle:
             for i, line in enumerate(orig_handle):
@@ -563,7 +566,7 @@ def create_chr_aware_events_file(options):
 
                 if is_header_line:
                     chr_index = columns.index('chr')
-                elif not sam_has_chr_prefix:
+                elif remove_chr_prefix:
                     orig_chr_column = columns[chr_index]
                     if orig_chr_column.startswith('chr'):
                         columns[chr_index] = orig_chr_column[3:]
@@ -875,6 +878,13 @@ def main():
     optional_group.add_argument(
         "--no-text-background", dest="text_background", action="store_false",
         help='Do not put a white box behind the junction read count')
+    optional_group.add_argument(
+        "--keep-event-chr-prefix", action="store_true",
+        help='force the contig name in the provided events file to be used')
+    optional_group.add_argument(
+        "--remove-event-chr-prefix", action="store_true",
+        help=('remove any leading "chr" from contig names in the provided'
+              ' events file'))
 
     options = parser.parse_args()
     out_path = os.path.abspath(os.path.expanduser(options.out_dir))
