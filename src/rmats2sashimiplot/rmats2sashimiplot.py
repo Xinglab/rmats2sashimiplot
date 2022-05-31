@@ -463,8 +463,8 @@ class EventCoor(object):
         if event_type == "MXE":
             self.e1st_s = str(int(items[5]) + 1)
             self.e1st_e = items[6]
-            self.e2st_s = str(int(items[7]) + 1)
-            self.e2st_e = items[8]
+            self.e2nd_s = str(int(items[7]) + 1)
+            self.e2nd_e = items[8]
             self.up_s = str(int(items[9]) + 1)
             self.up_e = items[10]
             self.dn_s = str(int(items[11]) + 1)
@@ -497,7 +497,7 @@ class EventCoor(object):
         if event_type == 'MXE':
             self.id_str = (seq_chr + "_" + self.up_s + "_" + self.up_e + "_" + strand + "@" +
                            seq_chr + "_" + self.e1st_s + "_" + self.e1st_e + "_" + strand + "@" +
-                           seq_chr + "_" + self.e2st_s + "_" + self.e2st_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.e2nd_s + "_" + self.e2nd_e + "_" + strand + "@" +
                            seq_chr + "_" + self.dn_s + "_" + self.dn_e + "_" + strand)
         elif event_type == 'A5SS':
             self.id_str = (seq_chr + "_" + self.sh_s + "_" + self.sh_e + "_" + strand + "@" +
@@ -517,7 +517,7 @@ class EventCoor(object):
     def generate_in_reversed_order(self, seq_chr, gene_symbol, strand, event_type):
         if event_type == 'MXE':
             self.id_str = (seq_chr + "_" + self.dn_s + "_" + self.dn_e + "_" + strand + "@" +
-                           seq_chr + "_" + self.e2st_s + "_" + self.e2st_e + "_" + strand + "@" +
+                           seq_chr + "_" + self.e2nd_s + "_" + self.e2nd_e + "_" + strand + "@" +
                            seq_chr + "_" + self.e1st_s + "_" + self.e1st_e + "_" + strand + "@" +
                            seq_chr + "_" + self.up_s + "_" + self.up_e + "_" + strand)
         elif event_type == 'A3SS':  # the same as the positive order in A5SS
@@ -608,7 +608,7 @@ def plot_with_eventsfile(options):
             if strand == '+':
                 coor.generate_in_positive_order(seq_chr, gene_symbol, strand, options.event_type)
                 w2.write("%s\n" % coor.name_str)
-                if options.event_type == "SE" or options.event_type == "RI":
+                if options.event_type == "SE":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -625,8 +625,21 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
-
-                elif options.event_type == "A3SS":  # flanking -- long/short TODO: change the ID name
+                elif options.event_type == "RI":
+                    # [se_s, se_e] is the whole retained intron isoform (not just the intron)
+                    w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
+                        seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
+                        seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
+                        seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.in;Parent=%s.A\n" % (
+                        seq_chr, coor.se_s, coor.se_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
+                        seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                elif options.event_type == "A3SS":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -635,16 +648,13 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
                         seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
-                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
                         seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
-
-                elif options.event_type == "A5SS":  # short/long -- flanking TODO: change the ID name
+                elif options.event_type == "A5SS":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -652,16 +662,13 @@ def plot_with_eventsfile(options):
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
                         seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
-                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
                         seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
                         seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
-                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
-
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                 elif options.event_type == "MXE":
                     w1.write("%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
@@ -677,16 +684,15 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (
-                        seq_chr, coor.e2st_s, coor.e2st_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2nd;Parent=%s.B\n" % (
+                        seq_chr, coor.e2nd_s, coor.e2nd_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
-
 
             elif strand == '-':
                 coor.generate_in_reversed_order(seq_chr, gene_symbol, strand, options.event_type)
                 w2.write("%s\n" % coor.name_str)
-                if options.event_type == "SE" or options.event_type == "RI":
+                if options.event_type == "SE":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -694,17 +700,30 @@ def plot_with_eventsfile(options):
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
-                        seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                        seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
                         seq_chr, coor.se_s, coor.se_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
-                        seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
-
-                elif options.event_type == "A5SS":  # flanking -- long/short TODO: change the ID name
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                elif options.event_type == "RI":
+                    # [se_s, se_e] is the whole retained intron isoform (not just the intron)
+                    w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
+                        seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
+                        seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
+                        seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.in;Parent=%s.A\n" % (
+                        seq_chr, coor.se_s, coor.se_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
+                        seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+                elif options.event_type == "A5SS":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -713,16 +732,13 @@ def plot_with_eventsfile(options):
                         seq_chr, coor.fl_s, coor.sh_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
                         seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
-                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
                         seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
                         seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
-
-                elif options.event_type == "A3SS":  # short/long -- flanking TODO: change the ID name
+                elif options.event_type == "A3SS":
                     w1.write("%s\tSE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -730,17 +746,15 @@ def plot_with_eventsfile(options):
                     w1.write("%s\tSE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
                         seq_chr, coor.sh_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
-                        seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.se;Parent=%s.A\n" % (
                         seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
                         seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.sh_s, coor.sh_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tSE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
-                        seq_chr, coor.lo_s, coor.lo_e, strand, coor.id_str, coor.id_str))
-
+                        seq_chr, coor.fl_s, coor.fl_e, strand, coor.id_str, coor.id_str))
                 elif options.event_type == "MXE":
+                    # On the negative strand, the inclusion isoform includes the 2nd exon
                     w1.write("%s\tMXE\tgene\t%s\t%s\t.\t%s\t.\tID=%s;Name=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.name_str))
                     w1.write("%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.A;Parent=%s\n" % (
@@ -748,17 +762,18 @@ def plot_with_eventsfile(options):
                     w1.write("%s\tMXE\tmRNA\t%s\t%s\t.\t%s\t.\tID=%s.B;Parent=%s\n" % (
                         seq_chr, coor.up_s, coor.dn_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.up;Parent=%s.A\n" % (
-                        seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.1st;Parent=%s.A\n" % (
-                        seq_chr, coor.e1st_s, coor.e1st_e, strand, coor.id_str, coor.id_str))
+                        seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.2nd;Parent=%s.A\n" % (
+                        seq_chr, coor.e2nd_s, coor.e2nd_e, strand, coor.id_str, coor.id_str))
                     w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.A.dn;Parent=%s.A\n" % (
-                        seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.2st;Parent=%s.B\n" % (
-                        seq_chr, coor.e2st_s, coor.e2st_e, strand, coor.id_str, coor.id_str))
-                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.up;Parent=%s.B\n" % (
                         seq_chr, coor.up_s, coor.up_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.1st;Parent=%s.B\n" % (
+                        seq_chr, coor.e1st_s, coor.e1st_e, strand, coor.id_str, coor.id_str))
+                    w1.write("%s\tMXE\texon\t%s\t%s\t.\t%s\t.\tID=%s.B.dn;Parent=%s.B\n" % (
+                        seq_chr, coor.dn_s, coor.dn_e, strand, coor.id_str, coor.id_str))
+
             w1.close()
             try:
                 conf_setting_file(options, gene_no_str, gene_symbol, events_name_level, coor.id_str)
