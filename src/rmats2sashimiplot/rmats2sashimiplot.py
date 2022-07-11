@@ -178,11 +178,14 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     setting_file.write("[plotting]\n")
     # use a dict to store the configuration
     setting = {}
-    if len_sample1 < 5:
-        setting['fig_height'] = 7
+    if options.fig_height is None:
+        if len_sample1 < 5:
+            setting['fig_height'] = 7
+        else:
+            setting["fig_height"] = 14
     else:
-        setting["fig_height"] = 14
-    setting["fig_width"] = 8
+        setting["fig_height"] = options.fig_height
+    setting["fig_width"] = options.fig_width
     setting["exon_scale"] = str(options.exon_s)
     setting["intron_scale"] = str(options.intron_s)
     setting["logged"] = False
@@ -885,8 +888,16 @@ def main():
         help=('Specify a list of colors with one color per plot. Without'
               ' grouping there is one plot per replicate. With grouping there'
               ' is one plot per group: --color \'#CC0011[,#FF8800]\''))
-    optional_group.add_argument("--font-size", dest="font_size", default=8,
-                                help="Set the font size. Default: %(default)s")
+    optional_group.add_argument(
+        "--font-size", dest="font_size", default=8,
+        help="Set the font size. Default: %(default)s")
+    optional_group.add_argument(
+        "--fig-height", dest="fig_height",
+        help=('Set the output figure height (in inches). Default is 7'
+              ' if sample size < 5 and 14 if sample size is 5 or more'))
+    optional_group.add_argument(
+        "--fig-width", dest="fig_width", default=8,
+        help="Set the output figure width (in inches). Default: %(default)s")
     optional_group.add_argument(
         "--hide-number", dest="hide_number", action="store_true",
         help='Do not display the read count on the junctions')
