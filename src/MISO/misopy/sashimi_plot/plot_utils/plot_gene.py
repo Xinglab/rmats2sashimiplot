@@ -370,8 +370,12 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         bam_group = group_files[i]  # ['./testData/S1.R1.test.bam','./testData/S1.R2.test.bam']
 
         # bam_file = os.path.expanduser(bam_files[i])
-        ax1 = subplot2grid((nfiles + 3, gene_posterior_ratio), (i, 0),
-                           colspan=gene_posterior_ratio - 1)
+        if show_posteriors:
+            ax1 = subplot2grid((nfiles + 3, gene_posterior_ratio), (i, 0),
+                               colspan=gene_posterior_ratio - 1)
+        else:
+            ax1 = subplot2grid((nfiles + 3, gene_posterior_ratio), (i, 0),
+                               colspan=gene_posterior_ratio)
 
         # Read sample label
         sample_label = settings["sample_labels"][i]
@@ -490,8 +494,12 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
 
 
     # Draw gene structure
-    ax = subplot2grid((nfiles + 3, gene_posterior_ratio), (nfiles + 1, 0),
-                      colspan=gene_posterior_ratio - 1, rowspan=2)
+    if show_posteriors:
+        ax = subplot2grid((nfiles + 3, gene_posterior_ratio), (nfiles + 1, 0),
+                          colspan=gene_posterior_ratio - 1, rowspan=2)
+    else:
+        ax = subplot2grid((nfiles + 3, gene_posterior_ratio), (nfiles + 1, 0),
+                          colspan=gene_posterior_ratio, rowspan=2)
     plot_mRNAs(tx_start, mRNAs, strand, graphcoords, reverse_minus)
     subplots_adjust(hspace=.10, wspace=.7)
 
