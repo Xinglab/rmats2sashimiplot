@@ -70,7 +70,16 @@ The test data used in the examples is available at [https://sourceforge.net/proj
 #### SAM files with rMATS event
 
 ```
-rmats2sashimiplot --s1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.sam,./rmats2sashimiplot_test_data/sample_1_replicate_2.sam,./rmats2sashimiplot_test_data/sample_1_replicate_3.sam --s2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.sam,./rmats2sashimiplot_test_data/sample_2_replicate_2.sam,./rmats2sashimiplot_test_data/sample_2_replicate_3.sam -t SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_events_output
+rmats2sashimiplot --s1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.sam,./rmats2sashimiplot_test_data/sample_1_replicate_2.sam,./rmats2sashimiplot_test_data/sample_1_replicate_3.sam --s2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.sam,./rmats2sashimiplot_test_data/sample_2_replicate_2.sam,./rmats2sashimiplot_test_data/sample_2_replicate_3.sam --event-type SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_events_output
+```
+
+Instead of providing the .sam paths directly on the command line, text files with the comma separated paths on the first line can be given: `--s1 s1.txt` and `--s2 s2.txt`. s1.txt would contain:
+```
+./rmats2sashimiplot_test_data/sample_1_replicate_1.sam,./rmats2sashimiplot_test_data/sample_1_replicate_2.sam,./rmats2sashimiplot_test_data/sample_1_replicate_3.sam
+```
+s2.txt would contain:
+```
+./rmats2sashimiplot_test_data/sample_2_replicate_1.sam,./rmats2sashimiplot_test_data/sample_2_replicate_2.sam,./rmats2sashimiplot_test_data/sample_2_replicate_3.sam
 ```
 
 ![img/plotwithevent.png](img/plotwithevent.png)
@@ -81,6 +90,8 @@ rmats2sashimiplot --s1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.sam,./
 rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam -c chr16:+:9000:25000:./rmats2sashimiplot_test_data/annotation.gff3 --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_coordinate_output
 ```
 
+Instead of providing the .bam paths directly on the command line, text files with the comma separated paths on the first line can be given: `--b1 b1.txt` and `--b2 b2.txt`
+
 ![img/plotwithcoor.png](img/plotwithcoor.png)
 
 #### Using a group file
@@ -88,7 +99,7 @@ rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./
 Input mapping files can be divided into different groups for plotting. rmats2sashimiplot calculates the average inclusion level, the average read depth and the average number of junction-spanning reads of each group and displays them in a sashimi plot. This provides the flexibility to compare different groups of samples.
 
 ```
-rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam -t SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_grouped_output --group-info grouping.gf
+rmats2sashimiplot --b1 ./rmats2sashimiplot_test_data/sample_1_replicate_1.bam,./rmats2sashimiplot_test_data/sample_1_replicate_2.bam,./rmats2sashimiplot_test_data/sample_1_replicate_3.bam --b2 ./rmats2sashimiplot_test_data/sample_2_replicate_1.bam,./rmats2sashimiplot_test_data/sample_2_replicate_2.bam,./rmats2sashimiplot_test_data/sample_2_replicate_3.bam --event-type SE -e ./rmats2sashimiplot_test_data/SE.MATS.JC.txt --l1 SampleOne --l2 SampleTwo --exon_s 1 --intron_s 5 -o test_grouped_output --group-info grouping.gf
 ```
 
 ![img/plotwitheventgf.png](img/plotwitheventgf.png)
@@ -155,11 +166,12 @@ A: rmats2sashimiplot is single threaded, but you can run multiple instances of r
 python src/rmats2sashimiplot/rmats2sashimiplot.py -h
 
 usage: rmats2sashimiplot [-h] -o OUT_DIR [--l1 L1] [--l2 L2]
-                         [-t {SE,A5SS,A3SS,MXE,RI}] [-e EVENTS_FILE]
+                         [--event-type {SE,A5SS,A3SS,MXE,RI}] [-e EVENTS_FILE]
                          [-c COORDINATE] [--s1 S1] [--s2 S2] [--b1 B1]
                          [--b2 B2] [--exon_s EXON_S] [--intron_s INTRON_S]
                          [--group-info GROUP_INFO] [--min-counts MIN_COUNTS]
                          [--color COLOR] [--font-size FONT_SIZE]
+                         [--fig-height FIG_HEIGHT] [--fig-width FIG_WIDTH]
                          [--hide-number] [--no-text-background]
                          [--keep-event-chr-prefix] [--remove-event-chr-prefix]
 
@@ -176,7 +188,7 @@ Labels:
 rMATS event input:
   Use either (rMATS event input) or (Coordinate and annotation input)
 
-  -t {SE,A5SS,A3SS,MXE,RI}
+  --event-type {SE,A5SS,A3SS,MXE,RI}
                         Type of event from rMATS result used in the analysis.
                         'SE': skipped exon, 'A5SS': alternative 5' splice
                         site, 'A3SS' alternative 3' splice site, 'MXE':
@@ -196,14 +208,16 @@ Coordinate and annotation input:
 
 SAM Files:
   Mapping results for sample_1 & sample_2 in SAM format. Replicates must be
-  in a comma separated list. (Only if using SAM)
+  in a comma separated list. A path to a file containing the comma separated
+  list can also be given. (Only if using SAM)
 
   --s1 S1               sample_1 sam files: s1_rep1.sam[,s1_rep2.sam]
   --s2 S2               sample_2 sam files: s2_rep1.sam[,s2_rep2.sam]
 
 BAM Files:
   Mapping results for sample_1 & sample_2 in BAM format. Replicates must be
-  in a comma separated list. (Only if using BAM)
+  in a comma separated list. A path to a file containing the comma separated
+  list can also be given. (Only if using BAM)
 
   --b1 B1               sample_1 bam files: s1_rep1.bam[,s1_rep2.bam]
   --b2 B2               sample_2 bam files: s2_rep1.bam[,s2_rep2.bam]
@@ -227,6 +241,11 @@ Optional:
                         '#CC0011[,#FF8800]'
   --font-size FONT_SIZE
                         Set the font size. Default: 8
+  --fig-height FIG_HEIGHT
+                        Set the output figure height (in inches). Default is 7
+                        if sample size < 5 and 14 if sample size is 5 or more
+  --fig-width FIG_WIDTH
+                        Set the output figure width (in inches). Default: 8
   --hide-number         Do not display the read count on the junctions
   --no-text-background  Do not put a white box behind the junction read count
   --keep-event-chr-prefix
