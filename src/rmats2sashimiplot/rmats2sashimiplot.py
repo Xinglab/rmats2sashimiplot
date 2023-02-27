@@ -899,7 +899,7 @@ def main():
               ' sashimi plot will be generated for each group instead of'
               ' the default behavior of one plot per replicate'))
     optional_group.add_argument(
-        "--min-counts", dest="min_counts", default=0,
+        "--min-counts", dest="min_counts", default=0, type=int,
         help=("Individual junctions with read count below --min-counts will"
               " be omitted from the plot. Default: %(default)s"))
     optional_group.add_argument(
