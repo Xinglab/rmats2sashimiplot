@@ -2,7 +2,7 @@
 ## Plotting utils
 ##
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid.axislines import SubplotZero
+from mpl_toolkits.axisartist.axislines import SubplotZero
 import scipy.stats as stats
 from scipy import *
 from numpy import array
