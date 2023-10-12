@@ -69,6 +69,20 @@ def file_check(string, expected_ext):
     return None
 
 
+def maybe_read_paths_from_file(file_path):
+    extension = os.path.splitext(file_path)[1]
+    if extension.lower() in ['.sam', '.bam']:
+        return file_path
+
+    if not os.path.isfile(file_path):
+        return file_path
+
+    with open(file_path) as handle:
+        first_line = handle.readline()
+
+    return first_line.strip()
+
+
 def checkout(parser, options):
     """
     check out the required arguments
@@ -86,13 +100,14 @@ def checkout(parser, options):
         parser.error("Specify either sam files or bam files not both")
     if (options.events_file is None or options.event_type is None) and options.coordinate is None:
         parser.error("Not enough arguments! Please provide "
-                     "1) coordinates with gff3 files. or "
-                     "2) events files together with events type.")
+                     "1) coordinates with gff3 file. or "
+                     "2) events file together with event type.")
 
     used_sample_1 = False
     used_sample_2 = False
     if options.s1 is not None:
         used_sample_1 = True
+        options.s1 = maybe_read_paths_from_file(options.s1)
         file_check_error = file_check(options.s1, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s1: {}".format(
@@ -100,6 +115,7 @@ def checkout(parser, options):
 
     if options.s2 is not None:
         used_sample_2 = True
+        options.s2 = maybe_read_paths_from_file(options.s2)
         file_check_error = file_check(options.s2, ".sam")
         if file_check_error:
             parser.error("Error checking sam files given as --s2: {}".format(
@@ -107,6 +123,7 @@ def checkout(parser, options):
 
     if options.b1 is not None:
         used_sample_1 = True
+        options.b1 = maybe_read_paths_from_file(options.b1)
         file_check_error = file_check(options.b1, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b1: {}".format(
@@ -114,6 +131,7 @@ def checkout(parser, options):
 
     if options.b2 is not None:
         used_sample_2 = True
+        options.b2 = maybe_read_paths_from_file(options.b2)
         file_check_error = file_check(options.b2, ".bam")
         if file_check_error:
             parser.error("Error checking bam files given as --b2: {}".format(
@@ -818,7 +836,7 @@ def main():
         'Use either ({}) or ({})'.format(coord_group_str, rmats_group_str))
 
     rmats_group.add_argument(
-        "-t", dest="event_type", choices=['SE', 'A5SS', 'A3SS', 'MXE', 'RI'],
+        "--event-type", dest="event_type", choices=['SE', 'A5SS', 'A3SS', 'MXE', 'RI'],
         help=("Type of event from rMATS result used in the analysis."
               " 'SE': skipped exon,"
               " 'A5SS': alternative 5' splice site,"
@@ -842,6 +860,7 @@ def main():
     sam_bam_group_desc_template = (
         'Mapping results for sample_1 & sample_2 in {0} format.'
         ' Replicates must be in a comma separated list.'
+        ' A path to a file containing the comma separated list can also be given.'
         ' (Only if using {0})')
     sam_bam_sample_arg_desc_template = (
         'sample_{num} {kind} files: s{num}_rep1.{kind}[,s{num}_rep2.{kind}]')
@@ -880,7 +899,7 @@ def main():
               ' sashimi plot will be generated for each group instead of'
               ' the default behavior of one plot per replicate'))
     optional_group.add_argument(
-        "--min-counts", dest="min_counts", default=0,
+        "--min-counts", dest="min_counts", default=0, type=int,
         help=("Individual junctions with read count below --min-counts will"
               " be omitted from the plot. Default: %(default)s"))
     optional_group.add_argument(
