@@ -27,7 +27,7 @@ with open(path.join(here, 'README.md')) as f:
 
 setup(
     name='rmats2sashimiplot',
-    version='2.0.4',
+    version='3.0.0',
     # 'find_packages' finds just the package name without the full path.
     # 'package_dir' is needed in combination with 'packages' to get the
     # full path of each package.

@@ -3,6 +3,7 @@
 [![Latest Release](https://img.shields.io/github/release/Xinglab/rmats2sashimiplot.svg?label=Latest%20Release)](https://github.com/Xinglab/rmats2sashimiplot/releases/latest)
 [![Total Bioconda Installs](https://img.shields.io/conda/dn/bioconda/rmats2sashimiplot.svg?label=Total%20Bioconda%20Installs)](https://anaconda.org/bioconda/rmats2sashimiplot)
 [![PyPI Installs](https://img.shields.io/pypi/dm/rmats2sashimiplot.svg?label=PyPI%20Installs)](https://pypi.org/project/rmats2sashimiplot/)
+[![Total Docker Pulls](https://img.shields.io/docker/pulls/xinglab/rmats2sashimiplot.svg?label=Total%20Docker%20Pulls)](https://hub.docker.com/r/xinglab/rmats2sashimiplot)
 
 ## About
 
