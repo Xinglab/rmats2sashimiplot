@@ -252,22 +252,30 @@ def analyze_group_info(group_info, bam_files, original_labels):
                         prefix = label_prefixs[i-1]
                         if not has_inc_level:
                             continue
-                        inc += inc_levels[i-1]
-                    num_file += end + 1 - start
+
+                        if not math.isnan(inc_levels[i-1]):
+                            inc += inc_levels[i-1]
+                            num_file += 1
                 else:
                     files.append(bam_files[int(item)-1])
                     prefix = label_prefixs[int(item)-1]
-                    num_file += 1
                     if not has_inc_level:
                         continue
-                    inc += inc_levels[int(item)-1]
+
+                    if not math.isnan(inc_levels[int(item)-1]):
+                        inc += inc_levels[int(item)-1]
+                        num_file += 1
             group_files.append(files)
             pre_group_name = prefix + ' ' + group_name
             group_num += 1
             if not has_inc_level:
                 sample_labels.append(group_name)
                 continue
-            pre_group_name += " IncLevel: {0:.2f}".format(inc/num_file)
+            if num_file == 0:
+                group_inc_level = float('nan')
+            else:
+                group_inc_level = inc/num_file
+            pre_group_name += " IncLevel: {0:.2f}".format(group_inc_level)
             sample_labels.append(pre_group_name)
         except:
             print 'read grouping info failed.'
