@@ -42,7 +42,8 @@ def plot_density_single(settings, sample_label,
                         font_size=6,
                         junction_log_base=10,
                         plot_title=None,
-                        plot_label=None):
+                        plot_label=None,
+                        coord_out_file_name=None):
     """
     Plot MISO events using BAM files and posterior distribution files.
     TODO: If comparison files are available, plot Bayes factors too.
@@ -98,6 +99,12 @@ def plot_density_single(settings, sample_label,
 
     if logged:
         wiggle = log10(wiggle + 1)
+
+    if coord_out_file_name:
+        with open(coord_out_file_name, 'at') as out_handle:
+            out_handle.write('{}\n'.format(bam_group))
+            for wiggle_i, wiggle_value in enumerate(wiggle):
+                out_handle.write('{},{}\n'.format(wiggle_i + tx_start, wiggle_value))
 
     maxheight = max(wiggle)
     if ymax is None:
@@ -383,6 +390,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         print "Reading sample label: %s" %(sample_label)
         # print "Processing BAM: %s" %(bam_file)
 
+        coord_out_file_name = sashimi_obj.output_filename.replace('.pdf', '_coord_out.txt')
         plotted_ax, maxy = plot_density_single(settings, sample_label,
                                          tx_start, tx_end, gene_obj, mRNAs, strand,
                                          graphcoords, graphToGene, bam_group, ax1, chrom,
@@ -393,7 +401,8 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                                          showXaxis=showXaxis, nyticks=nyticks, nxticks=nxticks,
                                          show_ylabel=show_ylabel, show_xlabel=show_xlabel,
                                          font_size=font_size,
-                                         junction_log_base=junction_log_base)
+                                         junction_log_base=junction_log_base,
+                                         coord_out_file_name=coord_out_file_name)
         plotted_axes.append(plotted_ax)
         maxys[i] = maxy
 
