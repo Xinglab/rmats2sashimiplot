@@ -434,13 +434,13 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
     # Reset axes based on this.
     # Set fake ymin bound to allow lower junctions to be visible
     fake_ymin = -0.6 * max_used_yval
-    universal_yticks = linspace(0, max_used_yval,
-                                nyticks + 1)
-    # Round up yticks
-    universal_ticks = map(math.ceil, universal_yticks)
     for sample_num, curr_ax in enumerate(plotted_axes):
+        y_lim = curr_ax.get_ylim()[1]
+        universal_yticks = linspace(0, y_lim, nyticks + 1)
+        # Round up yticks
+        universal_ticks = list(map(math.ceil, universal_yticks))
         if showYaxis:
-            curr_ax.set_ybound(lower=fake_ymin, upper=max_used_yval)
+            curr_ax.set_ybound(lower=fake_ymin, upper=y_lim)
             curr_yticklabels = []
             for label in universal_yticks:
                 if label <= 0:
@@ -453,7 +453,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                         curr_yticklabels.append("%d" %(label))
             curr_ax.set_yticklabels(curr_yticklabels,
                                     fontsize=font_size)
-            curr_ax.spines["left"].set_bounds(0, max_used_yval)
+            curr_ax.spines["left"].set_bounds(0, y_lim)
             curr_ax.set_yticks(universal_yticks)
             curr_ax.yaxis.set_ticks_position('left')
             curr_ax.spines["right"].set_color('none')
