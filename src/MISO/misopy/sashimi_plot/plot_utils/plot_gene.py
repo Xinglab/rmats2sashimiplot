@@ -433,9 +433,9 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
 
     # Reset axes based on this.
     # Set fake ymin bound to allow lower junctions to be visible
-    fake_ymin = -0.6 * max_used_yval
     for sample_num, curr_ax in enumerate(plotted_axes):
         y_lim = curr_ax.get_ylim()[1]
+        fake_ymin = -0.6 * y_lim
         universal_yticks = linspace(0, y_lim, nyticks + 1)
         # Round up yticks
         universal_ticks = list(map(math.ceil, universal_yticks))
