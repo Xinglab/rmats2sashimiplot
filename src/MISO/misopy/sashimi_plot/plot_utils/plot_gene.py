@@ -451,10 +451,10 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                         curr_yticklabels.append("%.1f" %(label))
                     else:
                         curr_yticklabels.append("%d" %(label))
+            curr_ax.set_yticks(universal_yticks)
             curr_ax.set_yticklabels(curr_yticklabels,
                                     fontsize=font_size)
             curr_ax.spines["left"].set_bounds(0, max_used_yval)
-            curr_ax.set_yticks(universal_yticks)
             curr_ax.yaxis.set_ticks_position('left')
             curr_ax.spines["right"].set_color('none')
             if show_ylabel:
