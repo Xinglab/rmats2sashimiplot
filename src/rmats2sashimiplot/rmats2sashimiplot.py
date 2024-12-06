@@ -330,20 +330,20 @@ def plot_c(options, id_str):
     python_executable = get_python_executable()
     # call python index_gff.py
     tmp_str = os.path.join(options.sashimi_path, "tmp.gff3")
-    os.system("{} {} --index {} {}".format(python_executable, path_index_gff,
+    os.system("{} {} --index \"{}\" \"{}\"".format(python_executable, path_index_gff,
                                            tmp_str, options.sashimi_path))
 
     # call python sashimi_plot.py
     setting_str = os.path.join(options.sashimi_path, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
     if options.group_info is not None:
-        os.system("{} {} --plot-event \"{}\" {} {} "
+        os.system("{} {} --plot-event \"{}\" \"{}\" \"{}\" "
                   "--output-dir {} --group-info {}".format(
                       python_executable, path_sashimi_plot, id_str,
                       options.sashimi_path, setting_str, output_path,
                       options.group_info))
     else:
-        os.system("{} {} --plot-event \"{}\" {} {} "
+        os.system("{} {} --plot-event \"{}\" \"{}\" \"{}\" "
                   "--output-dir {}".format(
                       python_executable, path_sashimi_plot, id_str,
                       options.sashimi_path, setting_str, output_path))
@@ -364,22 +364,22 @@ def plot_e(options, id_str, gene_symbol, events_no):
     # call python index_gff.py
     out_index = os.path.join(options.out_dir, "Sashimi_index_" + gene_symbol + '_' + str(events_no))
     tmp_str = os.path.join(out_index, "tmp.gff3")
-    os.system("{} {} --index {} {}".format(python_executable, path_index_gff,
+    os.system("{} {} --index \"{}\" \"{}\"".format(python_executable, path_index_gff,
                                            tmp_str, out_index))
 
     # call python sashimi_plot.py
     setting_str = os.path.join(out_index, "sashimi_plot_settings.txt")
     output_path = os.path.join(options.out_dir, "Sashimi_plot")
-    print("{} {} --plot-event \"{}\" {} {} "
+    print("{} {} --plot-event \"{}\" \"{}\" \"{}\" "
           "--output-dir {}".format(python_executable, path_sashimi_plot, id_str,
                                    out_index, setting_str, output_path))
     if options.group_info is not None:
-        os.system("{} {} --plot-event \"{}\" {} {} "
+        os.system("{} {} --plot-event \"{}\" \"{}\" \"{}\" "
                   "--output-dir {} --group-info {}".format(
                       python_executable, path_sashimi_plot, id_str, out_index,
                       setting_str, output_path, options.group_info))
     else:
-        os.system("{} {} --plot-event \"{}\" {} {} "
+        os.system("{} {} --plot-event \"{}\" \"{}\" \"{}\" "
                   "--output-dir {}".format(
                       python_executable, path_sashimi_plot, id_str, out_index,
                       setting_str, output_path))
@@ -388,7 +388,7 @@ def plot_e(options, id_str, gene_symbol, events_no):
     old_file = os.path.join(options.out_dir, "Sashimi_plot", id_str + '.pdf')
     new_file = os.path.join(options.out_dir, "Sashimi_plot",
                             str(events_no) + '_' + gene_symbol + '_' + id_str + '.pdf')
-    os.system("mv {0} {1}".format(old_file, new_file))
+    os.system("mv {0} \"{1}\"".format(old_file, new_file))
     return
 
 
