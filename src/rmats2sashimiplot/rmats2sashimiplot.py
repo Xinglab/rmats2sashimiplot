@@ -23,13 +23,16 @@ def index_bams(bams):
     split_bams = bams.split(",")
     for bam in split_bams:
         index_files = [bam + '.bai', bam + '.csi']
+        has_index = False
         for index_file in index_files:
-            if os.path.isfile(index_file):  # if the bam file has been indexed.
+            if os.path.isfile(index_file):
                 print("'{}' is indexed already: '{}'".format(bam, index_file))
-                return
+                has_index = True
+                break
 
-        print("Indexing '{}'.".format(bam))
-        os.system("samtools index " + bam)
+        if not has_index:
+            print("Indexing '{}'.".format(bam))
+            os.system("samtools index " + bam)
 
 
 def prepare_bams(options):
