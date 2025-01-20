@@ -39,6 +39,11 @@ rmats2sashimiplot is intended to be used in a Unix-based environment.
 
 ## Install
 
+rmats2sasmimiplot can be installed simply through pip:
+```
+pip install -e https://github.com/Xinglab/rmats2sashimiplot
+```
+___
 rmats2sasmimiplot can be run without installing:
 ```
 python ./src/rmats2sashimiplot/rmats2sashimiplot.py
