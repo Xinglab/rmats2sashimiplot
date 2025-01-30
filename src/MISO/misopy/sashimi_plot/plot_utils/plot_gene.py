@@ -42,7 +42,8 @@ def plot_density_single(settings, sample_label,
                         font_size=6,
                         junction_log_base=10,
                         plot_title=None,
-                        plot_label=None):
+                        plot_label=None,
+                        junction_out_file_name=None):
     """
     Plot MISO events using BAM files and posterior distribution files.
     TODO: If comparison files are available, plot Bayes factors too.
@@ -89,6 +90,14 @@ def plot_density_single(settings, sample_label,
     # junction_width_scale = settings["junction_width_scale"]
     for j_key in jxns.keys():
         jxns[j_key] = int(round(1.0 * jxns[j_key] / bamfile_num, 0))
+
+    if junction_out_file_name:
+        with open(junction_out_file_name, 'at') as junction_handle:
+            comma_bams = ','.join(bam_group)
+            junction_handle.write('{}\n'.format(comma_bams))
+            for junction, junction_count in jxns.items():
+                junction_handle.write('{}\t{}\n'.format(junction, junction_count))
+
     # gene_reads = sam_utils.fetch_bam_reads_in_gene(bamfile, gene_obj.chrom,\
     #     tx_start, tx_end, gene_obj)
     # reads, num_raw_reads = sam_utils.sam_parse_reads(gene_reads,\
@@ -383,6 +392,8 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         print "Reading sample label: %s" %(sample_label)
         # print "Processing BAM: %s" %(bam_file)
 
+        junction_out_file_name = sashimi_obj.output_filename.replace(
+            '.pdf', '_junction_out.txt')
         plotted_ax, maxy = plot_density_single(settings, sample_label,
                                          tx_start, tx_end, gene_obj, mRNAs, strand,
                                          graphcoords, graphToGene, bam_group, ax1, chrom,
@@ -393,7 +404,8 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                                          showXaxis=showXaxis, nyticks=nyticks, nxticks=nxticks,
                                          show_ylabel=show_ylabel, show_xlabel=show_xlabel,
                                          font_size=font_size,
-                                         junction_log_base=junction_log_base)
+                                         junction_log_base=junction_log_base,
+                                         junction_out_file_name=junction_out_file_name)
         plotted_axes.append(plotted_ax)
         maxys[i] = maxy
 
