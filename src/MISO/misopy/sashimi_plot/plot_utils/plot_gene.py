@@ -21,6 +21,54 @@ import misopy.sashimi_plot.plot_utils.plot_settings as plot_settings
 from misopy.sashimi_plot.plot_utils.plotting import show_spines
 from misopy.parse_gene import parseGene
 
+
+def set_wiggle_to_zero_outside_exons(mRNAs, tx_start, tx_end, wiggle):
+    all_exons = list()
+    for exons in mRNAs:
+        for exon in exons:
+            all_exons.append(exon)
+
+    all_exons.sort()
+    regions = list()
+    for exon_start, exon_end in all_exons:
+        if not regions:
+            regions = [[exon_start, exon_end]]
+            continue
+
+        cur_region = regions[-1]
+        cur_start, cur_end = cur_region
+        if cur_start <= exon_start <= cur_end:
+            new_end = max(cur_end, exon_end)
+            cur_region[1] = new_end
+            continue
+
+        regions.append([exon_start, exon_end])
+
+    for region_i, region in enumerate(regions):
+        region_start = region[0]
+        region_end = region[1]
+        if region_i == 0:
+            if region_start > tx_start:
+                zero_end = region_start - tx_start
+                for i in range(0, zero_end):
+                    wiggle[i] = 0
+
+        if region_i == (len(regions) - 1):
+            if region_end < tx_end:
+                non_zero_end = region_end - tx_start
+                for i in range(non_zero_end + 1, tx_end + 1):
+                    wiggle[i] = 0
+
+            continue
+
+        next_region = regions[region_i + 1]
+        next_region_start = next_region[0]
+        zero_start = (region_end - tx_start) + 1
+        zero_end = next_region_start - tx_start
+        for i in range(zero_start, zero_end):
+            wiggle[i] = 0
+
+
 def plot_density_single(settings, sample_label,
                         tx_start, tx_end, gene_obj, mRNAs, strand,
                         graphcoords, graphToGene, bam_group, axvar, chrom,
@@ -95,6 +143,8 @@ def plot_density_single(settings, sample_label,
     #     paired_end=paired_end)
     # wiggle, jxns = readsToWiggle(reads, tx_start, tx_end)
     #wiggle = 1e3 * wiggle / coverage
+
+    set_wiggle_to_zero_outside_exons(mRNAs, tx_start, tx_end, wiggle)
 
     if logged:
         wiggle = log10(wiggle + 1)
