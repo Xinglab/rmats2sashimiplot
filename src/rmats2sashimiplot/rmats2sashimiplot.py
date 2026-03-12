@@ -199,6 +199,9 @@ def conf_setting_file(options, gene_no_str=None, gene_symbol=None, events_name_l
     setting_file.write("[plotting]\n")
     # use a dict to store the configuration
     setting = {}
+    if options.ymax:
+        setting["ymax"] = options.ymax
+
     if options.fig_height is None:
         if len_sample1 < 5:
             setting['fig_height'] = 7
@@ -933,6 +936,9 @@ def main():
         "--remove-event-chr-prefix", action="store_true",
         help=('remove any leading "chr" from contig names in the provided'
               ' events file'))
+    optional_group.add_argument(
+        "--ymax", dest="ymax", type=float,
+        help="Set the y-axis upper limit")
 
     options = parser.parse_args()
     out_path = os.path.abspath(os.path.expanduser(options.out_dir))
