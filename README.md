@@ -175,6 +175,7 @@ usage: rmats2sashimiplot [-h] -o OUT_DIR [--l1 L1] [--l2 L2]
                          [--fig-height FIG_HEIGHT] [--fig-width FIG_WIDTH]
                          [--hide-number] [--no-text-background]
                          [--keep-event-chr-prefix] [--remove-event-chr-prefix]
+                         [--ymax YMAX]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -255,6 +256,7 @@ Optional:
   --remove-event-chr-prefix
                         remove any leading "chr" from contig names in the
                         provided events file
+  --ymax YMAX           Set the y-axis upper limit
 ```
 
 ## Output
