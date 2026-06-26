@@ -31,16 +31,16 @@ class MISOSamples:
         self.compressed_ids_fname = use_compressed
         self.compressed_ids_to_genes = None
         if self.compressed_ids_fname is not None:
-            print "  - Loading compressed IDs mapping from: %s" \
-                  %(self.compressed_ids_fname)
+            print("  - Loading compressed IDs mapping from: %s" \
+                  %(self.compressed_ids_fname))
             # Load mapping from gene IDs to their hashes
             self.compressed_ids_to_genes = \
               misc_utils.load_compressed_ids_to_genes(self.compressed_ids_fname)
             if len(self.compressed_ids_to_genes) == 0:
-                print "Error: Compressed IDs shelve file is empty. Are you sure " \
+                print("Error: Compressed IDs shelve file is empty. Are you sure " \
                       "the index directory you passed was created with the " \
                       "--compress-id flag, e.g.:\n" \
-                      "index_gff yourfile.gff --compress-id"
+                      "index_gff yourfile.gff --compress-id")
                 sys.exit(1)
         # Get all the MISO relevant filenames
         self.all_filenames = get_samples_dir_filenames(samples_dir)
@@ -116,7 +116,7 @@ class MISOSamples:
             event_data = curr_db.get_event_data_as_stream(event_name)
             samples = load_samples(event_data)
         if samples is None:
-            print "WARNING: Could not parse event %s samples" %(event_name)
+            print("WARNING: Could not parse event %s samples" %(event_name))
         return samples
 
 
@@ -202,9 +202,9 @@ def get_counts_from_header(samples_header):
         elif f.startswith("assigned_counts="):
             counts['assigned_counts'] = f.split("=")[1]
 
-    if len(counts.keys()) != 2:
-        print "Warning: Could not get counts fields out of " \
-              "%s header." %(samples_header)
+    if len(list(counts.keys())) != 2:
+        print("Warning: Could not get counts fields out of " \
+              "%s header." %(samples_header))
         counts = {'counts': 'n/a',
                   'assigned_counts': 'n/a'}
 
@@ -242,8 +242,8 @@ def get_event_name(miso_filename,
     event_name = basename.split(".miso")[0]
     if use_compressed_map is not None:
         if event_name not in use_compressed_map:
-            print "MISO FILENAME IS: %s" %(miso_filename)
-            print event_name
+            print("MISO FILENAME IS: %s" %(miso_filename))
+            print(event_name)
         else:
             event_name = use_compressed_map[event_name]
     return event_name
@@ -275,8 +275,8 @@ def summarize_sampler_results(samples_dir, summary_filename,
                      "mRNA_ends"]
     summary_header = "%s\n" %("\t".join(header_fields))
     summary_file.write(summary_header)
-    print "Loading events from: %s" %(samples_dir)
-    print "Writing summary to: %s" %(summary_filename)
+    print("Loading events from: %s" %(samples_dir))
+    print("Writing summary to: %s" %(summary_filename))
     samples_obj = MISOSamples(samples_dir,
                               use_compressed=use_compressed)
     num_events = 0
@@ -284,16 +284,16 @@ def summarize_sampler_results(samples_dir, summary_filename,
     for event_name in samples_obj.all_event_names:
         samples_results = samples_obj.get_event_samples(event_name)
         if samples_results is None:
-            print "WARNING: Skipping %s" %(event_name)
+            print("WARNING: Skipping %s" %(event_name))
             # Skip files that could not be parsed
             continue
         # If we're not given a mapping to compressed IDs, check
         # that the event IDs do not look compressed
         if misc_utils.is_compressed_name(event_name) and \
            (use_compressed is None):
-            print "WARNING: %s looks like a compressed id, but no mapping file " \
+            print("WARNING: %s looks like a compressed id, but no mapping file " \
                   "from compressed IDs to event IDs was given! Try: --use-compressed" \
-                  %(event_name)
+                  %(event_name))
         # Load header/parameters information
         samples = samples_results[0]
         header = samples_results[1]
@@ -303,7 +303,7 @@ def summarize_sampler_results(samples_dir, summary_filename,
         counts_info = samples_results[5]
         shape_len = len(shape(samples))
         if shape_len < 2:
-            print "WARNING: Skipping %s -- mishaped file" %(event_name)
+            print("WARNING: Skipping %s -- mishaped file" %(event_name))
             continue
         num_samples, num_isoforms = shape(samples)
         output_fields = format_credible_intervals(event_name, samples)
@@ -325,7 +325,7 @@ def summarize_sampler_results(samples_dir, summary_filename,
         output_line = "%s\n" %("\t".join(output_fields))
         summary_file.write(output_line)
         num_events += 1
-    print "  - Summarized a total of %d events." %(num_events)
+    print("  - Summarized a total of %d events." %(num_events))
     summary_file.close()
 
 
@@ -371,7 +371,7 @@ def get_samples_dir_filenames(samples_dir):
     Also collect files in samples_dir for backwards compatibility.
     """
     directories = glob.glob(os.path.join(samples_dir, "*"))
-    directories = filter(is_miso_chrom_dir, directories)
+    directories = list(filter(is_miso_chrom_dir, directories))
 
     # Filenames indexed by chromosomes
     filenames = []
@@ -391,21 +391,18 @@ def get_samples_dir_filenames(samples_dir):
                  for fname in filenames]
 
     # Remove directories and files beginning with "."
-    filenames = filter(lambda f: not os.path.isdir(f),
-                       filenames)
-    filenames = filter(lambda f: not os.path.basename(f).startswith("."),
-                       filenames)
+    filenames = [f for f in filenames if not os.path.isdir(f)]
+    filenames = [f for f in filenames if not os.path.basename(f).startswith(".")]
 
     # Resulting files should be either *.miso files
     # or *.miso_db files, but not both
     miso_filenames = \
-      filter(lambda f: os.path.basename(f).endswith(".miso"),
-             filenames)
+      [f for f in filenames if os.path.basename(f).endswith(".miso")]
     miso_db_filenames = \
-      filter(miso_db.is_miso_db_fname,
-             filenames)
+      list(filter(miso_db.is_miso_db_fname,
+             filenames))
     if len(miso_filenames) > 0 and len(miso_db_filenames) > 0:
-        print "WARNING: Directory %s has both *.miso and *.miso_db files" \
-              %(samples_dir)
+        print("WARNING: Directory %s has both *.miso and *.miso_db files" \
+              %(samples_dir))
     relevant_filenames = miso_filenames + miso_db_filenames
     return relevant_filenames

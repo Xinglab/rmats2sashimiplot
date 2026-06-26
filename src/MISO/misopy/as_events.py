@@ -139,15 +139,15 @@ class MISOEvents:
         elif (self.event_type == 'AFE' or self.event_type == 'ALE'):
             self.filter_afe_ale_events(settings)
         else:
-            raise Exception, "Unsupported event type for filtering: %s" %(self.event_type)
+            raise Exception("Unsupported event type for filtering: %s" %(self.event_type))
 
     def filter_afe_ale_events(self, settings,
                               atleast_proximal=0,
                               atleast_distal=0,
                               proximal_distal_sum=20):
-        print "Filtering AFE/ALE events..."
+        print("Filtering AFE/ALE events...")
         filtered_events = {}
-        for event_name, event in self.events.iteritems():
+        for event_name, event in self.events.items():
             num_proximal = event.num_proximal_body + event.num_proximal_jxns
             num_distal = event.num_distal_body + event.num_distal_jxns
             if (num_proximal >= atleast_proximal and num_distal >= atleast_distal) \
@@ -159,7 +159,7 @@ class MISOEvents:
                                  atleast_core=1,
                                  atleast_ext=1,
                                  core_ext_sum=20):
-        print "Filtering tandem UTR events..."
+        print("Filtering tandem UTR events...")
         if settings != None:
             if 'utr_filter' in settings:
                 core_ext_sum = settings['utr_filter'][0]
@@ -167,7 +167,7 @@ class MISOEvents:
                 atleast_core = settings['utr_filter'][2]
 
         filtered_events = {}
-        for event_name, event in self.events.iteritems():
+        for event_name, event in self.events.items():
             if (event.num_core >= atleast_core and event.num_ext >= atleast_ext) and \
                (event.num_core + event.num_ext) >= core_ext_sum:
                 filtered_events[event_name] = event
@@ -177,14 +177,14 @@ class MISOEvents:
                          atleast_ri_plus_ne=10,
                          atleast_ne=0,
                          atleast_num_common=1):
-        print "Filtering RI events..."
-        print "Filter: "
-        print "  - ri_plus_ne >= %d" %(atleast_ri_plus_ne)
-        print "  - ne >= %d" %(atleast_ne)
-        print "  - num_common >= %d" %(atleast_num_common)
+        print("Filtering RI events...")
+        print("Filter: ")
+        print("  - ri_plus_ne >= %d" %(atleast_ri_plus_ne))
+        print("  - ne >= %d" %(atleast_ne))
+        print("  - num_common >= %d" %(atleast_num_common))
 
         filtered_events = {}
-        for event_name, event in self.events.iteritems():
+        for event_name, event in self.events.items():
             if ((event.num_inc + event.num_exc) >= atleast_ri_plus_ne \
                 and (event.num_exc >= atleast_ne) and \
                 (event.num_common >= atleast_num_common)):
@@ -195,7 +195,7 @@ class MISOEvents:
                          atleast_ni_plus_ne=10,
                          atleast_ne=0,
                          atleast_num_common=1):
-        print "Filtering SE events..."
+        print("Filtering SE events...")
         if settings != None:
             if 'se_filter' in settings:
                 atleast_ni_plus_ne = settings['se_filter'][0]
@@ -203,7 +203,7 @@ class MISOEvents:
                 atleast_num_common = settings['se_filter'][2]
 
         filtered_events = {}
-        for event_name, event in self.events.iteritems():
+        for event_name, event in self.events.items():
             if ((event.num_inc + event.num_exc) >= atleast_ni_plus_ne) and (event.num_exc >= atleast_ne) and \
                    (event.num_common >= atleast_num_common):
                 filtered_events[event_name] = event
@@ -216,18 +216,18 @@ class MISOEvents:
         t1 = time.time()
         self.events = json_utils.json_load_file(json_filename)
         t2 = time.time()
-        print "Loading from JSON file took %.2f seconds." %(float(t2 - t1))
+        print("Loading from JSON file took %.2f seconds." %(float(t2 - t1)))
         self.num_events = len(self.events)
 
     def load_from_pickle_file(self, pickle_filename):
-        print "Called on: ", pickle_filename
+        print("Called on: ", pickle_filename)
         # clear currently loaded events, if any
         self.clear_events()
         # Modify events directly
         t1 = time.time()
         self.events = pickle_utils.load_pickled_file(pickle_filename)
         t2 = time.time()
-        print "Loading from Pickle file took %.2f seconds." %(float(t2 - t1))
+        print("Loading from Pickle file took %.2f seconds." %(float(t2 - t1)))
         self.num_events = len(self.events)
 
     def loaded_events_to_genes(self, single_event_name=None,
@@ -236,7 +236,7 @@ class MISOEvents:
         Parse the loaded set of events into gene structures.  Map events to genes.
         """
         if len(self.events) == 0:
-            raise Exception, "Must load events first before they can be converted to genes."
+            raise Exception("Must load events first before they can be converted to genes.")
         events_to_genes = {}
 
         t1 = time.time()
@@ -244,7 +244,7 @@ class MISOEvents:
             # If given an event name, only parse that event
             event_names = [single_event_name]
         else:
-            event_names = self.events.keys()
+            event_names = list(self.events.keys())
         for event_name in event_names:
             event = self.events[event_name]
 
@@ -262,10 +262,10 @@ class MISOEvents:
                                                   label=event.label, read_len=read_len,
                                                   overhang_len=overhang_len)
             else:
-                raise Exception, "Unsupported event type: %s" %(self.event_type)
+                raise Exception("Unsupported event type: %s" %(self.event_type))
             events_to_genes[event_name] = gene
         t2 = time.time()
-        print "Parsing of events to genes took %.2f seconds." %(t2 - t1)
+        print("Parsing of events to genes took %.2f seconds." %(t2 - t1))
         return events_to_genes
 
     def output_file(self, results_output_dir, sample_label, method="pickle"):
@@ -280,7 +280,7 @@ class MISOEvents:
         """
         Output as json.
         """
-        print "Serializing a total of %d events by JSON." %(len(self.events))
+        print("Serializing a total of %d events by JSON." %(len(self.events)))
         json_output_dir = os.path.join(results_output_dir, 'json')
         if not os.path.isdir(json_output_dir):
             os.mkdir(json_output_dir)
@@ -289,7 +289,7 @@ class MISOEvents:
         return json_events_filename
 
     def output_pickle_file(self, results_output_dir, sample_label):
-        print "Serializing a total of %d events by Pickle." %(len(self.events))
+        print("Serializing a total of %d events by Pickle." %(len(self.events)))
         pickle_output_dir = os.path.join(results_output_dir, 'pickle')
         if not os.path.isdir(pickle_output_dir):
             os.mkdir(pickle_output_dir)
@@ -335,8 +335,8 @@ def parse_event_information(event_name, event_type, delimiter=';',
                 'chrom': core_part_info['chrom']}
     elif (event_type == 'AFE' or event_type == 'ALE'):
         if event_name not in events_to_info:
-            raise Exception, "Error: Given unknown event %s of type %s." \
-                  %(event_name, event_type)
+            raise Exception("Error: Given unknown event %s of type %s." \
+                  %(event_name, event_type))
         # Return information about the events
         return events_to_info[event_name]
 
@@ -372,8 +372,8 @@ def load_afe_ale_events_information(events_info_filename, event_type,
     assert((event_type == 'AFE') or (event_type == 'ALE')), \
                        "Error: Event type must be AFE/ALE"
 
-    print "Loading events from %s (event type: %s)" %(events_info_filename,
-                                                      event_type)
+    print("Loading events from %s (event type: %s)" %(events_info_filename,
+                                                      event_type))
     events_info_file = open(events_info_filename, 'r')
     events_info = csv.reader(events_info_file,
                              delimiter=delimiter)
@@ -492,7 +492,7 @@ def load_event_counts(events_filename, event_type, delimiter=';',
         ## MXEs
         ##
         elif event_type == 'MXE':
-            raise Exception, "MXEs not supported."
+            raise Exception("MXEs not supported.")
 
         assert(event != None), "Event type %s is unknown." %(event_type)
 

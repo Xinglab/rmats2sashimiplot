@@ -43,8 +43,8 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
     Plot a Bayes factor distribution from a .miso_bf file.
     """
     if not bf_filename.endswith(".miso_bf"):
-        print "WARNING: %s does not end in .miso_bf, are you sure it is the " \
-              "output of a MISO samples comparison?" %(bf_filename)
+        print("WARNING: %s does not end in .miso_bf, are you sure it is the " \
+              "output of a MISO samples comparison?" %(bf_filename))
 
     # Load BF data
     data, h = csv2dictlist_raw(bf_filename)
@@ -64,8 +64,8 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
         delta_psi = event['diff']
 
         if type(bf) == str and "," in bf:
-            print "WARNING: %s is a multi-isoform event, skipping..." \
-                %(event)
+            print("WARNING: %s is a multi-isoform event, skipping..." \
+                %(event))
             continue
         else:
             # Impose upper limit on Bayes factor
@@ -77,12 +77,12 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
     bfs_and_deltas = array(bfs_and_deltas)
     num_events = len(bfs_and_deltas)
 
-    print "Loaded %d event comparisons." %(num_events)
+    print("Loaded %d event comparisons." %(num_events))
 
     output_filename = sashimi_obj.output_filename
 
-    print "Plotting Bayes factors distribution"
-    print "  - Output filename: %s" %(output_filename)
+    print("Plotting Bayes factors distribution")
+    print("  - Output filename: %s" %(output_filename))
     bf_thresholds = settings["bf_thresholds"]
     bar_color = settings["bar_color"]
 
@@ -90,11 +90,11 @@ def plot_bf_dist(bf_filename, settings_filename, output_dir,
     num_events_used = sum(bfs_and_deltas[:, 0] >= min_bf_thresh)
     for thresh in bf_thresholds:
         if type(thresh) != int:
-            print "Error: BF thresholds must be integers."
+            print("Error: BF thresholds must be integers.")
             sys.exit(1)
-    print "Using BF thresholds: "
-    print bf_thresholds
-    print "Using bar color: %s" %(bar_color)
+    print("Using BF thresholds: ")
+    print(bf_thresholds)
+    print("Using bar color: %s" %(bar_color))
     plot_cumulative_bars(bfs_and_deltas[:, 0],
                          bf_thresholds,
                          bar_color=bar_color,
@@ -124,11 +124,11 @@ def plot_event(event_name, pickle_dir, settings_filename,
     Also plots MISO estimates and Psi values.
     """
     if not os.path.isfile(settings_filename):
-        print "Error: settings filename %s not found." %(settings_filename)
+        print("Error: settings filename %s not found." %(settings_filename))
         sys.exit(1)
 
     if not os.path.isdir(pickle_dir):
-        print "Error: event pickle directory %s not found." %(pickle_dir)
+        print("Error: event pickle directory %s not found." %(pickle_dir))
         sys.exit(1)
 
     # Retrieve the full pickle filename
@@ -137,20 +137,20 @@ def plot_event(event_name, pickle_dir, settings_filename,
 
     # Check that file basename exists
     if len(glob.glob("%s*" %(glob.escape(genes_filename)))) == 0:
-        raise Exception, "Cannot find file %s. Are you sure the events " \
+        raise Exception("Cannot find file %s. Are you sure the events " \
                          "were indexed with the latest version of index_gff.py?" \
-                         %(genes_filename)
+                         %(genes_filename))
 
     event_to_filenames = shelve.open(genes_filename)
     if event_name not in event_to_filenames:
-        raise Exception, "Event %s not found in pickled directory %s. " \
+        raise Exception("Event %s not found in pickled directory %s. " \
               "Are you sure this is the right directory for the event?" \
-              %(event_name, pickle_dir)
+              %(event_name, pickle_dir))
 
     pickle_filename = event_to_filenames[event_name]
 
     if no_posteriors:
-        print "Asked to not plot MISO posteriors."
+        print("Asked to not plot MISO posteriors.")
 
     plot_density_from_file(settings_filename, pickle_filename, event_name,
                            output_dir,
@@ -167,7 +167,7 @@ def plot_insert_len(insert_len_filename,
     Plot insert length distribution.
     """
     if not os.path.isfile(settings_filename):
-        print "Error: settings filename %s not found." %(settings_filename)
+        print("Error: settings filename %s not found." %(settings_filename))
         sys.exit(1)
     plot_name = os.path.basename(insert_len_filename)
     sashimi_obj = Sashimi(plot_name, output_dir,
@@ -178,16 +178,16 @@ def plot_insert_len(insert_len_filename,
     sashimi_obj.setup_figure()
     s = plt.subplot(1, 1, 1)
 
-    print "Plotting insert length distribution..."
-    print "  - Distribution file: %s" %(insert_len_filename)
-    print "  - Output plot: %s" %(output_filename)
+    print("Plotting insert length distribution...")
+    print("  - Distribution file: %s" %(insert_len_filename))
+    print("  - Output plot: %s" %(output_filename))
 
     insert_dist, params = pe_utils.load_insert_len(insert_len_filename)
 
     mean, sdev, dispersion, num_pairs \
           = pe_utils.compute_insert_len_stats(insert_dist)
-    print "min insert: %.1f" %(min(insert_dist))
-    print "max insert: %.1f" %(max(insert_dist))
+    print("min insert: %.1f" %(min(insert_dist)))
+    print("max insert: %.1f" %(max(insert_dist)))
     plt.title("%s (%d read-pairs)" \
               %(plot_name,
                 num_pairs),
@@ -211,10 +211,10 @@ def plot_insert_len(insert_len_filename,
     sashimi_obj.save_plot()
 
 def greeting():
-    print "Sashimi plot: Visualize spliced RNA-Seq reads along gene models. " \
-          "Part of the MISO (Mixture of Isoforms model) framework."
-    print "See --help for usage.\n"
-    print "Manual available at: http://genes.mit.edu/burgelab/miso/docs/sashimi.html\n"
+    print("Sashimi plot: Visualize spliced RNA-Seq reads along gene models. " \
+          "Part of the MISO (Mixture of Isoforms model) framework.")
+    print("See --help for usage.\n")
+    print("Manual available at: http://genes.mit.edu/burgelab/miso/docs/sashimi.html\n")
 
 
 def main():
@@ -254,7 +254,7 @@ def main():
         sys.exit(1)
 
     if options.output_dir == None:
-        print "Error: need --output-dir"
+        print("Error: need --output-dir")
         sys.exit(1)
 
     output_dir = os.path.abspath(os.path.expanduser(options.output_dir))

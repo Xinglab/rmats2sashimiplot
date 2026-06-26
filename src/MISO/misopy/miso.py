@@ -59,10 +59,10 @@ def get_main_logger(log_outdir,
 
 
 def greeting(parser=None):
-    print "MISO (Mixture of Isoforms model)"
-    print "Probabilistic analysis of RNA-Seq data for detecting " \
-          "differential isoforms"
-    print "Use --help argument to view options.\n"
+    print("MISO (Mixture of Isoforms model)")
+    print("Probabilistic analysis of RNA-Seq data for detecting " \
+          "differential isoforms")
+    print("Use --help argument to view options.\n")
     if parser is not None:
         parser.print_help()
 
@@ -142,7 +142,7 @@ class GenesDispatcher:
         if gene_ids is not None:
             self.gene_ids = gene_ids
         else:
-            self.gene_ids = self.gene_ids_to_gff_index.keys()
+            self.gene_ids = list(self.gene_ids_to_gff_index.keys())
         if len(self.gene_ids) == 0:
             self.main_logger.error("No genes to run on. Did you pass me the wrong path " \
                                    "to your index GFF directory? " \
@@ -178,7 +178,7 @@ class GenesDispatcher:
                     if gene_id not in self.gene_ids_to_gff_index:
                         # If gene is not found (perhaps because it had only a 'gene'
                         # entry in GFF, with no mRNA children), then skip it
-                        print "Skipping: %s" %(gene_id)
+                        print("Skipping: %s" %(gene_id))
                         continue
                     index_fname = self.gene_ids_to_gff_index[gene_id]
                     output_line = "%s\t%s\n" %(gene_id,
@@ -201,7 +201,7 @@ class GenesDispatcher:
         ##
         ## Prepare all the files necessary to run each batch
         ##
-        print "Preparing to run %d batches of jobs..." %(num_batches)
+        print("Preparing to run %d batches of jobs..." %(num_batches))
         miso_run = os.path.join(miso_path, "run_miso.py")
         for batch_num, batch in enumerate(batch_filenames):
             batch_filename, batch_size = batch
@@ -233,7 +233,7 @@ class GenesDispatcher:
         ##
         # First handle special case of SGE cluster submission
         if self.use_cluster and self.SGEarray:
-            print "Using SGEarray..."
+            print("Using SGEarray...")
             # Call SGE
             batch_argfile = os.path.join(self.cluster_scripts_dir,
                                          "run_args.txt")
@@ -249,8 +249,8 @@ class GenesDispatcher:
         cluster_jobs = []
         for batch_num, cmd_info in enumerate(all_miso_cmds):
             miso_cmd, batch_size = cmd_info
-            print "Running batch of %d genes.." %(batch_size)
-            print "  - Executing: %s" %(miso_cmd)
+            print("Running batch of %d genes.." %(batch_size))
+            print("  - Executing: %s" %(miso_cmd))
             # Make a log file for the batch, where all the output
             # will be redirected
             time_str = time.strftime("%m-%d-%y_%H:%M:%S")
@@ -262,7 +262,7 @@ class GenesDispatcher:
                 # Run locally
                 p = subprocess.Popen(cmd_to_run, shell=True)
                 thread_id = "batch-%d" %(batch_num)
-                print "  - Submitted thread %s" %(thread_id)
+                print("  - Submitted thread %s" %(thread_id))
                 self.threads[thread_id] = p
             else:
                 # Run on cluster
@@ -272,7 +272,7 @@ class GenesDispatcher:
                     queue_type = "short"
                 # Run on cluster
                 job_name = "gene_psi_batch_%d" %(batch_num)
-                print "Submitting to cluster: %s" %(cmd_to_run)
+                print("Submitting to cluster: %s" %(cmd_to_run))
                 job_id = \
                     cluster_utils.run_on_cluster(cmd_to_run,
                                                  job_name,
@@ -318,7 +318,7 @@ class GenesDispatcher:
         num_threads = len(self.threads)
         if num_threads == 0:
             return
-        print "Waiting on %d threads..." %(num_threads)
+        print("Waiting on %d threads..." %(num_threads))
         t_start = time.time()
         for thread_name in self.threads:
             if thread_name in threads_completed:
@@ -359,11 +359,11 @@ def compute_all_genes_psi(gff_dir, bam_filename, read_len,
       Uses bedtools to determine coverage of each event and remove
       events that do not meet the coverage criteria from the run.
     """
-    print "Computing Psi values..."
-    print "  - GFF index: %s" %(gff_dir)
-    print "  - BAM: %s" %(bam_filename)
-    print "  - Read length: %d" %(read_len)
-    print "  - Output directory: %s" %(output_dir)
+    print("Computing Psi values...")
+    print("  - GFF index: %s" %(gff_dir))
+    print("  - BAM: %s" %(bam_filename))
+    print("  - Read length: %d" %(read_len))
+    print("  - Output directory: %s" %(output_dir))
 
     misc_utils.make_dir(output_dir)
 
@@ -513,15 +513,15 @@ def main():
     greeting()
 
     if options.version:
-        print "MISO version %s\n" %(misopy.__version__)
+        print("MISO version %s\n" %(misopy.__version__))
 
     ##
     ## Load the settings file
     ##
     if not os.path.isdir(miso_settings_path):
-        print "Error: %s is not a directory containing a default MISO " \
+        print("Error: %s is not a directory containing a default MISO " \
               "settings filename. Please specify a settings filename " \
-              "using --settings-filename."
+              "using --settings-filename.")
         return
 
     settings_filename = \
@@ -529,12 +529,12 @@ def main():
     Settings.load(settings_filename)
 
     if (not options.use_cluster) and options.chunk_jobs:
-        print "Error: Chunking jobs only applies when using " \
-              "the --use-cluster option to run MISO on cluster."
+        print("Error: Chunking jobs only applies when using " \
+              "the --use-cluster option to run MISO on cluster.")
         sys.exit(1)
     if (not options.use_cluster) and options.SGEarray:
-        print "Error: SGEarray implies that you are using an SGE cluster," \
-              "please run again with --use-cluster option enabled."
+        print("Error: SGEarray implies that you are using an SGE cluster," \
+              "please run again with --use-cluster option enabled.")
         sys.exit(1)
 
     ##
@@ -550,7 +550,7 @@ def main():
             os.path.abspath(os.path.expanduser(options.compute_genes_psi[1]))
 
         if options.output_dir == None:
-            print "Error: need --output-dir to compute Psi values."
+            print("Error: need --output-dir to compute Psi values.")
             sys.exit(1)
 
         # Output directory to use
@@ -593,29 +593,29 @@ def main():
     if options.view_gene != None:
         indexed_gene_filename = \
             os.path.abspath(os.path.expanduser(options.view_gene))
-        print "Viewing genes in %s" %(indexed_gene_filename)
+        print("Viewing genes in %s" %(indexed_gene_filename))
         gff_genes = gff_utils.load_indexed_gff_file(indexed_gene_filename)
 
         if gff_genes == None:
-            print "No genes."
+            print("No genes.")
             sys.exit(1)
 
-        for gene_id, gene_info in gff_genes.iteritems():
-            print "Gene %s" %(gene_id)
+        for gene_id, gene_info in gff_genes.items():
+            print("Gene %s" %(gene_id))
             gene_obj = gene_info['gene_object']
-            print " - Gene object: ", gene_obj
-            print "=="
-            print "Isoforms: "
+            print(" - Gene object: ", gene_obj)
+            print("==")
+            print("Isoforms: ")
             for isoform in gene_obj.isoforms:
-                print " - ", isoform
-            print "=="
-            print "mRNA IDs: "
+                print(" - ", isoform)
+            print("==")
+            print("mRNA IDs: ")
             for mRNA_id in gene_info['hierarchy'][gene_id]['mRNAs']:
-                print "%s" %(mRNA_id)
-            print "=="
-            print "Exons: "
+                print("%s" %(mRNA_id))
+            print("==")
+            print("Exons: ")
             for exon in gene_obj.parts:
-                print " - ", exon
+                print(" - ", exon)
 
 if __name__ == "__main__":
     main()

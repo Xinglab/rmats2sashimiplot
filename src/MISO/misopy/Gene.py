@@ -202,8 +202,8 @@ class Gene:
         parts_before = []
         for p in self.parts:
             if p == None:
-                raise Exception, "Attempting to reference a None part in %s, (part = %s)" \
-                      %(str(self), str(part))
+                raise Exception("Attempting to reference a None part in %s, (part = %s)" \
+                      %(str(self), str(part)))
             if p.end < part.start:
                 parts_before.append(p)
             else:
@@ -237,7 +237,7 @@ class Gene:
         start_part_num = self.parts.index(start_part)
         end_part_num = self.parts.index(end_part)
         # find parts crossed in between start and end
-        parts_crossed = range(start_part_num + 1, end_part_num)
+        parts_crossed = list(range(start_part_num + 1, end_part_num))
         if read_len != None:
             if (end - start) <= read_len:
                 return parts_crossed
@@ -311,8 +311,8 @@ class Gene:
                 # retrieve part
                 part = self.get_part_by_label(part_label)
                 if not part:
-                    raise Exception, "Invalid description of isoforms: refers to undefined part %s, %s, gene: %s" \
-                          %(part, part_label, self.label)
+                    raise Exception("Invalid description of isoforms: refers to undefined part %s, %s, gene: %s" \
+                          %(part, part_label, self.label))
                 isoform_parts.append(part)
                 isoform_seq += part.seq
             # make isoform with the given parts
@@ -328,7 +328,7 @@ class Gene:
         """
         if self.transcript_ids != None:
             if len(self.transcript_ids) != len(self.isoforms):
-                raise Exception, "Transcript IDs do not match number of isoforms."
+                raise Exception("Transcript IDs do not match number of isoforms.")
             for iso_num, iso in enumerate(self.isoforms):
                 curr_iso = self.isoforms[iso_num]
                 curr_iso.label = self.transcript_ids[iso_num]
@@ -759,7 +759,7 @@ class Isoform:
         start_part_num = self.parts.index(start_part)
         end_part_num = self.parts.index(end_part)
         # find parts crossed in between start and end
-        return range(start_part_num + 1, end_part_num)
+        return list(range(start_part_num + 1, end_part_num))
 
     def cigar_overhang_met(self, cigar, overhang_len):
         """
@@ -843,20 +843,20 @@ class Isoform:
 
 
 def pretty(d, indent=0):
-    for key, value in d.iteritems():
-        print '  ' * indent + str(key)
+    for key, value in d.items():
+        print('  ' * indent + str(key))
         if isinstance(value, dict):
             pretty(value, indent+1)
         else:
-            print '  ' * (indent+1) + str(value)
+            print('  ' * (indent+1) + str(value))
 
 
 def printTree(tree, depth = 0):
     if tree == None or not type(tree) == dict:
-        print "\t" * depth, tree
+        print("\t" * depth, tree)
     else:
-        for key, val in tree.items():
-            print "\t" * depth, key
+        for key, val in list(tree.items()):
+            print("\t" * depth, key)
             printTree(val, depth+1)
 
 
@@ -889,7 +889,7 @@ def load_genes_from_gff(gff_filename,
 
         if gene_label not in gene_hierarchy:
             if not suppress_warnings:
-                print "Skipping gene %s..." %(gene_label)
+                print("Skipping gene %s..." %(gene_label))
             continue
 
         gene_hierarchy[gene_label]['gene'] = gene
@@ -900,19 +900,19 @@ def load_genes_from_gff(gff_filename,
                                               gene_records)
         if gene_obj == None:
             if not suppress_warnings:
-                print "Cannot make gene out of %s" %(gene_label)
+                print("Cannot make gene out of %s" %(gene_label))
             continue
         gff_genes[gene.get_id()] = {'gene_object': gene_obj,
                                     'hierarchy': gene_hierarchy}
 
         if (num_genes % 5000) == 0:
             if not suppress_warnings:
-                print "Through %d genes..." %(num_genes)
+                print("Through %d genes..." %(num_genes))
         num_genes += 1
 
     num_genes = len(gff_genes)
     if not suppress_warnings:
-        print "Loaded %d genes" %(num_genes)
+        print("Loaded %d genes" %(num_genes))
 
     return gff_genes
 
@@ -938,8 +938,8 @@ def make_gene_from_gff_records(gene_label,
                       if (rec.type == "mRNA" or rec.type == "transcript")]
 
     if len(transcript_ids) == 0:
-        raise Exception, "Error: %s has no transcripts..." \
-              %(gene_label)
+        raise Exception("Error: %s has no transcripts..." \
+              %(gene_label))
 
     num_transcripts_with_exons = 0
 
@@ -955,14 +955,14 @@ def make_gene_from_gff_records(gene_label,
         exons = []
 
         if len(transcript_exons) == 0:
-            print "%s has no exons" %(transcript_id)
+            print("%s has no exons" %(transcript_id))
             continue
 
         # Record how many transcripts we have with exons children
         # (i.e., usable transcripts)
         num_transcripts_with_exons += 1
 
-        for exon_id, exon_info in transcript_exons.iteritems():
+        for exon_id, exon_info in transcript_exons.items():
             exon_rec = exon_info['record']
 
             exon = Exon(exon_rec.start, exon_rec.end, from_gff_record={'record':
@@ -1119,7 +1119,7 @@ def afe_ale_event_to_gene(proximal_exons, distal_exons, event_type,
     if event_type == 'AFE':
         parts = [distal_exon, proximal_exon]
     else:
-        raise Exception, "Parsing wrong event type, %s" %(event_type)
+        raise Exception("Parsing wrong event type, %s" %(event_type))
 
     # Make it so proximal isoform is always first
     gene = Gene(['%sProximal' %(event_type), '%sDistal' %(event_type)],

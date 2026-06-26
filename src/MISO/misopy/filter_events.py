@@ -111,8 +111,8 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
         num_pass = len(comp[0])
         output_filename = os.path.join(output_dir,
                                        os.path.basename(fname) + ".filtered")
-        print "Filtering %s into %s" %(",".join(filter_filename),
-                                       output_filename)
+        print("Filtering %s into %s" %(",".join(filter_filename),
+                                       output_filename))
         filter_output(comp[0], output_filename, h, num_pass, total_events[0])
 
     else:
@@ -129,7 +129,7 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
                 rep_list[c][event['event_name']].append(event)
             c = c + 1
 
-        for event_name in event_dict.keys():
+        for event_name in list(event_dict.keys()):
             # not enough replicates of the event passed the previous filters
             if len(event_dict[event_name]) < diff_thresh:
                 del(event_dict[event_name])
@@ -171,7 +171,7 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
         for events in comp:
             event_list = []
             for event in events:
-                if event_dict.has_key(event['event_name']):
+                if event['event_name'] in event_dict:
                     event_list.append(event)
             comp_new.append(event_list)
 
@@ -180,8 +180,8 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
             fname = filter_filename[i]
             output_filename = os.path.join(output_dir,
                                            os.path.basename(fname) + ".filtered")
-            print "Filtering %s into %s" %(fname,
-                                           output_filename)
+            print("Filtering %s into %s" %(fname,
+                                           output_filename))
             filter_output(comp_new[i], output_filename, h, num_pass, total_events[i])
 
 
@@ -249,7 +249,7 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
     if abs(delta_psi_filter) > 1 or \
        abs(delta_psi_filter) < 0:
-        raise Exception, "Error: delta psi value outside [0, 1]."
+        raise Exception("Error: delta psi value outside [0, 1].")
 
     for event in data:
         # Sometimes the bayes factor is not formatted correctly, this fixes that
@@ -257,9 +257,9 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
         num_isoforms = len(event['isoforms'])
         if num_isoforms != 2:
-            print "Error: filter_events.py is only defined for MISO output " \
+            print("Error: filter_events.py is only defined for MISO output " \
                   "on two-isoform alternative events. " \
-                  "Found a non-two isoform event: %s" %(event['event_name'])
+                  "Found a non-two isoform event: %s" %(event['event_name']))
             sys.exit(1)
 
         # Get sample 1 counts
@@ -299,7 +299,7 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
             sample2_counts = get_counts(event['sample2_counts'])
 
             if sample2_counts == None:
-                raise Exception, "Incompatible samples."
+                raise Exception("Incompatible samples.")
 
             sample2_inc, sample2_exc, sample2_both = sample2_counts
 
@@ -333,16 +333,16 @@ def filter_output(filtered_events, output_filename, h, num_pass, total_events):
     """
     dictlist2file(filtered_events, output_filename, h)
 
-    print "%d/%d events pass the filter (%.2f percent)." \
+    print("%d/%d events pass the filter (%.2f percent)." \
           %(num_pass,
             total_events,
-            (num_pass/float(total_events)) * 100)
+            (num_pass/float(total_events)) * 100))
 
 
 def greeting():
-    print "filter_events: filtering MISO pairwise comparison output.\n"
-    print "Note: This utility is only works on MISO output for two-isoform "
-    print "event annotations.\n"
+    print("filter_events: filtering MISO pairwise comparison output.\n")
+    print("Note: This utility is only works on MISO output for two-isoform ")
+    print("event annotations.\n")
 
 
 def main():
@@ -389,11 +389,11 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.filter_filename == None:
-        print "Need at least one filename to filter (use --filter.)"
+        print("Need at least one filename to filter (use --filter.)")
         return
     if options.output_dir == None:
-        print "Need an output directory to output filtered file to " \
-              "(use --output-dir)"
+        print("Need an output directory to output filtered file to " \
+              "(use --output-dir)")
         return
 
     filter_filename = []

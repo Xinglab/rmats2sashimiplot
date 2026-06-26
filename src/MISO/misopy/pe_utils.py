@@ -26,7 +26,7 @@ def get_insert_dist_array(interval_to_paired_dists,
     Read insert length distribution as array of numbers.
     """
     insert_dist = []
-    for interval, paired_dists in interval_to_paired_dists.iteritems():
+    for interval, paired_dists in interval_to_paired_dists.items():
         insert_dist.extend(paired_dists)
     return array(insert_dist)
 
@@ -54,10 +54,10 @@ def filter_insert_len(interval_to_dists,
 
     min_cutoff = mu - (sd_max * sdev)
     max_cutoff = mu + (sd_max * sdev)
-    print "Excluding values < %.2f or > %.2f" \
-          %(min_cutoff, max_cutoff)
+    print("Excluding values < %.2f or > %.2f" \
+          %(min_cutoff, max_cutoff))
 
-    for interval, dists in interval_to_dists.iteritems():
+    for interval, dists in interval_to_dists.items():
         dists = array(dists)
         filtered_dists = delete(dists, nonzero(dists < min_cutoff)[0])
         filtered_dists = delete(filtered_dists,
@@ -69,7 +69,7 @@ def filter_insert_len(interval_to_dists,
 
 def load_insert_len(insert_dist_filename,
                     delim='\t'):
-    print "Loading insert length from: %s" %(insert_dist_filename)
+    print("Loading insert length from: %s" %(insert_dist_filename))
     insert_dist_file = open(insert_dist_filename, "r")
     insert_lens = []
     params_header = insert_dist_file.readline().strip()
@@ -102,13 +102,13 @@ def bedtools_map_bam_to_bed(bam_filename, gff_intervals_filename):
     bedtools_cmd = "intersectBed -abam %s -b %s -wa -wb -bed -f 1" \
                    %(bam_filename, gff_intervals_filename)
 
-    print "Executing: %s" %(bedtools_cmd)
+    print("Executing: %s" %(bedtools_cmd))
 
     if (not os.path.isfile(bam_filename)) or \
        (not os.path.isfile(gff_intervals_filename)):
-        raise Exception, "Error: %s or %s do not exist." \
+        raise Exception("Error: %s or %s do not exist." \
             %(bam_filename,
-              gff_intervals_filename)
+              gff_intervals_filename))
     bed_stream = os.popen(bedtools_cmd)
     return bed_stream
 
@@ -157,7 +157,7 @@ def compute_inserts_from_paired_mates(paired_reads):
     interval_to_paired_dists = defaultdict(list)
     num_skipped = 0
     num_kept = 0
-    for read_id, read_pair in paired_reads.iteritems():
+    for read_id, read_pair in paired_reads.items():
         to_skip = False
         # Get the intervals that each read pair lands in
         # Consider here only the mate pairs that map to
@@ -208,15 +208,15 @@ def compute_inserts_from_paired_mates(paired_reads):
         insert_len = right_end - left_start + 1
 
         if insert_len <= 0:
-            print "WARNING: 0 or negative insert length detected " \
-                  "in region %s." %(curr_gff_interval)
+            print("WARNING: 0 or negative insert length detected " \
+                  "in region %s." %(curr_gff_interval))
             continue
 
         interval_to_paired_dists[curr_gff_interval].append(insert_len)
         num_kept += 1
 
-    print "Used %d paired mates, threw out %d" \
-          %(num_kept, num_skipped)
+    print("Used %d paired mates, threw out %d" \
+          %(num_kept, num_skipped))
 
     return interval_to_paired_dists
 
@@ -238,14 +238,14 @@ def compute_insert_len(bams_to_process,
     """
     bams_str = "\n  ".join(bams_to_process)
     num_bams = len(bams_to_process)
-    print "Computing insert length distribution of %d files:\n  %s" \
-          %(num_bams, bams_str)
-    print "  - Using const. exons from: %s" %(const_exons_gff_filename)
-    print "  - Outputting to: %s" %(output_dir)
-    print "  - Minimum exon size used: %d" %(min_exon_size)
+    print("Computing insert length distribution of %d files:\n  %s" \
+          %(num_bams, bams_str))
+    print("  - Using const. exons from: %s" %(const_exons_gff_filename))
+    print("  - Outputting to: %s" %(output_dir))
+    print("  - Minimum exon size used: %d" %(min_exon_size))
 
     if not os.path.isdir(output_dir):
-        print "Making directory: %s" %(output_dir)
+        print("Making directory: %s" %(output_dir))
         os.makedirs(output_dir)
 
     all_constitutive = True
@@ -259,9 +259,9 @@ def compute_insert_len(bams_to_process,
     filter_reads = not no_bam_filter
 
     if filter_reads:
-        print "Filtering BAM reads"
+        print("Filtering BAM reads")
     else:
-        print "Turning off filtering of BAM reads"
+        print("Turning off filtering of BAM reads")
 
     for bam_filename in bams_to_process:
         t1 = time.time()
@@ -269,15 +269,15 @@ def compute_insert_len(bams_to_process,
                                        "%s.insert_len" \
                                        %(os.path.basename(bam_filename)))
         if not os.path.isfile(bam_filename):
-            print "Cannot find BAM file %s" %(bam_filename)
-            print "Quitting..."
+            print("Cannot find BAM file %s" %(bam_filename))
+            print("Quitting...")
             sys.exit(1)
-        print "Fetching reads in constitutive exons"
+        print("Fetching reads in constitutive exons")
         mapped_bam_filename = exon_utils.map_bam2gff(bam_filename,
                                                      const_exons_gff_filename,
                                                      output_dir)
         if mapped_bam_filename == None:
-            raise Exception, "Error: Insert length computation failed."
+            raise Exception("Error: Insert length computation failed.")
 
         # Load mapped BAM filename
         mapped_bam = pysam.Samfile(mapped_bam_filename, "rb")
@@ -289,17 +289,17 @@ def compute_insert_len(bams_to_process,
         num_paired_reads = len(paired_reads)
 
         if num_paired_reads == 0:
-            print "WARNING: no paired mates in %s. Skipping...\n"\
+            print("WARNING: no paired mates in %s. Skipping...\n"\
                   "Are you sure the read IDs match? If your BAM paired flags are "\
                   "unset, try using --no-bam-filter." \
-                  %(bam_filename)
+                  %(bam_filename))
             continue
-        print "Using %d paired mates" %(num_paired_reads)
+        print("Using %d paired mates" %(num_paired_reads))
         interval_to_paired_dists = compute_inserts_from_paired_mates(paired_reads)
         summarize_insert_len_dist(interval_to_paired_dists, output_filename,
                                   sd_max=sd_max)
         t2 = time.time()
-        print "Insert length computation took %.2f seconds." %(t2 - t1)
+        print("Insert length computation took %.2f seconds." %(t2 - t1))
 
 
 # def pair_reads_from_bed_intervals(bed_stream):
@@ -411,7 +411,7 @@ def output_insert_len_dist(interval_to_paired_dists,
     header = "#%s\t%s\n" %("region", "insert_len")
     output_file.write(header)
 
-    for region, insert_lens in interval_to_paired_dists.iteritems():
+    for region, insert_lens in interval_to_paired_dists.items():
         if len(insert_lens) == 0:
             continue
         str_lens = ",".join([str(l) for l in insert_lens])
@@ -449,13 +449,13 @@ def summarize_insert_len_dist(interval_to_paired_dists,
     """
     Summarize insert len distributions.
     """
-    print "Summarizing insert length distribution.."
-    print "  - Output file: %s" %(output_filename)
+    print("Summarizing insert length distribution..")
+    print("  - Output file: %s" %(output_filename))
 
     output_file = open(output_filename, "w")
 
-    print "Removing values %d-many deviations outside the mean" \
-          %(sd_max)
+    print("Removing values %d-many deviations outside the mean" \
+          %(sd_max))
 
     # Filter insert length distribution based on sd_max
     filtered_interval_to_dist = filter_insert_len(interval_to_paired_dists,
@@ -463,22 +463,22 @@ def summarize_insert_len_dist(interval_to_paired_dists,
     filtered_insert_dist = get_insert_dist_array(filtered_interval_to_dist)
 
     if len(filtered_insert_dist) == 0:
-        print "Error: Could not find any properly mated pairs to " \
+        print("Error: Could not find any properly mated pairs to " \
               "compute insert length with. Are you sure your BAM reads " \
               "are properly paired and map the chromosome headers in the " \
-              "constitutive exon file?"
+              "constitutive exon file?")
         sys.exit(1)
 
     mu, sdev, dispersion, num_pairs = \
         compute_insert_len_stats(filtered_insert_dist)
 
-    print "mean\tsdev\tdispersion"
-    print "%.1f\t%.1f\t%.1f" \
-          %(mu, sdev, dispersion)
+    print("mean\tsdev\tdispersion")
+    print("%.1f\t%.1f\t%.1f" \
+          %(mu, sdev, dispersion))
     min_insert = min(filtered_insert_dist)
     max_insert = max(filtered_insert_dist)
-    print "min insert: %d" %(min_insert)
-    print "max insert: %d" %(max_insert)
+    print("min insert: %d" %(min_insert))
+    print("max insert: %d" %(max_insert))
 
     # Write headers
     header_line = "#%s=%.1f,%s=%.1f,%s=%.1f,%s=%d\n" \
@@ -495,10 +495,10 @@ def summarize_insert_len_dist(interval_to_paired_dists,
 
 
 def greeting():
-    print "Utility for computing insert length distributions from paired-end " \
-          "BAM files."
-    print "Part of MISO (Mixture of Isoforms model)\n"
-    print "See --help for usage.\n"
+    print("Utility for computing insert length distributions from paired-end " \
+          "BAM files.")
+    print("Part of MISO (Mixture of Isoforms model)\n")
+    print("See --help for usage.\n")
 
 
 def main():
@@ -531,7 +531,7 @@ def main():
     if options.output_dir is None:
         greeting()
 
-        print "Error: need --output-dir."
+        print("Error: need --output-dir.")
         return
 
     output_dir = os.path.abspath(os.path.expanduser(options.output_dir))

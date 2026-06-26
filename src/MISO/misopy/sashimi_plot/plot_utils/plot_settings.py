@@ -5,7 +5,7 @@ import sys
 import os
 import ast
 
-import ConfigParser
+import configparser
 
 import misopy
 import misopy.miso_utils as miso_utils
@@ -84,14 +84,14 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     """
     settings = get_default_settings()
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
 
-    print "Reading settings from: %s" %(settings_filename)
+    print("Reading settings from: %s" %(settings_filename))
     config.read(settings_filename)
 
     for section in config.sections():
         for option in config.options(section):
-            print "Parsing %s:%s" %(section, option)
+            print("Parsing %s:%s" %(section, option))
             if option in FLOAT_PARAMS:
                 settings[option] = config.getfloat(section, option)
             elif option in INT_PARAMS:
@@ -129,9 +129,9 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
 
     if not (num_labels == num_bams == num_colors) and not(settings["group_info"]):
         print('\033[0;31;m')  # change the print color as red
-        print "Error: Must provide sample label and color for each entry in bam_files!"
-        print "  - Provided %d labels, %d BAMs, %d colors" \
-            %(num_labels, num_bams, num_colors)
+        print("Error: Must provide sample label and color for each entry in bam_files!")
+        print("  - Provided %d labels, %d BAMs, %d colors" \
+            %(num_labels, num_bams, num_colors))
         print('\033[0m')  # set the color as default value
         sys.exit(1)
 
@@ -149,7 +149,7 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
 
     if "coverages" in settings:
         coverages = ast.literal_eval(settings["coverages"])
-        coverages = map(float, coverages)
+        coverages = list(map(float, coverages))
         # Normalize coverages per M
         coverages = [x / 1e6  for x in coverages]
     else:
@@ -158,7 +158,7 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
 
     if len(settings["coverages"]) != len(settings["sample_labels"]):
         print('\033[0;31;m')  # change the print color as red
-        print "Error: Must provide a coverage value for each sample or leave coverages unset."
+        print("Error: Must provide a coverage value for each sample or leave coverages unset.")
         print('\033[0m')  # set the color as default value
         sys.exit(1)
 

@@ -51,19 +51,19 @@ def compute_gene_psi(gene_ids, gff_index_filename, bam_filename,
     misc_utils.make_dir(output_dir)
 
     if not os.path.exists(gff_index_filename):
-        print "Error: No GFF %s" %(gff_index_filename)
+        print("Error: No GFF %s" %(gff_index_filename))
         return
 
     num_genes = len(gene_ids)
 
-    print "Computing Psi for %d genes..." %(num_genes)
-    print "  - " + ", ".join(gene_ids)
-    print "  - GFF filename: %s" %(gff_index_filename)
-    print "  - BAM: %s" %(bam_filename)
-    print "  - Outputting to: %s" %(output_dir)
+    print("Computing Psi for %d genes..." %(num_genes))
+    print("  - " + ", ".join(gene_ids))
+    print("  - GFF filename: %s" %(gff_index_filename))
+    print("  - BAM: %s" %(bam_filename))
+    print("  - Outputting to: %s" %(output_dir))
 
     if paired_end:
-        print "  - Paired-end mode: ", paired_end
+        print("  - Paired-end mode: ", paired_end)
 
     settings = Settings.get()
     settings_params = Settings.get_sampler_params()
@@ -102,7 +102,7 @@ def compute_gene_psi(gene_ids, gff_index_filename, bam_filename,
     # Check if we're in compressed mode
     compressed_mode = misc_utils.is_compressed_index(gff_index_filename)
 
-    for gene_id, gene_info in gff_genes.iteritems():
+    for gene_id, gene_info in gff_genes.items():
         lookup_id = gene_id
         # Skip genes that we were not asked to run on
         if lookup_id not in gene_ids:
@@ -112,9 +112,9 @@ def compute_gene_psi(gene_ids, gff_index_filename, bam_filename,
 
         # Sanity check: if the isoforms are all shorter than the read,
         # skip the event
-        if all(map(lambda l: l < read_len, gene_obj.iso_lens)):
-            print "All isoforms of %s shorter than %d, so skipping" \
-                  %(gene_id, read_len)
+        if all([l < read_len for l in gene_obj.iso_lens]):
+            print("All isoforms of %s shorter than %d, so skipping" \
+                  %(gene_id, read_len))
             continue
 
         # Find the most inclusive transcription start and end sites
@@ -140,12 +140,12 @@ def compute_gene_psi(gene_ids, gff_index_filename, bam_filename,
         # Skip gene if none of the reads align to gene boundaries
         if filter_reads:
             if num_raw_reads < min_event_reads:
-                print "Only %d reads in gene, skipping (needed >= %d reads)" \
+                print("Only %d reads in gene, skipping (needed >= %d reads)" \
                       %(num_raw_reads,
-                        min_event_reads)
+                        min_event_reads))
                 continue
             else:
-                print "%d raw reads in event" %(num_raw_reads)
+                print("%d raw reads in event" %(num_raw_reads))
 
         num_isoforms = len(gene_obj.isoforms)
         hyperparameters = ones(num_isoforms)
@@ -191,7 +191,7 @@ def compute_gene_psi(gene_ids, gff_index_filename, bam_filename,
         # Pick .miso output filename based on the pickle filename
         miso_basename = os.path.basename(gff_index_filename)
         if not miso_basename.endswith(".pickle"):
-            print "Error: Invalid index file %s" %(gff_index_filename)
+            print("Error: Invalid index file %s" %(gff_index_filename))
             sys.exit(1)
         miso_basename = miso_basename.replace(".pickle", "")
         output_filename = os.path.join(chrom_dir, "%s" %(miso_basename))
@@ -212,7 +212,7 @@ def run_compute_genes_from_file(options):
     corresponding to the event/gene.
     """
     if options.read_len == None:
-        print "Error: must provide --read-len."
+        print("Error: must provide --read-len.")
         sys.exit(1)
 
     overhang_len = 1
@@ -227,18 +227,18 @@ def run_compute_genes_from_file(options):
         os.path.abspath(os.path.expanduser(options.compute_genes_from_file[1]))
     output_dir = \
         os.path.abspath(os.path.expanduser(options.compute_genes_from_file[2]))
-    print "Computing Psi for genes from file..."
-    print "  - Input file: %s" %(genes_filename)
+    print("Computing Psi for genes from file...")
+    print("  - Input file: %s" %(genes_filename))
     if options.paired_end != None:
         paired_end = float(options.paired_end[0]), \
                      float(options.paired_end[1])
-        print "  - Paired-end mode"
+        print("  - Paired-end mode")
     # Check that the events filename exists
     if not os.path.isfile(genes_filename):
-        print "Error: %s filename does not exist." %(genes_filename)
+        print("Error: %s filename does not exist." %(genes_filename))
         sys.exit(1)
     if not os.path.isfile(bam_filename):
-        print "Error: BAM filename %s does not exist." %(bam_filename)
+        print("Error: BAM filename %s does not exist." %(bam_filename))
         sys.exit(1)
     # Load the events and their indexed GFF paths
     num_genes = 0
@@ -246,14 +246,14 @@ def run_compute_genes_from_file(options):
         for line in genes_in:
             gene_id, gff_filename = line.strip().split("\t")
             if not os.path.isfile(gff_filename):
-                print "Error: %s does not exist." %(gff_filename)
+                print("Error: %s does not exist." %(gff_filename))
                 sys.exit(1)
             compute_gene_psi([gene_id], gff_filename, bam_filename,
                              output_dir, options.read_len, overhang_len,
                              paired_end=paired_end,
                              event_type=options.event_type)
             num_genes += 1
-    print "Processed %d genes" %(num_genes)
+    print("Processed %d genes" %(num_genes))
 
 
 def run_compute_gene_psi(options):
@@ -261,7 +261,7 @@ def run_compute_gene_psi(options):
     Parse options and run compute_genes_psi.
     """
     if options.read_len == None:
-        print "Error: must provide --read-len."
+        print("Error: must provide --read-len.")
         sys.exit(1)
 
     overhang_len = 1
@@ -295,10 +295,10 @@ def run_compute_gene_psi(options):
 
 
 def greeting(parser=None):
-    print "MISO (Mixture of Isoforms model)"
-    print "Probabilistic analysis of RNA-Seq data to detect " \
-          "differential isoforms"
-    print "Use --help argument to view options.\n"
+    print("MISO (Mixture of Isoforms model)")
+    print("Probabilistic analysis of RNA-Seq data to detect " \
+          "differential isoforms")
+    print("Use --help argument to view options.\n")
     if parser is not None:
         parser.print_help()
 
@@ -408,18 +408,18 @@ def main():
         use_compressed = \
             os.path.abspath(os.path.expanduser(options.use_compressed))
         if not os.path.exists(use_compressed):
-            print "Error: mapping filename from event IDs to compressed IDs %s " \
-                  "is not found." %(use_compressed)
+            print("Error: mapping filename from event IDs to compressed IDs %s " \
+                  "is not found." %(use_compressed))
             sys.exit(1)
         else:
-            print "Compression being used."
+            print("Compression being used.")
 
     if options.samples_to_compare is not None:
         sample1_dirname = os.path.abspath(options.samples_to_compare[0])
         sample2_dirname = os.path.abspath(options.samples_to_compare[1])
         output_dirname = os.path.abspath(options.samples_to_compare[2])
         if not os.path.isdir(output_dirname):
-            print "Making comparisons directory: %s" %(output_dirname)
+            print("Making comparisons directory: %s" %(output_dirname))
             misc_utils.make_dir(output_dirname)
         ht.output_samples_comparison(sample1_dirname,
                                      sample2_dirname,
@@ -443,7 +443,7 @@ def main():
             os.path.abspath(os.path.expanduser(options.summarize_samples[0]))
         if options.summary_label != None:
             samples_label = options.summary_label
-            print "Using summary label: %s" %(samples_label)
+            print("Using summary label: %s" %(samples_label))
         else:
             samples_label = \
                 os.path.basename(os.path.expanduser(samples_dir))
@@ -462,29 +462,29 @@ def main():
     if options.view_gene != None:
         indexed_gene_filename = \
             os.path.abspath(os.path.expanduser(options.view_gene))
-        print "Viewing genes in %s" %(indexed_gene_filename)
+        print("Viewing genes in %s" %(indexed_gene_filename))
         gff_genes = gff_utils.load_indexed_gff_file(indexed_gene_filename)
 
         if gff_genes == None:
-            print "No genes."
+            print("No genes.")
             sys.exit(1)
 
-        for gene_id, gene_info in gff_genes.iteritems():
-            print "Gene %s" %(gene_id)
+        for gene_id, gene_info in gff_genes.items():
+            print("Gene %s" %(gene_id))
             gene_obj = gene_info['gene_object']
-            print " - Gene object: ", gene_obj
-            print "=="
-            print "Isoforms: "
+            print(" - Gene object: ", gene_obj)
+            print("==")
+            print("Isoforms: ")
             for isoform in gene_obj.isoforms:
-                print " - ", isoform
-            print "=="
-            print "mRNA IDs: "
+                print(" - ", isoform)
+            print("==")
+            print("mRNA IDs: ")
             for mRNA_id in gene_info['hierarchy'][gene_id]['mRNAs']:
-                print "%s" %(mRNA_id)
-            print "=="
-            print "Exons: "
+                print("%s" %(mRNA_id))
+            print("==")
+            print("Exons: ")
             for exon in gene_obj.parts:
-                print " - ", exon
+                print(" - ", exon)
 
 if __name__ == '__main__':
     main()

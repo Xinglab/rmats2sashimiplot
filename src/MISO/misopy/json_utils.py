@@ -9,7 +9,7 @@ def json_serialize(obj, filename):
 
 def json_load_file(filename):
     if os.path.isdir(filename):
-        raise Exception, "%s is a directory -- expected a JSON filename." %(filename)
+        raise Exception("%s is a directory -- expected a JSON filename." %(filename))
     f = open(filename)
     obj = json.load(f)
     return obj

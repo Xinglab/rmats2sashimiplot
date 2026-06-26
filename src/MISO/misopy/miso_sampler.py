@@ -22,7 +22,7 @@ import pysplicing
 
 from scipy import *
 from numpy import *
-import cPickle as pickle
+import pickle as pickle
 from scipy.stats import mode
 import math
 import time
@@ -116,8 +116,8 @@ def print_assignment_summary(assignments):
     counts = defaultdict(int)
     for a in assignments:
         counts[a] += 1
-    for k, v in counts.iteritems():
-        print "Total of %d in isoform %d" %(v, k)
+    for k, v in counts.items():
+        print("Total of %d in isoform %d" %(v, k))
 
 
 def float_array_to_str(array_of_floats):
@@ -179,8 +179,8 @@ class MISOSampler:
         if self.paired_end:
             if ((not 'mean_frag_len' in self.params) or \
                 (not 'frag_variance' in self.params)):
-                raise Exception, "Must set mean_frag_len and frag_variance when " \
-                      "running in sampler on paired-end data."
+                raise Exception("Must set mean_frag_len and frag_variance when " \
+                      "running in sampler on paired-end data.")
             self.mean_frag_len = self.params['mean_frag_len']
             self.frag_variance = self.params['frag_variance']
 
@@ -227,14 +227,14 @@ class MISOSampler:
         self.num_reads = len(read_positions)
 
         if self.num_reads == 0:
-            print "No reads for gene: %s" %(gene.label)
+            print("No reads for gene: %s" %(gene.label))
             return
 
         output_file = output_file + ".miso"
         # If output filename exists, don't run sampler
         if os.path.isfile(os.path.normpath(output_file)):
-            print "Output filename %s exists, not running MISO." \
-                %(output_file)
+            print("Output filename %s exists, not running MISO." \
+                %(output_file))
             return None
 
         self.params['iters'] = num_iters
@@ -286,37 +286,37 @@ class MISOSampler:
             # Number of standard deviations in insert length
             # distribution to consider when assigning reads
             # to isoforms
-            num_sds = 4L
+            num_sds = 4
 
             # Run paired-end
-            miso_results = pysplicing.MISOPaired(c_gene, 0L,
+            miso_results = pysplicing.MISOPaired(c_gene, 0,
                                                  read_positions,
                                                  read_cigars,
-                                                 long(self.read_len),
+                                                 int(self.read_len),
                                                  float(self.mean_frag_len),
                                                  float(self.frag_variance),
                                                  float(num_sds),
-                                                 long(num_iters),
-                                                 long(burn_in),
-                                                 long(lag),
+                                                 int(num_iters),
+                                                 int(burn_in),
+                                                 int(lag),
                                                  prior_params,
-                                                 long(self.overhang_len),
-                                                 long(num_chains),
+                                                 int(self.overhang_len),
+                                                 int(num_chains),
                                                  start_cond,
                                                  stop_cond)
         else:
             # Run single-end
             miso_results = pysplicing.MISO(c_gene,
-                                           0L,
+                                           0,
                                            read_positions,
                                            read_cigars,
-                                           long(self.read_len),
-                                           long(num_iters),
-                                           long(burn_in),
-                                           long(lag),
+                                           int(self.read_len),
+                                           int(num_iters),
+                                           int(burn_in),
+                                           int(lag),
                                            prior_params,
-                                           long(self.overhang_len),
-                                           long(num_chains),
+                                           int(self.overhang_len),
+                                           int(num_chains),
                                            start_cond,
                                            stop_cond,
                                            pysplicing.MISO_ALGO_REASSIGN)
@@ -350,7 +350,7 @@ class MISOSampler:
         # Skip events where all reads are incompatible with the annotation;
         # do not output a file for those.
         if all(assignments == -1):
-            print "All reads incompatible with annotation, skipping..."
+            print("All reads incompatible with annotation, skipping...")
             return
 
         accepted_proposals = run_stats[4]
@@ -362,7 +362,7 @@ class MISOSampler:
         #self.miso_logger.info("Number of iterations recorded: %d" %(len(psi_vectors)))
 
         # Write MISO output to file
-        print "Outputting samples to: %s..." %(output_file)
+        print("Outputting samples to: %s..." %(output_file))
         self.miso_logger.info("Outputting samples to: %s" %(output_file))
         self.output_miso_results(output_file, gene, reads_data, assignments,
                                  psi_vectors, kept_log_scores, num_iters,
@@ -370,7 +370,7 @@ class MISOSampler:
                                  proposal_type)
         if verbose:
             t2 = time.time()
-            print "Event took %.2f seconds" %(t2 - t1)
+            print("Event took %.2f seconds" %(t2 - t1))
 
 
     def output_miso_results(self, output_file, gene, reads_data, assignments,
@@ -463,7 +463,7 @@ class MISOSampler:
             output_line = "%s\t%.2f\n" %(psi_sample_str, curr_log_score)
             output.write(output_line)
         output.close()
-        print "Completed outputting."
+        print("Completed outputting.")
 #        return [percent_acceptance, array(psi_vectors), array(kept_log_scores)]
 
 def run_sampler_on_event(gene, ni, ne, nb, read_len, overhang_len, num_iters,
@@ -471,13 +471,13 @@ def run_sampler_on_event(gene, ni, ne, nb, read_len, overhang_len, num_iters,
     """
     Run sampler on a two-isoform gene event.
     """
-    print "Running sampler on a two-isoform event..."
-    print "  - Gene label: ", gene.label, gene
-    print "  - NI, NE, NB: %d, %d, %d" %(ni, ne, nb)
-    print "Using default sampler parameters."
+    print("Running sampler on a two-isoform event...")
+    print("  - Gene label: ", gene.label, gene)
+    print("  - NI, NE, NB: %d, %d, %d" %(ni, ne, nb))
+    print("Using default sampler parameters.")
     if gene.chrom != None:
         # Index output by chromosome
-        print "Indexing by chromosome..."
+        print("Indexing by chromosome...")
         output_dir = os.path.join(output_dir, gene.chrom)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -509,19 +509,19 @@ def run_sampler_on_event(gene, ni, ne, nb, read_len, overhang_len, num_iters,
     # Compute credible intervals
     cred_interval = ht.compute_credible_intervals(samples, confidence_level=confidence_level)
     t2 = time.time()
-    print "  - Sampler run took %s seconds." %(str(t2-t1))
+    print("  - Sampler run took %s seconds." %(str(t2-t1)))
     # return samples and credible intervals
     return (samples, cred_interval)
 
 
 def profile_miso():
-    from Gene import make_gene
+    from .Gene import make_gene
     gene = make_gene([150, 100, 150], [[1, 2, 3], [1, 3]])
     read_len = 36
     overhang_len = 4
     output_dir = "profiler-test"
     for x in range(10):
-        print "x = %d" %(x)
+        print("x = %d" %(x))
         a, b = run_sampler_on_event(gene, 500, 50, 40, read_len, overhang_len,
                                     10000, output_dir)
 

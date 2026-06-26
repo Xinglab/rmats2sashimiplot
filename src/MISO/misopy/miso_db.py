@@ -10,7 +10,7 @@ import sqlite3
 import shutil
 import fnmatch
 import glob
-import StringIO
+import io
 
 import misopy
 import misopy.misc_utils as misc_utils
@@ -33,15 +33,15 @@ class MISODatabase:
             # Make mapping from uncompressed to compressed IDs
             self.uncomp_to_comp = misc_utils.inv_dict(self.comp_to_uncomp)
         if not os.path.isfile(db_fname):
-            raise Exception, "%s does not exist." %(db_fname)
+            raise Exception("%s does not exist." %(db_fname))
         self.db_fname = db_fname
         # Create table names that start with 'table_' to properly handle
         # Ensembl headers, which are numeric only and tables cannot
         # be named numerically.
         self.table_name = "table_%s" %(get_table_name_from_file(self.db_fname))
         if self.table_name is None:
-            print "Error: Cannot retrieve name of MISO db file %s" \
-                  %(self.db_fname)
+            print("Error: Cannot retrieve name of MISO db file %s" \
+                  %(self.db_fname))
             return None
         self.conn = sqlite3.connect(self.db_fname)
         # Determine event name format
@@ -73,8 +73,8 @@ class MISODatabase:
         # given a mapping, this is a major error
         if self.is_db_events_compressed and \
            ((self.comp_to_uncomp is None) or (self.uncomp_to_comp is None)):
-            raise Exception, "The database contains compressed IDs but no " \
-                             "mapping (.shelve) file was given."
+            raise Exception("The database contains compressed IDs but no " \
+                             "mapping (.shelve) file was given.")
         # If we have a compressed event representation in database and
         # the event given is uncompressed, then look at the
         # compressed representation
@@ -90,8 +90,8 @@ class MISODatabase:
             # If there's no compressed mapping, we can't
             # use this event
             if self.comp_to_uncomp is None:
-                raise Exception, "Cannot get compressed event %s from " \
-                                 "uncompressed database." %(event_name)
+                raise Exception("Cannot get compressed event %s from " \
+                                 "uncompressed database." %(event_name))
             if event_name not in self.comp_to_uncomp:
                 return None
             event_to_query = self.comp_to_uncomp[event_name]
@@ -105,15 +105,14 @@ class MISODatabase:
             # Event not found
             return None
         if len(rows) > 1:
-            raise Exception, \
-              "More than one entry for event %s" %(event_to_query)
+            raise Exception("More than one entry for event %s" %(event_to_query))
         event_name, psi_vals_and_scores, header = rows[0]
         # If we're given a mapping to compressed events,
         # return the event name as the *uncompressed* event
         # name
         event_data = "%s\n%s\n" %(header,
                                   psi_vals_and_scores)
-        event_stream = StringIO.StringIO(event_data)
+        event_stream = io.StringIO(event_data)
         return event_stream
 
 
@@ -145,19 +144,19 @@ def miso_dir_to_db(dir_to_compress, output_filename):
     """
     Convert MISO directory into MySQL table using sqlite3.
     """
-    print "Converting MISO directory into database"
-    print "  - MISO dir: %s" %(dir_to_compress)
-    print "  - Output file: %s" %(output_filename)
+    print("Converting MISO directory into database")
+    print("  - MISO dir: %s" %(dir_to_compress))
+    print("  - Output file: %s" %(output_filename))
     if not os.path.isdir(dir_to_compress):
-        print "Error: %s not a directory, aborting." %(dir_to_compress)
+        print("Error: %s not a directory, aborting." %(dir_to_compress))
         sys.exit(1)
     miso_filenames = glob.glob(os.path.join(dir_to_compress, "*.miso"))
     num_files = len(miso_filenames)
-    print "  - %d files to compress" %(num_files)
+    print("  - %d files to compress" %(num_files))
     # Initialize the SQLite database
     if os.path.isfile(output_filename):
-        print "Error: Database %s already exists, aborting." \
-              %(output_filename)
+        print("Error: Database %s already exists, aborting." \
+              %(output_filename))
         return None
     conn = sqlite3.connect(output_filename)
     c = conn.cursor()
@@ -170,7 +169,7 @@ def miso_dir_to_db(dir_to_compress, output_filename):
     for miso_fname in miso_filenames:
         miso_file_fields = load_miso_file_as_str(miso_fname)
         if miso_file_fields is None:
-            print "Error: Cannot compress %s. Aborting." %(miso_fname)
+            print("Error: Cannot compress %s. Aborting." %(miso_fname))
             return None
         header, psi_vals_and_scores = miso_file_fields
         ######
@@ -216,7 +215,7 @@ def load_miso_file_as_str(miso_filename):
     into an sqlite database.
     """
     if not os.path.isfile(miso_filename):
-        print "Error: Cannot find %s" %(miso_filename)
+        print("Error: Cannot find %s" %(miso_filename))
         return None
     header = ""
     psi_vals_and_scores = ""

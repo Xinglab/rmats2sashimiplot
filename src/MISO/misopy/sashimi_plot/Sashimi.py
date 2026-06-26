@@ -55,9 +55,9 @@ class Sashimi:
         else:
             fig_height = self.settings["fig_height"]
             fig_width = self.settings["fig_width"]
-            print "Reading dimensions from settings..."
-            print " - Height: %.2f" %(float(fig_height))
-            print " - Width: %.2f" %(float(fig_width))
+            print("Reading dimensions from settings...")
+            print(" - Height: %.2f" %(float(fig_height)))
+            print(" - Width: %.2f" %(float(fig_width)))
             self.dimensions = [fig_width, fig_height]
 
 
@@ -69,13 +69,13 @@ class Sashimi:
         self.output_filename = os.path.join(self.output_dir, plot_basename)
 
     def setup_figure(self):
-        print "Setting up plot using dimensions: ", self.dimensions
+        print("Setting up plot using dimensions: ", self.dimensions)
         plt.figure(figsize=self.dimensions)
 
         # If asked, use sans serif fonts
         font_size = self.settings["font_size"]
         if self.settings["sans_serif"]:
-            print "Using sans serif fonts."
+            print("Using sans serif fonts.")
             plotting.make_sans_serif(font_size=font_size)
 
     def save_plot(self, plot_label=None):
@@ -84,7 +84,7 @@ class Sashimi:
         the file type.
         """
         if self.output_filename == None:
-            raise Exception, "sashimi_plot does not know where to save the plot."
+            raise Exception("sashimi_plot does not know where to save the plot.")
         output_fname = None
         if plot_label is not None:
             # Use custom plot label if given
@@ -94,5 +94,5 @@ class Sashimi:
                 os.path.dirname(dirname, "%s.%s" %(plot_label, ext))
         else:
             output_fname = self.output_filename
-        print "Saving plot to: %s" %(output_fname)
+        print("Saving plot to: %s" %(output_fname))
         plt.savefig(output_fname)

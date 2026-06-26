@@ -3,7 +3,7 @@
 ##
 import misopy
 import os
-import cPickle as pickle
+import pickle as pickle
 
 def load_pickled_file(pickled_filename):
     if os.access(pickled_filename, os.F_OK):

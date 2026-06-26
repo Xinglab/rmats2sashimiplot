@@ -8,18 +8,18 @@ def parseGene(pickle_filename, event):
     Parse a pickled gene.
     """
     if not os.path.isfile(pickle_filename):
-        raise Exception, "Error: no filename %s" %(pickle_filename)
+        raise Exception("Error: no filename %s" %(pickle_filename))
     gff_genes = gff_utils.load_indexed_gff_file(pickle_filename)
 
     if gff_genes == None:
-        raise Exception, "Error: could not load genes from %s" \
-              %(pickle_filename)
+        raise Exception("Error: could not load genes from %s" \
+              %(pickle_filename))
 
     exon_starts = []
     exon_ends = []
     mRNAs = []
     chrom = None
-    for gene_id, gene_info in gff_genes.iteritems():
+    for gene_id, gene_info in gff_genes.items():
         if event == gene_id:
             gene_obj = gene_info['gene_object']
             gene_hierarchy = gene_info['hierarchy']
@@ -27,11 +27,11 @@ def parseGene(pickle_filename, event):
                 gene_hierarchy[gene_id])
             chrom = gene_obj.chrom
 
-            for mRNA_id, mRNA_info in gene_hierarchy[gene_id]['mRNAs'].iteritems():
+            for mRNA_id, mRNA_info in gene_hierarchy[gene_id]['mRNAs'].items():
                 mRNA = []
                 for exon_id, exon_info in gene_hierarchy[gene_id]['mRNAs']\
                     [mRNA_id]['exons'].\
-                    iteritems():
+                    items():
 
                     exon_rec = gene_hierarchy[gene_id]['mRNAs']\
                         [mRNA_id]['exons'][exon_id]['record']

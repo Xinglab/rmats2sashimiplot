@@ -4,7 +4,7 @@ import sys
 import unittest
 
 import pysam
-import sam_utils
+from . import sam_utils
 
 class TestMISO(unittest.TestCase):
     """
@@ -36,14 +36,14 @@ class TestMISO(unittest.TestCase):
         The 'a' ensures this runs first.
         """
 
-        print "Testing conversion of SAM to BAM..."
+        print("Testing conversion of SAM to BAM...")
         output_dir = \
             os.path.join(self.tests_output_dir, "sam-output")
         sam_to_bam_cmd = \
             "%s --convert %s %s" %(self.sam_to_bam_script,
                                    self.test_sam_filename,
                                    output_dir)
-        print "Executing: %s" %(sam_to_bam_cmd)
+        print("Executing: %s" %(sam_to_bam_cmd))
         os.system(sam_to_bam_cmd)
 
         # Make sure conversion worked; sorted, indexed BAM file is outputted
@@ -85,10 +85,10 @@ class TestMISO(unittest.TestCase):
         minus_target_strand = "-"
         # fr-unstranded: both strand reads should match
         # either target strand
-        print "Testing fr-unstranded..."
+        print("Testing fr-unstranded...")
         for curr_read in [f_read, r_read]:
             for target in [plus_target_strand, minus_target_strand]:
-                print "Checking read ", curr_read.qname, " against ", target
+                print("Checking read ", curr_read.qname, " against ", target)
                 assert(sam_utils.read_matches_strand(curr_read,
                                                      target,
                                                      "fr-unstranded") == True), \
@@ -96,7 +96,7 @@ class TestMISO(unittest.TestCase):
         # fr-firststrand: forward read must match target strand,
         # i.e. +read matches +target, and -read matches -target
         # test +read
-        print "Testing fr-firststrand..."
+        print("Testing fr-firststrand...")
         assert(sam_utils.read_matches_strand(f_read,
                                              plus_target_strand,
                                              "fr-firststrand") == True), \
@@ -134,7 +134,7 @@ class TestMISO(unittest.TestCase):
 
         The 'z' ensures this runs last.
         """
-        print "Testing gene-level Psi..."
+        print("Testing gene-level Psi...")
         sam_dir = os.path.join(self.tests_output_dir, "sam-output")
         bam_filename = os.path.join(sam_dir, "c2c12.Atp2b1.sorted.bam")
 
@@ -152,12 +152,12 @@ class TestMISO(unittest.TestCase):
                                      "genes",
                                      "Atp2b1",
                                      "indexed")
-        print "Testing GFF indexing of: %s" %(gff_filename)
+        print("Testing GFF indexing of: %s" %(gff_filename))
         index_cmd = "%s --index %s %s" %(self.index_gff_script,
                                          gff_filename,
                                          gff_index_dir)
 
-        print "Executing: %s" %(index_cmd)
+        print("Executing: %s" %(index_cmd))
         os.system(index_cmd)
 
         output_dir = os.path.join(self.tests_output_dir,
@@ -168,7 +168,7 @@ class TestMISO(unittest.TestCase):
                      bam_filename,
                      output_dir,
                      read_len)
-        print "Executing: %s" %(miso_cmd)
+        print("Executing: %s" %(miso_cmd))
         os.system(miso_cmd)
 
 def main():

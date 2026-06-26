@@ -27,7 +27,7 @@ class TestCluster(unittest.TestCase):
         """
         Test MISO on cluster.
         """
-        print "Testing single-end SE event interface..."
+        print("Testing single-end SE event interface...")
 
         ##
         ## Try running MISO on cluster using default settings.
@@ -51,14 +51,14 @@ class TestCluster(unittest.TestCase):
                                                        read_len,
                                                        overhang_len,
                                                        event_type)
-        print "Executing: %s" %(miso_cmd)
+        print("Executing: %s" %(miso_cmd))
         os.system(miso_cmd)
 
     def test_cluster_gene_psi(self):
         """
         Test gene-level Psi inferences using SAM/BAM reads.
         """
-        print "Testing gene-level Psi..."
+        print("Testing gene-level Psi...")
         sam_dir = os.path.join(self.tests_output_dir, "sam-output")
         bam_filename = os.path.join(sam_dir, "c2c12.Atp2b1.sorted.bam")
 
@@ -73,7 +73,7 @@ class TestCluster(unittest.TestCase):
                                                 gff_filename,
                                                 gff_index_dir)
 
-        print "Executing: %s" %(index_cmd)
+        print("Executing: %s" %(index_cmd))
         os.system(index_cmd)
 
         output_dir = os.path.join(self.tests_output_dir, "gene-psi-output")
@@ -87,7 +87,7 @@ class TestCluster(unittest.TestCase):
                      read_len,
                      insert_mean,
                      insert_sd)
-        print "Executing: %s" %(miso_cmd)
+        print("Executing: %s" %(miso_cmd))
         os.system(miso_cmd)
 
 

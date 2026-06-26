@@ -14,8 +14,8 @@ def get_miso_files_from_dir(dirname):
     """
     miso_basename_files = []
     if not os.path.isdir(dirname):
-        print "Error: %s not a directory." \
-              %(dirname)
+        print("Error: %s not a directory." \
+              %(dirname))
         return miso_basename_files
     miso_files = glob.glob(os.path.join(dirname, "*.miso"))
     # return basenames
@@ -58,11 +58,11 @@ def get_miso_output_files(event_name, chrom, settings):
     else:
         miso_prefix = ""
 
-    print "miso_prefix: %s" %(miso_prefix)
+    print("miso_prefix: %s" %(miso_prefix))
 
     if "miso_files" not in settings:
-        print "Error: need \'miso_files\' to be set in settings file in " \
-              "order to plot MISO estimates."
+        print("Error: need \'miso_files\' to be set in settings file in " \
+              "order to plot MISO estimates.")
         return miso_filenames
 
     miso_files = settings['miso_files']
@@ -75,8 +75,8 @@ def get_miso_output_files(event_name, chrom, settings):
 
     for curr_sample_path in miso_sample_paths:
         event_found = False
-        print "Searching for MISO files in: %s" %(curr_sample_path)
-        print "  - Looking for chromosome %s directories" %(chrom)
+        print("Searching for MISO files in: %s" %(curr_sample_path))
+        print("  - Looking for chromosome %s directories" %(chrom))
 
         if event_with_miso_ext in get_miso_files_from_dir(curr_sample_path):
             # Allow the event to be in a top-level directory outside of a
@@ -85,10 +85,10 @@ def get_miso_output_files(event_name, chrom, settings):
             event_filename = os.path.join(curr_sample_path,
                                           event_with_miso_ext)
             miso_filenames.append(event_filename)
-            print "Found %s MISO file in top-level directory." %(event_name)
-            print "  - Location: %s" %(event_filename)
-            print "Please try to keep MISO event files in their chromosome "\
-                  "directory."
+            print("Found %s MISO file in top-level directory." %(event_name))
+            print("  - Location: %s" %(event_filename))
+            print("Please try to keep MISO event files in their chromosome "\
+                  "directory.")
             break
 
         for root, dirs, files in os.walk(curr_sample_path):
@@ -99,7 +99,7 @@ def get_miso_output_files(event_name, chrom, settings):
             # see if the MISO file is in there
             if chrom in dirs:
                 chrom_dirname = os.path.abspath(os.path.join(root, chrom))
-                print "Looking for MISO files in: %s" %(chrom_dirname)
+                print("Looking for MISO files in: %s" %(chrom_dirname))
                 # Fetch MISO files, if any
                 curr_miso_files = get_miso_files_from_dir(chrom_dirname)
 
@@ -110,27 +110,27 @@ def get_miso_output_files(event_name, chrom, settings):
                     # Add to list
                     event_filename = os.path.join(root, chrom,
                                                   event_with_miso_ext)
-                    print "Found %s MISO file." %(event_name)
-                    print "  - Location: %s" %(event_filename)
+                    print("Found %s MISO file." %(event_name))
+                    print("  - Location: %s" %(event_filename))
                     miso_filenames.append(event_filename)
                     break
 
         if not event_found:
             # If we're here, it means we couldn't find the MISO
             # output files for the current sample
-            print "Error: Could not find MISO output files for " \
+            print("Error: Could not find MISO output files for " \
                   "sample %s (after searching in %s and its subdirectories). " \
                   "Are you sure MISO output files are present in that " \
                   "directory?" %(os.path.basename(curr_sample_path),
-                                 curr_sample_path)
+                                 curr_sample_path))
             # Include empty path for this sample
             miso_filenames.append('')
 
     # Number of event filenames retrieved must equal
     # the number of samples to be plotted
     if len(miso_filenames) != len(miso_files):
-        print "WARNING: Could not find MISO files for all samples."
-        print "  - miso_filenames: ", miso_filenames
-        print "  - miso_samples to be plotted: ", miso_files
+        print("WARNING: Could not find MISO files for all samples.")
+        print("  - miso_filenames: ", miso_filenames)
+        print("  - miso_samples to be plotted: ", miso_files)
 
     return miso_filenames

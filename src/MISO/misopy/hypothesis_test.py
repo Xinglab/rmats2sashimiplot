@@ -56,8 +56,7 @@ class gaussian_kde_covfact(stats.gaussian_kde):
         elif self.covfact:
             return float(self.covfact)
         else:
-            raise ValueError, \
-                'covariance factor has to be scotts, silverman or a number'
+            raise ValueError('covariance factor has to be scotts, silverman or a number')
 
     def reset_covfact(self, covfact):
         self.covfact = covfact
@@ -103,7 +102,7 @@ def compute_delta_densities(samples1_results,
     densities = {}
     # Compute analytic prior density
     prior_density_fn = lambda x: 1 + x if x <= 0 else 1 - x
-    analytic_prior_density = map(prior_density_fn, diff_range)
+    analytic_prior_density = list(map(prior_density_fn, diff_range))
     posterior_samples1 = samples1_results[0]
     posterior_samples2 = samples2_results[0]
 
@@ -155,10 +154,10 @@ def compute_delta_densities(samples1_results,
         all_same_diff = all(posterior_diff - posterior_diff[0] == 0)
 
         if all_same_diff and not warning_outputted:
-            print "Warning: Event %s was not sampled properly in %s or %s" \
+            print("Warning: Event %s was not sampled properly in %s or %s" \
                   %(event_name,
                     sample1_label,
-                    sample2_label)
+                    sample2_label))
             warning_outputted = True
 
         if mean_abs_posterior_diff <= .009 or all_same_diff:
@@ -190,16 +189,16 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
     Expects two directories with samples from a MISO run, where corresponding
     events in the two samples' directories begin with the same event name.
     """
-    print "Given output dir: %s" %(output_dir)
-    print "Retrieving MISO files in sample directories..."
+    print("Given output dir: %s" %(output_dir))
+    print("Retrieving MISO files in sample directories...")
     sample1_obj = MISOSamples(sample1_dir,
                               use_compressed=use_compressed)
     sample2_obj = MISOSamples(sample2_dir,
                               use_compressed=use_compressed)
-    print "Computing sample comparison between %s and %s..." %(sample1_dir,
-                                                               sample2_dir)
-    print "  - No. of events in %s: %d" %(sample1_dir, sample1_obj.num_events)
-    print "  - No. of events in %s: %d" %(sample2_dir, sample2_obj.num_events)
+    print("Computing sample comparison between %s and %s..." %(sample1_dir,
+                                                               sample2_dir))
+    print("  - No. of events in %s: %d" %(sample1_dir, sample1_obj.num_events))
+    print("  - No. of events in %s: %d" %(sample2_dir, sample2_obj.num_events))
     # Output header for Bayes factor file
     if sample_labels is None:
         # Use directory names as sample labels
@@ -208,11 +207,11 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
     else:
         # If we're given sample labels, use them
         sample1_label, sample2_label = sample_labels
-        print "Using user-given sample labels (sample1 = %s, sample2 = %s)" \
-              %(sample1_label, sample2_label)
+        print("Using user-given sample labels (sample1 = %s, sample2 = %s)" \
+              %(sample1_label, sample2_label))
     output_dir = os.path.join(output_dir, "%s_vs_%s" %(sample1_label,
                                                        sample2_label))
-    print "Creating comparisons parent directory: %s" %(output_dir)
+    print("Creating comparisons parent directory: %s" %(output_dir))
     # Create parent directory for comparison
     misc_utils.make_dir(output_dir)
 
@@ -341,7 +340,7 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
                          gene_info["mRNA_ends"]]
         output_line = "%s\n" %("\t".join(output_fields))
         output_file.write(output_line)
-    print "Compared a total of %d events." %(num_events_compared)
+    print("Compared a total of %d events." %(num_events_compared))
     output_file.close()
 
 
@@ -370,8 +369,8 @@ def compute_bayes_factor(prior_density, posterior_density,
         bayes_factor = bayes_factor[0]
 
     if print_bayes:
-        print "diff_posterior: %.4f" %(diff_posterior)
-        print "bayes_factor: %.2f" %(bayes_factor)
+        print("diff_posterior: %.4f" %(diff_posterior))
+        print("bayes_factor: %.2f" %(bayes_factor))
 
     # Upper bound on Bayes factor
     if bayes_factor > max_bf:

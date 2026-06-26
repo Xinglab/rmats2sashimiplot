@@ -49,9 +49,9 @@ class MISOPacker:
         """
         t1 = time.time()
         for miso_dirname in miso_dirnames:
-            print "Processing: %s" %(miso_dirname)
+            print("Processing: %s" %(miso_dirname))
             if not os.path.isdir(miso_dirname):
-                print "Error: %s not a directory." %(miso_dirname)
+                print("Error: %s not a directory." %(miso_dirname))
                 sys.exit(1)
             for dir_to_compress, subdirs, curr_fnames in os.walk(miso_dirname):
                 if miso_db.is_miso_unpacked_dir(dir_to_compress):
@@ -59,10 +59,10 @@ class MISOPacker:
                     # into a MISO database
                     chrom_basename = os.path.basename(dir_to_compress)
                     if len(chrom_basename) == 0:
-                        print "Error: Failed to pack MISO directory %s" \
-                              %(miso_dirname)
-                        raise Exception, "Basename for %s is empty!" \
-                              %(dir_to_compress)
+                        print("Error: Failed to pack MISO directory %s" \
+                              %(miso_dirname))
+                        raise Exception("Basename for %s is empty!" \
+                              %(dir_to_compress))
                     db_fname = \
                       os.path.join(os.path.dirname(dir_to_compress),
                                    "%s%s" %(chrom_basename,
@@ -75,15 +75,15 @@ class MISOPacker:
                     # containing the *.miso file
                     shutil.rmtree(dir_to_compress)
         t2 = time.time()
-        print "Packing took %.2f minutes" %((t2 - t1)/60.)
+        print("Packing took %.2f minutes" %((t2 - t1)/60.))
 
 
 def greeting(parser=None):
-    print "MISO (Mixture of Isoforms model)"
-    print "Pack the MISO output into an SQL database."
-    print "Use --help argument to view options.\n"
-    print "Example usage:\n"
-    print "miso_pack --pack mydir"
+    print("MISO (Mixture of Isoforms model)")
+    print("Pack the MISO output into an SQL database.")
+    print("Use --help argument to view options.\n")
+    print("Example usage:\n")
+    print("miso_pack --pack mydir")
     if parser is not None:
         parser.print_help()
 
@@ -94,7 +94,7 @@ def pack_miso_output(dirs_to_pack_as_str):
     """
     dirs_to_pack = dirs_to_pack_as_str.split(",")
     # Make into absolute paths
-    dirs_to_pack = map(misc_utils.pathify, dirs_to_pack)
+    dirs_to_pack = list(map(misc_utils.pathify, dirs_to_pack))
     miso_packer = MISOPacker(dirs_to_pack)
     miso_packer.pack_dirs(dirs_to_pack)
 
@@ -102,14 +102,14 @@ def pack_miso_output(dirs_to_pack_as_str):
 def view_miso_db(db_fname):
     db_fname = misc_utils.pathify(db_fname)
     if not os.path.isfile(db_fname):
-        print "Error: %s does not exist." %(db_fname)
+        print("Error: %s does not exist." %(db_fname))
         sys.exit(1)
     curr_db = miso_db.MISODatabase(db_fname)
     event_names = curr_db.get_all_event_names()
     num_events = len(event_names)
-    print "Database contains %d events" %(num_events)
+    print("Database contains %d events" %(num_events))
     for event in event_names:
-        print event
+        print(event)
 
 
 def main():

@@ -77,7 +77,7 @@ def csv2array(f,
                                 deletechars='',
                                 delimiter=delimiter)
     except IOError as io_error:
-        raise Exception, "IOError: %s, file: %s" %(io_error, file_in)
+        raise Exception("IOError: %s, file: %s" %(io_error, file_in))
     cols = data_array[0,:]
     data = {}
     for n in range(data_array.ndim):
@@ -93,7 +93,7 @@ def tryEval(s):
 
 
 def evalDict(d):
-    for k, v in d.iteritems():
+    for k, v in d.items():
         d[k] = tryEval(v)
     return d
 
@@ -132,7 +132,7 @@ def dictlist2file(dictrows, filename, fieldnames, delimiter='\t',
     if fieldnames != None:
         header = delimiter.join(fieldnames) + lineterminator
     else:
-        header = dictrows[0].keys()
+        header = list(dictrows[0].keys())
         header.sort()
     out_f.write(header)
     if write_raw:
@@ -157,8 +157,8 @@ def csv2dictlist_raw(filename, delimiter='\t'):
     dictlist = []
     # convert data to list of dictionaries
     for line in f:
-        values = map(tryEval, line.strip().split(delimiter))
-        dictline = dict(zip(header_fields, values))
+        values = list(map(tryEval, line.strip().split(delimiter)))
+        dictline = dict(list(zip(header_fields, values)))
         dictlist.append(dictline)
     return (dictlist, header_fields)
 

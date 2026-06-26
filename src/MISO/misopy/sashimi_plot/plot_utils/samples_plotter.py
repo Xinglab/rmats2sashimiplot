@@ -75,7 +75,7 @@ class SamplesPlotter:
                 plt.ylabel('Frequency (Isoform %d)' %(c + 1))
             plt.subplots_adjust(wspace=0.5)
         else:
-            raise Exception, "Invalid number of isoforms %d" %(num_isoforms)
+            raise Exception("Invalid number of isoforms %d" %(num_isoforms))
         return plot_handle
 
     def plot_two_iso_samples(self, fig=None, isoform_index=0, num_rows=1, num_cols=1, subplot_start=1,
@@ -121,7 +121,7 @@ class SamplesPlotter:
         # Normalize samples
         if normed:
             yticks = list(plt.gca().get_yticks())
-            print "yticks: ", yticks
+            print("yticks: ", yticks)
             ytick_labels = ["%.2f" %(float(ytick) / float(normed)) for ytick in yticks]
             ax.set_yticklabels(ytick_labels)
 #            samples_to_plot = samples_to_plot / float(len(samples_to_plot))

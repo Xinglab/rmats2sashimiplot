@@ -57,9 +57,9 @@ def plot_density_single(settings, sample_label,
         try:
             subset_reads = bamfile.fetch(reference=chrom, start=tx_start,end=tx_end)
         except ValueError as e:
-            print "Error retrieving files from %s: %s" %(chrom, str(e))
-            print "Are you sure %s appears in your BAM file?" %(chrom)
-            print "Aborting plot..."
+            print("Error retrieving files from %s: %s" %(chrom, str(e)))
+            print("Are you sure %s appears in your BAM file?" %(chrom))
+            print("Aborting plot...")
             return axvar
         # wiggle, jxns = readsToWiggle_pysam(subset_reads, tx_start, tx_end)
         # p1 = subprocess.Popen(["samtools", "view", "-F", "0x4", file_name,], stdout=subprocess.PIPE)
@@ -77,8 +77,8 @@ def plot_density_single(settings, sample_label,
         p1.stdout.close()
         output,err = p2.communicate()
         if err:
-            print err
-            print 'Setting the number of mapped read to 1.'
+            print(err)
+            print('Setting the number of mapped read to 1.')
             cover = 1
         else:
             cover = int(output) / 1e6
@@ -87,7 +87,7 @@ def plot_density_single(settings, sample_label,
     coverage = np.mean(all_c)
     wiggle = 1e3 * wiggle / coverage / bamfile_num
     # junction_width_scale = settings["junction_width_scale"]
-    for j_key in jxns.keys():
+    for j_key in list(jxns.keys()):
         jxns[j_key] = int(round(1.0 * jxns[j_key] / bamfile_num, 0))
     # gene_reads = sam_utils.fetch_bam_reads_in_gene(bamfile, gene_obj.chrom,\
     #     tx_start, tx_end, gene_obj)
@@ -132,7 +132,7 @@ def plot_density_single(settings, sample_label,
     show_text_background = settings["text_background"]
     maxy = 0
     for jxn in jxns:
-        leftss, rightss = map(int, jxn.split(":"))
+        leftss, rightss = list(map(int, jxn.split(":")))
 
         ss1, ss2 = [graphcoords[leftss - tx_start - 1],\
             graphcoords[rightss - tx_start]]
@@ -246,7 +246,7 @@ def analyze_group_info(group_info, bam_files, original_labels):
             prefix = ''
             for item in file_names:
                 if '-' in item:
-                    start, end = map(int, item.split('-'))
+                    start, end = list(map(int, item.split('-')))
                     for i in range(start, end+1):
                         files.append(bam_files[i-1])  # here we suppose that the index of files begins from 0
                         prefix = label_prefixs[i-1]
@@ -270,7 +270,7 @@ def analyze_group_info(group_info, bam_files, original_labels):
             pre_group_name += " IncLevel: {0:.2f}".format(inc/num_file)
             sample_labels.append(pre_group_name)
         except:
-            print 'read grouping info failed.'
+            print('read grouping info failed.')
             group_file.close()
             sys.exit(1)
     sample_colors = cm.rainbow(np.linspace(0, 1, group_num)) * 0.85
@@ -312,8 +312,8 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
     show_xlabel = settings["show_xlabel"]
     if plot_title is None:
         plot_title = event
-    print "Using intron scale ", intron_scale
-    print "Using exon scale ", exon_scale
+    print("Using intron scale ", intron_scale)
+    print("Using exon scale ", exon_scale)
 
     # Always show y-axis for read densities for now
     showYaxis = True
@@ -333,8 +333,8 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         # if the group color is customized by the user
         if len(colors) != len(group_colors):
             print('\033[0;31;m') # change the print color as red
-            print("The number of custom colors is {0} which doesn't match the group number {1}. The program uses the "
-                  "rainbow color as default.".format(len(colors), len(group_colors)))
+            print(("The number of custom colors is {0} which doesn't match the group number {1}. The program uses the "
+                  "rainbow color as default.".format(len(colors), len(group_colors))))
             print('\033[0m')  # set the color as default value
             colors = settings["colors"] = group_colors
 
@@ -380,7 +380,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         # Read sample label
         sample_label = settings["sample_labels"][i]
 
-        print "Reading sample label: %s" %(sample_label)
+        print("Reading sample label: %s" %(sample_label))
         # print "Processing BAM: %s" %(bam_file)
 
         plotted_ax, maxy = plot_density_single(settings, sample_label,
@@ -404,9 +404,9 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                     (i, gene_posterior_ratio - 1))
 
                 if not os.path.isfile(miso_file):
-                    print "Warning: MISO file %s not found" %(miso_file)
+                    print("Warning: MISO file %s not found" %(miso_file))
 
-                print "Loading MISO file: %s" %(miso_file)
+                print("Loading MISO file: %s" %(miso_file))
                 plot_posterior_single(miso_file, ax2, posterior_bins,
                                       showXaxis=showXaxis, show_ylabel=False,
                                       font_size=font_size,
@@ -415,7 +415,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                 box(on=False)
                 xticks([])
                 yticks([])
-                print "Posterior plot failed."
+                print("Posterior plot failed.")
 
     ##
     ## Figure out correct y-axis values
@@ -437,7 +437,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
     universal_yticks = linspace(0, max_used_yval,
                                 nyticks + 1)
     # Round up yticks
-    universal_ticks = map(math.ceil, universal_yticks)
+    universal_ticks = list(map(math.ceil, universal_yticks))
     for sample_num, curr_ax in enumerate(plotted_axes):
         if showYaxis:
             curr_ax.set_ybound(lower=fake_ymin, upper=max_used_yval)
@@ -545,7 +545,7 @@ def readsToWiggle_pysam(reads, tx_start, tx_end, wiggle, jxns):
     for read in reads:
         # Skip reads with no CIGAR string
         if read.cigar is None:
-            print "Skipping read with no CIGAR string: %s" %(read.cigar)
+            print("Skipping read with no CIGAR string: %s" %(read.cigar))
             continue
         cigar_str = sam_utils.sam_cigar_to_str(read.cigar)
 
@@ -560,8 +560,8 @@ def readsToWiggle_pysam(reads, tx_start, tx_end, wiggle, jxns):
         for cigar_part in read.cigar:
             if cigar_part[0] == 1 or \
                cigar_part[0] == 2:
-                print "Skipping read with CIGAR %s" \
-                      %(cigar_str)
+                print("Skipping read with CIGAR %s" \
+                      %(cigar_str))
                 skipit = True
         if skipit:
             continue
@@ -777,7 +777,7 @@ def plot_posterior_single(miso_f, axvar, posterior_bins,
     axis_color = "k"
     for shown_axis in axes_to_show:
         if shown_axis in axvar.spines:
-            print "Setting color on %s axis" %(shown_axis)
+            print("Setting color on %s axis" %(shown_axis))
             axvar.spines[shown_axis].set_linewidth(axis_size)
             axvar.xaxis.set_tick_params(size=tick_size,
                                         color=axis_color)
@@ -830,8 +830,8 @@ def plot_density_from_file(settings_f, pickle_filename, event,
                           settings_filename=settings_f,
                           no_posteriors=no_posteriors)
 
-    print "Plotting read densities and MISO estimates along event..."
-    print "  - Event: %s" %(event)
+    print("Plotting read densities and MISO estimates along event...")
+    print("  - Event: %s" %(event))
 
     settings = sashimi_obj.settings
     if no_posteriors:

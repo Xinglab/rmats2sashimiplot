@@ -40,12 +40,12 @@ def get_ids_passing_filter(gff_index_dir,
     genes_gff_fname = os.path.join(gff_index_dir,
                                    "genes.gff")
     if not os.path.isfile(genes_gff_fname):
-        print "WARNING: Could not find \'genes.gff\' in %s - " \
+        print("WARNING: Could not find \'genes.gff\' in %s - " \
               "skipping prefilter stage. Please reindex your " \
               "GFF file with the latest version to enable " \
-              "prefiltering." %(gff_index_dir)
+              "prefiltering." %(gff_index_dir))
         return None
-    print "Prefiltering reads..."
+    print("Prefiltering reads...")
     coverage_fname = exon_utils.get_bam_gff_coverage(bam_filename,
                                                      genes_gff_fname,
                                                      output_dir)
@@ -63,8 +63,8 @@ def get_ids_passing_filter(gff_index_dir,
                 continue
             attribs = gff_utils.parse_gff_attribs(fields[8])
             if "ID" not in attribs:
-                print "WARNING: No ID= found for line:\n%s\nSkipping..." \
-                    %(line)
+                print("WARNING: No ID= found for line:\n%s\nSkipping..." \
+                    %(line))
                 continue
             event_id = attribs["ID"]
             ids_passing_filter.append(event_id)
@@ -80,10 +80,10 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
     annotation and BAM filename.  Warn users if there are
     headers mismatches.
     """
-    print "Checking your GFF annotation and BAM for mismatches..."
+    print("Checking your GFF annotation and BAM for mismatches...")
     # Check that BAM exists
     if not os.path.isfile(bam_filename):
-        print "Error: BAM %s cannot be found." %(bam_filename)
+        print("Error: BAM %s cannot be found." %(bam_filename))
         return
     # Check that a BAM header is available
     bam_index_fname = "%s.bai" %(bam_filename)
@@ -91,7 +91,7 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
         main_logger.warning("Expected BAM index file %s not found." \
                             %(bam_index_fname))
         main_logger.warning("Are you sure your BAM file is indexed?")
-    print "Checking if BAM has mixed read lengths..."
+    print("Checking if BAM has mixed read lengths...")
     bam_file = pysam.Samfile(bam_filename, "rb")
     n = 0
     seq_lens = {}
@@ -101,7 +101,7 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
             break
         seq_lens[len(bam_read.seq)] = True
         n += 1
-    all_seq_lens = seq_lens.keys()
+    all_seq_lens = list(seq_lens.keys())
     if len(all_seq_lens) > 1:
         msg = "Found mixed length reads in your BAM file: %s\n" \
               "MISO does not support mixed read lengths. Please " \
@@ -114,7 +114,7 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
         main_logger.warning(msg)
         time.sleep(5)
     else:
-        print "Found reads of length %d in BAM." %(all_seq_lens[0])
+        print("Found reads of length %d in BAM." %(all_seq_lens[0]))
         # Check the BAM read length against the read length that was
         # given
         if given_read_len != None:
@@ -184,11 +184,11 @@ def check_gff_and_bam(gff_dir, bam_filename, main_logger,
                             "while your %s does not." %(chr_containing,
                                                         not_chr_containing))
         main_logger.warning("The first few BAM chromosomes were: %s" \
-                            %(",".join(bam_chroms.keys())))
-        print "BAM references: "
-        print bam_file.references
+                            %(",".join(list(bam_chroms.keys()))))
+        print("BAM references: ")
+        print(bam_file.references)
         main_logger.warning("The first few GFF chromosomes were: %s" \
-                            %(",".join(gff_chroms.keys())))
+                            %(",".join(list(gff_chroms.keys()))))
         main_logger.warning("Run is likely to fail or produce empty output. Proceeding " \
                             "anyway...")
         time.sleep(15)
@@ -217,12 +217,12 @@ def compute_psi(sample_filenames, output_dir, event_type,
 
     misc_utils.make_dir(output_dir)
 
-    print "Computing Psi for events of type %s" %(event_type)
-    print "  - samples used: ", sample_filenames.keys()
+    print("Computing Psi for events of type %s" %(event_type))
+    print("  - samples used: ", list(sample_filenames.keys()))
 
-    for sample_label, sample_filename in sample_filenames.iteritems():
-        print "Processing sample: label=%s, filename=%s" \
-            %(sample_label, sample_filename)
+    for sample_label, sample_filename in sample_filenames.items():
+        print("Processing sample: label=%s, filename=%s" \
+            %(sample_label, sample_filename))
         results_output_dir = os.path.join(output_dir, sample_label)
         misc_utils.make_dir(results_output_dir)
 
@@ -234,10 +234,10 @@ def compute_psi(sample_filenames, output_dir, event_type,
 
         # Filter events
         if filter_events:
-            print "Filtering events..."
+            print("Filtering events...")
             events.filter_events(settings=Settings.get())
 
-        print "Running on a total of %d events." %(len(events.events))
+        print("Running on a total of %d events." %(len(events.events)))
 
         events_filename = events.output_file(results_output_dir,
                                              sample_label)
@@ -256,24 +256,24 @@ def compute_psi(sample_filenames, output_dir, event_type,
                 miso_cmd += ' --use-cluster --chunk-jobs %d' %(chunk_jobs)
             else:
                 miso_cmd += ' --use-cluster'
-        print "Executing: %s" %(miso_cmd)
+        print("Executing: %s" %(miso_cmd))
         if use_cluster:
-            print " - Using cluster"
+            print(" - Using cluster")
         os.system(miso_cmd)
 
 
 def greeting(parser=None):
-    print "MISO (Mixture of Isoforms model)"
-    print "Probabilistic analysis of RNA-Seq data to detect " \
-          "differential isoforms"
-    print "Use --help argument to view options.\n"
+    print("MISO (Mixture of Isoforms model)")
+    print("Probabilistic analysis of RNA-Seq data to detect " \
+          "differential isoforms")
+    print("Use --help argument to view options.\n")
     if parser is not None:
         parser.print_help()
 
 
 def main():
-    print "MISO (Mixture of Isoforms model)"
-    print "To run MISO, please use \"miso\" instead."
+    print("MISO (Mixture of Isoforms model)")
+    print("To run MISO, please use \"miso\" instead.")
 
 if __name__ == '__main__':
     main()

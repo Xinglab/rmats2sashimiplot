@@ -33,7 +33,7 @@ import re
 import shelve
 import misopy
 import misopy.pickle_utils as pickle_utils
-from urllib import quote as url_quote, unquote as url_unquote
+from urllib.parse import quote as url_quote, unquote as url_unquote
 
 from collections import defaultdict
 
@@ -76,13 +76,13 @@ def load_shelved_genes_to_fnames(indexed_gff_dir,
     if it exists. Return None if it does not exist.
     """
     shelve_fname = os.path.join(indexed_gff_dir, shelve_basename)
-    print "Searching for %s.." %(shelve_fname)
+    print("Searching for %s.." %(shelve_fname))
     gene_ids_to_gff_index = None
     if os.path.isfile(shelve_fname):
-        print "  - Found shelved file."
+        print("  - Found shelved file.")
         gene_ids_to_gff_index = shelve.open(shelve_fname)
     else:
-        print "  - File not found."
+        print("  - File not found.")
     return gene_ids_to_gff_index
 
 
@@ -90,8 +90,8 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
     """
     Return mapping from gene IDs to their indexed GFF filename.
     """
-    print "Mapping genes to their indexed GFF representation, using %s" \
-          %(indexed_gff_dir)
+    print("Mapping genes to their indexed GFF representation, using %s" \
+          %(indexed_gff_dir))
     gff_chrom_dirs = os.listdir(indexed_gff_dir)
 
     # Load gene IDs to mapping from .shelve file
@@ -111,7 +111,7 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
 
         # Skip subentries that are not directories
         if not os.path.isdir(chrom_dir_path):
-            print "Skipping: %s" %(chrom_dir_path)
+            print("Skipping: %s" %(chrom_dir_path))
             continue
 
         # Get the chromosome filename
@@ -123,9 +123,9 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
         num_genes = len(chrom_indexed_filenames)
         if num_genes > 1:
             # Handle genes case
-            print "Loading indexed gene filenames from: %s" \
-                  %(chrom_dir_path)
-            print "  - Loading %d genes" %(num_genes)
+            print("Loading indexed gene filenames from: %s" \
+                  %(chrom_dir_path))
+            print("  - Loading %d genes" %(num_genes))
 
             for gene_index_filename in chrom_indexed_filenames:
                 # Skip non-Pickle files
@@ -136,10 +136,10 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
                                                                    gene_index_filename))
                 indexed_gene = load_indexed_gff_chrom(gene_index_filename)
 
-                for gene_id, gene_info in indexed_gene.iteritems():
+                for gene_id, gene_info in indexed_gene.items():
                     gene_ids_to_gff_index[gene_id] = gene_index_filename
         elif num_genes == 0:
-            raise Exception, "No genes in directory: %s" %(chrom_dir_path)
+            raise Exception("No genes in directory: %s" %(chrom_dir_path))
         else:
             chrom_indexed_filename = os.path.join(chrom_dir_path,
                                                   chrom_indexed_filenames[0])
@@ -147,7 +147,7 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
             # Load the indexed chromosome GFF file
             indexed_gff_chrom = load_indexed_gff_chrom(chrom_indexed_filename)
 
-            for gene_id, gene_info in indexed_gff_chrom.iteritems():
+            for gene_id, gene_info in indexed_gff_chrom.items():
                 gene_ids_to_gff_index[gene_id] = chrom_indexed_filename
 
     return gene_ids_to_gff_index
@@ -276,8 +276,8 @@ class GFFDatabase:
 
             if len(mRNAs) == len(exons) == len(cdss) == 0:
                 if not self.suppress_warnings:
-                    print "WARNING: No entries found for gene %s in GFF %s" \
-                          %(gene, self.from_filename)
+                    print("WARNING: No entries found for gene %s in GFF %s" \
+                          %(gene, self.from_filename))
                 # Remove from gene hierarchy
                 del gene_hierarchy[gene]
 #               raise Exception, "No entries found for gene %s in GFF: %s" %(gene,
@@ -298,14 +298,14 @@ class GFFDatabase:
         recs, hierarchy = self.get_genes_records(genes)
         # retrieve the records corresponding to the genes
         if len(recs) == 0:
-            raise Exception, "No entries found for " + str(genes) + " in GFF: %s" %(filename)
+            raise Exception("No entries found for " + str(genes) + " in GFF: %s" %(filename))
         # serialize them as GFF
         output_file = open(filename, 'w')
-        print >> sys.stderr, "Outputting sliced GFF records to: %s" %(filename)
+        print("Outputting sliced GFF records to: %s" %(filename), file=sys.stderr)
         gff_writer = Writer(output_file)
         gff_writer.write_recs(recs)
 
-    def next(self):
+    def __next__(self):
         if self.__entries == []:
             raise StopIteration
         return self.__entries.pop()
@@ -348,8 +348,8 @@ class GFF:
         if self.start > self.end:
             self.start, self.end = self.end, self.start
             if strand != '-':
-                print >>sys.stderr, "WARNING: Swapping start and end fields, which must satisfy start <= end:"
-                print >>sys.stderr, self.__repr__()
+                print("WARNING: Swapping start and end fields, which must satisfy start <= end:", file=sys.stderr)
+                print(self.__repr__(), file=sys.stderr)
 
         # set default exon IDs if they are not already set
         self._set_default_exon_id()
@@ -394,7 +394,7 @@ class GFF:
         """Returns a copy of this GFF record"""
 
         # Make new attributes dict with copied value lists
-        attributes_copy = dict([(k, v[:]) for k, v in self.attributes.items()])
+        attributes_copy = dict([(k, v[:]) for k, v in list(self.attributes.items())])
 
         return GFF(self.seqid,
                       self.source,
@@ -533,7 +533,7 @@ class Reader:
 
         #  Set default record parser
         if version not in self._record_parsers:
-            raise Exception, "Unrecognized GFF default version: " + version
+            raise Exception("Unrecognized GFF default version: " + version)
         self._record_parser = self._record_parsers[version]
 
         # Stage next record so that we read all metadata at top of file
@@ -572,7 +572,7 @@ class Reader:
     def read(self):
         """Returns the next record or None if there are none left."""
         try:
-            return self.next()
+            return next(self)
         except StopIteration:
             return None
 
@@ -586,7 +586,7 @@ class Reader:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self._stage_rec()
         if self._next_rec is None:
             raise StopIteration
@@ -622,8 +622,8 @@ class Reader:
             self._record_parser = self._record_parsers[self._version]
         except KeyError:
             self._record_parser = self._record_parsers[self._default_version]
-            print >>sys.stderr, "Warning: Unrecognized GFF version (%s). " + \
-                "Using default version %s %s." % (self._version, self._default_version)
+            print("Warning: Unrecognized GFF version (%s). " + \
+                "Using default version %s %s." % (self._version, self._default_version), file=sys.stderr)
 
     def _parse_directive(self, line):
         tokens = line[2:-1].split(None, 1)
@@ -669,7 +669,7 @@ class Reader:
         elif len(fields) == 9:
             attributes = {"group": [fields[8]]}
         else:
-            raise FormatError, "Invalid number of fields (should be 8 or 9):\n" + line
+            raise FormatError("Invalid number of fields (should be 8 or 9):\n" + line)
 
         try:
             return GFF(seqid=fields[0],
@@ -681,8 +681,8 @@ class Reader:
                           strand=parse_maybe_empty(fields[6]),
                           phase=parse_maybe_empty(fields[7], int),
                           attributes=attributes)
-        except ValueError, e:
-            raise FormatError, "GFF field format error: " + e.message
+        except ValueError as e:
+            raise FormatError("GFF field format error: " + e.message)
 
     def _parse_record_v2(self, line):
         fields = line[:-1].split('\t', 8)
@@ -692,7 +692,7 @@ class Reader:
         elif len(fields) == 9:
             attributes_string = fields[8]
         else:
-            raise FormatError, "Invalid number of fields (should be 8 or 9):\n" + line
+            raise FormatError("Invalid number of fields (should be 8 or 9):\n" + line)
 
         try:
             return GFF(seqid=fields[0],
@@ -704,8 +704,8 @@ class Reader:
                           strand=parse_maybe_empty(fields[6]),
                           phase=parse_maybe_empty(fields[7], int),
                           attributes=self._parse_attributes_v2(attributes_string))
-        except ValueError, e:
-            raise FormatError, "GFF field format error: " + e.message
+        except ValueError as e:
+            raise FormatError("GFF field format error: " + e.message)
 
     def _parse_record_v3(self, line):
         self._references_resolved = False
@@ -716,7 +716,7 @@ class Reader:
         fields = line.split('\t')
 
         if len(fields) != 9:
-            raise FormatError, "Invalid number of fields (should be 9):\n" + line
+            raise FormatError("Invalid number of fields (should be 9):\n" + line)
 
         try:
             return GFF(seqid=url_unquote(fields[0]),
@@ -728,8 +728,8 @@ class Reader:
                           strand=parse_maybe_empty(fields[6]),
                           phase=parse_maybe_empty(fields[7], int),
                           attributes=self._parse_attributes_v3(fields[8]))
-        except ValueError, e:
-            raise FormatError, "GFF field format error: " + e.message
+        except ValueError as e:
+            raise FormatError("GFF field format error: " + e.message)
 
     def _parse_attributes_v3(self, s):
         attributes = {}
@@ -739,10 +739,10 @@ class Reader:
                 continue
             try:
                 tag, value = pair_string.split("=")
-                attributes[url_unquote(tag)] = map(url_unquote,
-                                                   value.split(","))
+                attributes[url_unquote(tag)] = list(map(url_unquote,
+                                                   value.split(",")))
             except ValueError:
-                print >>sys.stderr, "WARNING: Invalid attributes string: ", s
+                print("WARNING: Invalid attributes string: ", s, file=sys.stderr)
 #                raise FormatError("Invalid attributes string: " + s)
         return attributes
 
@@ -755,7 +755,7 @@ class Reader:
                     currentTag = token.value
                     attributes[currentTag] = []
                 else:
-                    raise FormatError, "Invalid attributes string: " + s
+                    raise FormatError("Invalid attributes string: " + s)
             elif isinstance(token, SeparatorToken):
                 currentTag = None
             elif isinstance(token, CommentToken):
@@ -765,7 +765,7 @@ class Reader:
             elif isinstance(token, ValueToken):
                 attributes[currentTag].append(token.value)
             else:
-                raise FormatError, "Invalid attributes string: " + s
+                raise FormatError("Invalid attributes string: " + s)
         return attributes
 
 class IdentifierToken:
@@ -797,7 +797,7 @@ class AttributeIterator:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.pos >= len(self.s):
             raise StopIteration
 
@@ -814,7 +814,7 @@ class AttributeIterator:
 
 def is_integer(x):
     """Returns true if x is of integer type (int or long)."""
-    return type(x) in (int, long)
+    return type(x) in (int, int)
 
 def parse_maybe_empty(s, parse_type=str):
     if s == '.':
@@ -862,7 +862,7 @@ class Writer:
             self.version = version
             self.write_metadatum(Metadatum("gff-version", version))
         except KeyError:
-            raise Exception, "Unrecognized GFF version: " + version
+            raise Exception("Unrecognized GFF version: " + version)
 
         for metadatum in metadata:
             self.write_metadatum(metadatum)
@@ -870,13 +870,13 @@ class Writer:
     def write_metadatum(self, metadatum):
         """Writes a metadatum line."""
         if metadatum.value is not None:
-            print >>self.stream, "##%s %s" % (metadatum.name, metadatum.value)
+            print("##%s %s" % (metadatum.name, metadatum.value), file=self.stream)
         else:
-            print >>self.stream, "##%s" % metadatum.name
+            print("##%s" % metadatum.name, file=self.stream)
 
     def write_comment(self, comment):
         """Writes a comment line."""
-        print >>self.stream, "#%s" % comment
+        print("#%s" % comment, file=self.stream)
 
     def write(self, rec):
         """Writes a single record."""
@@ -898,7 +898,7 @@ class Writer:
                   format_maybe_empty(rec.phase)]
         if rec.attributes.get('group') is not None:
             fields.append(rec.attributes['group'][0])
-        print >>self.stream, '\t'.join(fields)
+        print('\t'.join(fields), file=self.stream)
 
     def _write_rec_v2(self, rec):
         fields = [rec.seqid,
@@ -911,7 +911,7 @@ class Writer:
                   format_maybe_empty(rec.phase)]
         if rec.attributes:
             fields.append(self._format_attributes_v2(rec.attributes))
-        print >>self.stream, '\t'.join(fields)
+        print('\t'.join(fields), file=self.stream)
 
     def _write_rec_v3(self, rec):
         _type_pat.sub(url_quote, rec.type)
@@ -924,7 +924,7 @@ class Writer:
                   format_maybe_empty(rec.strand),
                   format_maybe_empty(rec.phase),
                   format_maybe_empty(self._format_attributes_v3(rec.attributes))]
-        print >>self.stream, '\t'.join(fields)
+        print('\t'.join(fields), file=self.stream)
 
     def _write_rec_gtf(self, rec):
         # The required GTF attributes
@@ -945,11 +945,11 @@ class Writer:
         return ';'.join(["%s=%s" % (_tag_pat.sub(url_quote_sub, tag),
                                     ','.join([_value_pat.sub(url_quote_sub, value)
                                               for value in values]))
-                         for tag, values in attributes.items()])
+                         for tag, values in list(attributes.items())])
 
     def _format_attributes_v2(self, attributes):
-        return ' '.join([' '.join([tag] + map(quote, values)) + ";"
-                          for tag, values in attributes.items()])
+        return ' '.join([' '.join([tag] + list(map(quote, values))) + ";"
+                          for tag, values in list(attributes.items())])
 
 
 def get_inclusive_txn_bounds(gene_hierarchy):
@@ -962,7 +962,7 @@ def get_inclusive_txn_bounds(gene_hierarchy):
 
     strand = None
 
-    for mRNA_id, mRNA_info in gene_hierarchy['mRNAs'].iteritems():
+    for mRNA_id, mRNA_info in gene_hierarchy['mRNAs'].items():
         mRNA_rec = mRNA_info["record"]
         strand = mRNA_rec.strand
 

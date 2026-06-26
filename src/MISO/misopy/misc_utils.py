@@ -35,8 +35,8 @@ def load_compressed_ids_to_genes(compressed_filename):
     Load mapping from compressed IDs to genes.
     """
     if not os.path.exists(compressed_filename):
-        print "Error: %s compressed file does not exist." \
-              %(compressed_filename)
+        print("Error: %s compressed file does not exist." \
+              %(compressed_filename))
         sys.exit(1)
     compressed_ids_to_genes = {}
     # Load mapping from gene IDs to their hashes
@@ -61,7 +61,7 @@ def is_compressed_index(index_filename):
 
 def make_dir(dirpath):
     if os.path.isfile(dirpath):
-        print "Error: %s is a file!" %(dirpath)
+        print("Error: %s is a file!" %(dirpath))
         sys.exit(1)
     # Try to make the directory
     try:
@@ -84,10 +84,10 @@ def which(program):
         elif not os.access(fpath, os.X_OK):
             # If the file exists but is not executable, warn
             # the user
-            print "WARNING: Found %s but it is not executable." %(fpath)
-            print "Please ensure %s is executable." %(fpath)
-            print "On Unix, use something like: "
-            print "  chmod +x %s" %(fpath)
+            print("WARNING: Found %s but it is not executable." %(fpath))
+            print("Please ensure %s is executable." %(fpath))
+            print("On Unix, use something like: ")
+            print("  chmod +x %s" %(fpath))
             time.sleep(10)
             return False
         return True

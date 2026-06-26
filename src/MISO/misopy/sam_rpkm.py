@@ -66,38 +66,38 @@ def compute_rpkm(gff_filename, bam_filename, read_len,
     """
     Compute RPKMs for genes listed in GFF based on BAM reads.
     """
-    print "Computing RPKMs..."
-    print "  - GFF filename: %s" %(gff_filename)
-    print "  - BAM filename: %s" %(bam_filename)
-    print "  - Output dir: %s" %(output_dir)
+    print("Computing RPKMs...")
+    print("  - GFF filename: %s" %(gff_filename))
+    print("  - BAM filename: %s" %(bam_filename))
+    print("  - Output dir: %s" %(output_dir))
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     output_filename = os.path.join(output_dir,
                                    "%s.rpkm" %(os.path.basename(bam_filename)))
-    print "Outputting RPKMs to: %s" %(output_filename)
+    print("Outputting RPKMs to: %s" %(output_filename))
 
     rpkm_fieldnames = ['gene_id', 'rpkm', 'const_exon_lens',
                        'num_reads']
 
     # Parse the GFF into genes
-    print "Parsing GFF into genes..."
+    print("Parsing GFF into genes...")
     t1 = time.time()
     gff_genes = load_genes_from_gff(gff_filename)
     t2 = time.time()
-    print "Parsing took %.2f seconds" %(t2 - t1)
+    print("Parsing took %.2f seconds" %(t2 - t1))
 
     # Load the BAM file
     bamfile = sam_utils.load_bam_reads(bam_filename)
 
-    print "Counting all reads..."
+    print("Counting all reads...")
     t1 = time.time()
     num_total_reads = count_total_reads(bam_filename)
     t2 = time.time()
-    print "Took: %.2f seconds" %(t2 - t1)
+    print("Took: %.2f seconds" %(t2 - t1))
 
-    print "Number of total reads in BAM file: %d" %(num_total_reads)
+    print("Number of total reads in BAM file: %d" %(num_total_reads))
 
     num_genes = 0
 
@@ -106,7 +106,7 @@ def compute_rpkm(gff_filename, bam_filename, read_len,
     exons_too_small = {}
     num_no_const = 0
 
-    for gene_id, gene_info in gff_genes.iteritems():
+    for gene_id, gene_info in gff_genes.items():
         # Get the gene object
         gene = gene_info['gene_object']
 
@@ -124,12 +124,12 @@ def compute_rpkm(gff_filename, bam_filename, read_len,
             chrom = gene.chrom
 
         if "random" in chrom:
-            print "Skipping random chromosome gene: %s, %s" \
-                  %(gene_id, chrom)
+            print("Skipping random chromosome gene: %s, %s" \
+                  %(gene_id, chrom))
             continue
 
         if len(const_exons) == 0:
-            print "Gene %s has no constitutive regions!" %(gene_id)
+            print("Gene %s has no constitutive regions!" %(gene_id))
             num_no_const += 1
             continue
 
@@ -143,9 +143,9 @@ def compute_rpkm(gff_filename, bam_filename, read_len,
             try:
                 reads = bamfile.fetch(chrom, exon.start, exon.end)
             except ValueError:
-                print "Error fetching region: %s:%d-%d" %(chrom,
+                print("Error fetching region: %s:%d-%d" %(chrom,
                                                           exon.start,
-                                                          exon.end)
+                                                          exon.end))
                 break
 
             # Count reads landing in exon
@@ -194,16 +194,16 @@ def compute_rpkm(gff_filename, bam_filename, read_len,
         # Compute how many reads land in each constitutive exon
         num_genes += 1
 
-    num_too_small = len(exons_too_small.keys())
+    num_too_small = len(list(exons_too_small.keys()))
 
-    print "Computed RPKMs for %d genes." %(num_genes)
-    print "  - Total of %d genes cannot be used because they lack const. regions." \
-          %(num_no_const)
-    print "  - Total of %d genes cannot be used since their exons are too small." \
-          %(num_too_small)
-    for gene, total_counts in exons_too_small.iteritems():
-        print "      gene_id\ttotal_counts"
-        print "    * %s\t%d" %(gene, total_counts)
+    print("Computed RPKMs for %d genes." %(num_genes))
+    print("  - Total of %d genes cannot be used because they lack const. regions." \
+          %(num_no_const))
+    print("  - Total of %d genes cannot be used since their exons are too small." \
+          %(num_too_small))
+    for gene, total_counts in exons_too_small.items():
+        print("      gene_id\ttotal_counts")
+        print("    * %s\t%d" %(gene, total_counts))
 
     # Output RPKMs to file
     dictlist2file(rpkms_dictlist, output_filename,
@@ -224,7 +224,7 @@ def main():
 
     if options.compute_rpkm != None:
         if options.read_len == 0:
-            print "Error: Must give --read-len to compute RPKMs."
+            print("Error: Must give --read-len to compute RPKMs.")
             return
 
         gff_filename = os.path.abspath(os.path.expanduser(options.compute_rpkm[0]))

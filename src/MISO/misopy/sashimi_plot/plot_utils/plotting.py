@@ -93,7 +93,7 @@ def make_grouped_bar_plot(ax, x_axis_labels, group_labels, group_values,
 
 
 def show_spines(ax,spines):
-    for loc, spine in ax.spines.iteritems():
+    for loc, spine in ax.spines.items():
         if loc not in spines:
             spine.set_color('none') # don't draw spine
 
@@ -170,7 +170,7 @@ def make_sans_serif(font_size=10):
     plt.rcParams['ps.useafm'] = True
     plt.rcParams['pdf.fonttype'] = 42
     #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-    print "Setting to FreeSans"
+    print("Setting to FreeSans")
     rc('font',**{'family':'sans-serif','sans-serif':['FreeSans']})
     plt.rcParams['pdf.fonttype'] = 42
     plt.rcParams['font.size'] = font_size

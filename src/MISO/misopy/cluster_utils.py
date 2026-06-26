@@ -9,7 +9,7 @@ import subprocess
 import misopy
 import misopy.settings as settings
 import misopy.misc_utils as misc_utils
-from settings import Settings, load_settings
+from .settings import Settings, load_settings
 
 def write_cluster_preface(file_handle):
     module_preface = \
@@ -108,13 +108,13 @@ def run_SGEarray_cluster(arg_list, argfile, cluster_output_dir,
     elif queue_type == "short":
         queue_name = Settings.get_short_queue_name()
     else:
-        raise Exception, "Unknown queue type: %s" %(queue_type)
+        raise Exception("Unknown queue type: %s" %(queue_type))
 
     if queue_type == None:
-        print "  - queue: unspecified"
+        print("  - queue: unspecified")
     else:
-        print "  - queue: %s, using queue name %s" %(queue_type,
-                                                     queue_name)
+        print("  - queue: %s, using queue name %s" %(queue_type,
+                                                     queue_name))
     cs = open(cluster_script, 'w')
     cs.write("#!/bin/sh" + "\n")
     cs.write("#$ -N %s\n" %(job_name))
@@ -162,7 +162,7 @@ def run_on_cluster(cmd, job_name, cluster_output_dir,
                    queue_type=None,
                    cmd_name="qsub",
                    settings_fname=None):
-    print "Submitting job: %s" %(job_name)
+    print("Submitting job: %s" %(job_name))
     queue_name = None
 
     # Load command name from settings file
@@ -175,17 +175,17 @@ def run_on_cluster(cmd, job_name, cluster_output_dir,
     elif queue_type == "short":
         queue_name = Settings.get_short_queue_name()
     else:
-        print "Warning: Unknown queue type: %s" %(queue_type)
+        print("Warning: Unknown queue type: %s" %(queue_type))
         queue_name = queue_type
 
     if queue_type is None:
-        print "  - queue type: unspecified"
+        print("  - queue type: unspecified")
     else:
-        print "  - queue type: %s" %(queue_type)
+        print("  - queue type: %s" %(queue_type))
     if queue_name is None:
-        print " - queue name unspecified"
+        print(" - queue name unspecified")
     else:
-        print " - queue name: %s" %(queue_name)
+        print(" - queue name: %s" %(queue_name))
 
     misc_utils.make_dir(cluster_output_dir)
     if cluster_scripts_dir == None:
@@ -219,7 +219,7 @@ def launch_job(cluster_cmd, cmd_name):
     Execute cluster_cmd and return its job ID if
     it can be fetched.
     """
-    print "Executing: %s" %(cluster_cmd)
+    print("Executing: %s" %(cluster_cmd))
     proc = subprocess.Popen(cluster_cmd, shell=True,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
@@ -284,19 +284,19 @@ def wait_on_jobs(job_ids, cluster_cmd,
     if cluster_cmd not in supported_cmds:
         return
     num_jobs = len(job_ids)
-    print "Waiting on a set of %d jobs..." %(num_jobs)
+    print("Waiting on a set of %d jobs..." %(num_jobs))
     curr_time = time.strftime("%x, %X")
     t_start = time.time()
-    print "  - Starting to wait at %s" %(curr_time)
+    print("  - Starting to wait at %s" %(curr_time))
     completed_jobs = {}
     for job_id in job_ids:
         if job_id in completed_jobs:
             continue
         wait_on_job(job_id, cluster_cmd)
-        print "  - Job ", job_id, " completed."
+        print("  - Job ", job_id, " completed.")
         completed_jobs[job_id] = True
     curr_time = time.strftime("%x, %X")
     t_end = time.time()
-    print "Jobs completed at %s" %(curr_time)
+    print("Jobs completed at %s" %(curr_time))
     duration = ((t_end - t_start) / 60.) / 60.
-    print "  - Took %.2f hours." %(duration)
+    print("  - Took %.2f hours." %(duration))

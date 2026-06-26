@@ -27,7 +27,7 @@ def count_aligned_reads(reads, paired_end=False):
         counts_dict[hashable_read] += 1
 
     # Sort results by keys for consistency
-    keys = counts_dict.keys()
+    keys = list(counts_dict.keys())
     keys.sort()
 
     counts = [(k, counts_dict[k]) for k in keys]

@@ -28,11 +28,11 @@ np.seterr(all='ignore')
 miso_path = os.path.dirname(os.path.abspath(__file__))
 
 def greeting(parser=None):
-    print "MISO (Mixture of Isoforms model)"
-    print "Compare MISO samples to get differential isoform statistics."
-    print "Use --help argument to view options.\n"
-    print "Example usage:\n"
-    print "compare_miso --compare-samples sample1/ sample2/ results/"
+    print("MISO (Mixture of Isoforms model)")
+    print("Compare MISO samples to get differential isoform statistics.")
+    print("Use --help argument to view options.\n")
+    print("Example usage:\n")
+    print("compare_miso --compare-samples sample1/ sample2/ results/")
     if parser is not None:
         parser.print_help()
 
@@ -74,18 +74,18 @@ def main():
         use_compressed = \
             os.path.abspath(os.path.expanduser(options.use_compressed))
         if not os.path.exists(use_compressed):
-            print "Error: mapping filename from event IDs to compressed IDs %s " \
-                  "is not found." %(use_compressed)
+            print("Error: mapping filename from event IDs to compressed IDs %s " \
+                  "is not found." %(use_compressed))
             sys.exit(1)
         else:
-            print "Compression being used."
+            print("Compression being used.")
 
     if options.samples_to_compare is not None:
         sample1_dirname = os.path.abspath(options.samples_to_compare[0])
         sample2_dirname = os.path.abspath(options.samples_to_compare[1])
         output_dirname = os.path.abspath(options.samples_to_compare[2])
         if not os.path.isdir(output_dirname):
-            print "Making comparisons directory: %s" %(output_dirname)
+            print("Making comparisons directory: %s" %(output_dirname))
             misc_utils.make_dir(output_dirname)
         ht.output_samples_comparison(sample1_dirname,
                                      sample2_dirname,

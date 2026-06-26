@@ -144,7 +144,7 @@ def load_bam_reads(bam_filename,
     """
     Load a set of indexed BAM reads.
     """
-    print "Loading BAM filename from: %s" %(bam_filename)
+    print("Loading BAM filename from: %s" %(bam_filename))
     bam_filename = os.path.abspath(os.path.expanduser(bam_filename))
     bamfile = pysam.Samfile(bam_filename, "rb",
                             template=template)
@@ -170,14 +170,14 @@ def fetch_bam_reads_in_gene(bamfile, chrom, start, end,
     try:
         gene_reads = bamfile.fetch(chrom, start, end)
     except ValueError:
-        print "Cannot fetch reads in region: %s:%d-%d" %(chrom,
+        print("Cannot fetch reads in region: %s:%d-%d" %(chrom,
                                                          start,
-                                                         end)
+                                                         end))
     except AssertionError:
-        print "AssertionError in region: %s:%d-%d" %(chrom,
+        print("AssertionError in region: %s:%d-%d" %(chrom,
                                                      start,
-                                                     end)
-        print "  - Check that your BAM file is indexed!"
+                                                     end))
+        print("  - Check that your BAM file is indexed!")
     return gene_reads
 
 
@@ -250,7 +250,7 @@ def pair_sam_reads(samfile,
     num_unpaired = 0
     num_total = 0
 
-    for read_name, read in paired_reads.iteritems():
+    for read_name, read in paired_reads.items():
         if len(read) != 2:
             unpaired_reads[read_name] = read
             num_unpaired += 1
@@ -269,19 +269,19 @@ def pair_sam_reads(samfile,
             continue
 
         if left_read.pos > right_read.pos:
-            print "WARNING: %s left mate starts later than right "\
-                  "mate" %(left_read.qname)
+            print("WARNING: %s left mate starts later than right "\
+                  "mate" %(left_read.qname))
         num_total += 1
 
     # Delete reads that are on the same strand
     for del_key in to_delete:
         del paired_reads[del_key]
 
-    print "Filtered out %d read pairs that were on same strand." \
-        %(len(to_delete))
-    print "Filtered out %d reads that had no paired mate." \
-        %(num_unpaired)
-    print "  - Total read pairs: %d" %(num_total)
+    print("Filtered out %d read pairs that were on same strand." \
+        %(len(to_delete)))
+    print("Filtered out %d reads that had no paired mate." \
+        %(num_unpaired))
+    print("  - Total read pairs: %d" %(num_total))
 
     if not return_unpaired:
         return paired_reads
@@ -324,7 +324,7 @@ def read_matches_strand(read,
     if strand_rule == "fr-unstranded":
         return True
     if strand_rule == "fr-secondstrand":
-        raise Exception, "fr-secondstrand currently unsupported."
+        raise Exception("fr-secondstrand currently unsupported.")
     matches = False
     if paired_end is not None:
         ## Paired-end reads
@@ -338,7 +338,7 @@ def read_matches_strand(read,
             elif target_strand == "-":
                 return (flag_to_strand(read2.flag) == "-")
         else:
-            raise Exception, "Unknown strandedness rule."
+            raise Exception("Unknown strandedness rule.")
     else:
         ## Single-end reads
         if strand_rule == "fr-firststrand":
@@ -346,7 +346,7 @@ def read_matches_strand(read,
             # match the target strand
             matches = (flag_to_strand(read.flag) == target_strand)
         else:
-            raise Exception, "Unknown strandedness rule."
+            raise Exception("Unknown strandedness rule.")
     return matches
 
 
@@ -398,7 +398,7 @@ def sam_parse_reads(samfile,
         # Process reads into format required by fastmiso
         # MISO C engine requires pairs to follow each other in order.
         # Unpaired reads are not supported.
-        for read_id, read_info in paired_reads.iteritems():
+        for read_id, read_info in paired_reads.items():
             if check_strand:
                 # Check strand
                 if not read_matches_strand(read_info,
@@ -447,8 +447,8 @@ def sam_parse_reads(samfile,
             num_reads += 1
 
     if check_strand:
-        print "No. reads discarded due to strand violation: %d" \
-            %(num_strand_discarded)
+        print("No. reads discarded due to strand violation: %d" \
+            %(num_strand_discarded))
 
     reads = (tuple(read_positions),
              tuple(read_cigars))
@@ -471,7 +471,7 @@ def sam_pe_reads_to_isoforms(samfile, gene, read_len, overhang_len):
 
     k = 0
 
-    for read_id, read_pair in paired_reads.iteritems():
+    for read_id, read_pair in paired_reads.items():
         if len(read_pair) != 2:
             # Skip reads with no pair
             continue
@@ -487,7 +487,7 @@ def sam_pe_reads_to_isoforms(samfile, gene, read_len, overhang_len):
 #            print "read %s inconsistent with all isoforms" %(read_id)
             k += 1
 
-    print "Filtered out %d reads that were not consistent with any isoform" %(k)
+    print("Filtered out %d reads that were not consistent with any isoform" %(k))
     return pe_reads, num_read_pairs
 
 
@@ -512,7 +512,7 @@ def sam_se_reads_to_isoforms(samfile, gene, read_len,
         else:
             num_skipped += 1
 
-    print "Skipped total of %d reads." %(num_skipped)
+    print("Skipped total of %d reads." %(num_skipped))
 
     return alignments, num_reads
 
@@ -522,7 +522,7 @@ def sam_reads_to_isoforms(samfile, gene, read_len, overhang_len,
     """
     Align BAM reads to the gene model.
     """
-    print "Aligning reads to gene..."
+    print("Aligning reads to gene...")
     t1 = time.time()
 
     if paired_end != None:
@@ -535,8 +535,8 @@ def sam_reads_to_isoforms(samfile, gene, read_len, overhang_len,
                                                     overhang_len)
 
     t2 = time.time()
-    print "Alignment to gene took %.2f seconds (%d reads)." %((t2 - t1),
-                                                              num_reads)
+    print("Alignment to gene took %.2f seconds (%d reads)." %((t2 - t1),
+                                                              num_reads))
     return reads
 
 
