@@ -1,6 +1,7 @@
 import misopy
 import pysplicing
 
+
 def py2c_gene(py_gene):
     """
     Convert a Python Gene object to a C gene object for use
@@ -18,6 +19,5 @@ def py2c_gene(py_gene):
         isoforms_desc.append(curr_iso_desc)
 
     CMISO_isoforms_desc = tuple(isoforms_desc)
-    c_gene = pysplicing.createGene(CMISO_exon_lens,
-                                   CMISO_isoforms_desc)
+    c_gene = pysplicing.createGene(CMISO_exon_lens, CMISO_isoforms_desc)
     return c_gene

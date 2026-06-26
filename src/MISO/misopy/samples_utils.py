@@ -54,7 +54,6 @@ class MISOSamples:
         self.all_event_names = self.get_all_event_names()
         self.num_events = len(self.all_event_names)
 
-
     def get_all_event_names(self):
         """
         Return all event names in current samples dir.
@@ -94,7 +93,6 @@ class MISOSamples:
                     self.event_names_to_fnames[event_name_to_use] = curr_fname
         return all_event_names
 
-
     def get_event_samples(self, event_name):
         """
         Get the samples information for the given event by name.
@@ -116,7 +114,7 @@ class MISOSamples:
             event_data = curr_db.get_event_data_as_stream(event_name)
             samples = load_samples(event_data)
         if samples is None:
-            print("WARNING: Could not parse event %s samples" %(event_name))
+            print("WARNING: Could not parse event %s samples" % (event_name))
         return samples
 
 
@@ -205,8 +203,7 @@ def get_counts_from_header(samples_header):
     if len(list(counts.keys())) != 2:
         print("Warning: Could not get counts fields out of " \
               "%s header." %(samples_header))
-        counts = {'counts': 'n/a',
-                  'assigned_counts': 'n/a'}
+        counts = {'counts': 'n/a', 'assigned_counts': 'n/a'}
 
     return counts
 
@@ -228,8 +225,7 @@ def get_gene_info_from_params(params):
     return gene_info
 
 
-def get_event_name(miso_filename,
-                   use_compressed_map=None):
+def get_event_name(miso_filename, use_compressed_map=None):
     """
     Get event name from MISO filename.
 
@@ -242,11 +238,12 @@ def get_event_name(miso_filename,
     event_name = basename.split(".miso")[0]
     if use_compressed_map is not None:
         if event_name not in use_compressed_map:
-            print("MISO FILENAME IS: %s" %(miso_filename))
+            print("MISO FILENAME IS: %s" % (miso_filename))
             print(event_name)
         else:
             event_name = use_compressed_map[event_name]
     return event_name
+
 
 # def get_event_name(miso_filename):
 #     """
@@ -260,31 +257,38 @@ def get_event_name(miso_filename,
 #     return event_name
 
 
-def summarize_sampler_results(samples_dir, summary_filename,
+def summarize_sampler_results(samples_dir,
+                              summary_filename,
                               use_compressed=None):
     """
     Given a set of samples from MISO, output a summary file.
     """
     summary_file = open(summary_filename, 'w')
-    header_fields = ["event_name", "miso_posterior_mean", "ci_low", "ci_high",
-                     "isoforms", "counts", "assigned_counts",
-                     # Fields related to gene/event
-                     "chrom",
-                     "strand",
-                     "mRNA_starts",
-                     "mRNA_ends"]
-    summary_header = "%s\n" %("\t".join(header_fields))
+    header_fields = [
+        "event_name",
+        "miso_posterior_mean",
+        "ci_low",
+        "ci_high",
+        "isoforms",
+        "counts",
+        "assigned_counts",
+        # Fields related to gene/event
+        "chrom",
+        "strand",
+        "mRNA_starts",
+        "mRNA_ends"
+    ]
+    summary_header = "%s\n" % ("\t".join(header_fields))
     summary_file.write(summary_header)
-    print("Loading events from: %s" %(samples_dir))
-    print("Writing summary to: %s" %(summary_filename))
-    samples_obj = MISOSamples(samples_dir,
-                              use_compressed=use_compressed)
+    print("Loading events from: %s" % (samples_dir))
+    print("Writing summary to: %s" % (summary_filename))
+    samples_obj = MISOSamples(samples_dir, use_compressed=use_compressed)
     num_events = 0
 
     for event_name in samples_obj.all_event_names:
         samples_results = samples_obj.get_event_samples(event_name)
         if samples_results is None:
-            print("WARNING: Skipping %s" %(event_name))
+            print("WARNING: Skipping %s" % (event_name))
             # Skip files that could not be parsed
             continue
         # If we're not given a mapping to compressed IDs, check
@@ -303,7 +307,7 @@ def summarize_sampler_results(samples_dir, summary_filename,
         counts_info = samples_results[5]
         shape_len = len(shape(samples))
         if shape_len < 2:
-            print("WARNING: Skipping %s -- mishaped file" %(event_name))
+            print("WARNING: Skipping %s -- mishaped file" % (event_name))
             continue
         num_samples, num_isoforms = shape(samples)
         output_fields = format_credible_intervals(event_name, samples)
@@ -322,10 +326,10 @@ def summarize_sampler_results(samples_dir, summary_filename,
         output_fields.append(gene_info["mRNA_starts"])
         output_fields.append(gene_info["mRNA_ends"])
 
-        output_line = "%s\n" %("\t".join(output_fields))
+        output_line = "%s\n" % ("\t".join(output_fields))
         summary_file.write(output_line)
         num_events += 1
-    print("  - Summarized a total of %d events." %(num_events))
+    print("  - Summarized a total of %d events." % (num_events))
     summary_file.close()
 
 
@@ -392,7 +396,9 @@ def get_samples_dir_filenames(samples_dir):
 
     # Remove directories and files beginning with "."
     filenames = [f for f in filenames if not os.path.isdir(f)]
-    filenames = [f for f in filenames if not os.path.basename(f).startswith(".")]
+    filenames = [
+        f for f in filenames if not os.path.basename(f).startswith(".")
+    ]
 
     # Resulting files should be either *.miso files
     # or *.miso_db files, but not both

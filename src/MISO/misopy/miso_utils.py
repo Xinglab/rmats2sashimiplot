@@ -58,7 +58,7 @@ def get_miso_output_files(event_name, chrom, settings):
     else:
         miso_prefix = ""
 
-    print("miso_prefix: %s" %(miso_prefix))
+    print("miso_prefix: %s" % (miso_prefix))
 
     if "miso_files" not in settings:
         print("Error: need \'miso_files\' to be set in settings file in " \
@@ -71,12 +71,12 @@ def get_miso_output_files(event_name, chrom, settings):
         [os.path.abspath(os.path.expanduser(os.path.join(miso_prefix, f))) \
          for f in miso_files]
 
-    event_with_miso_ext = "%s.miso" %(event_name)
+    event_with_miso_ext = "%s.miso" % (event_name)
 
     for curr_sample_path in miso_sample_paths:
         event_found = False
-        print("Searching for MISO files in: %s" %(curr_sample_path))
-        print("  - Looking for chromosome %s directories" %(chrom))
+        print("Searching for MISO files in: %s" % (curr_sample_path))
+        print("  - Looking for chromosome %s directories" % (chrom))
 
         if event_with_miso_ext in get_miso_files_from_dir(curr_sample_path):
             # Allow the event to be in a top-level directory outside of a
@@ -85,8 +85,8 @@ def get_miso_output_files(event_name, chrom, settings):
             event_filename = os.path.join(curr_sample_path,
                                           event_with_miso_ext)
             miso_filenames.append(event_filename)
-            print("Found %s MISO file in top-level directory." %(event_name))
-            print("  - Location: %s" %(event_filename))
+            print("Found %s MISO file in top-level directory." % (event_name))
+            print("  - Location: %s" % (event_filename))
             print("Please try to keep MISO event files in their chromosome "\
                   "directory.")
             break
@@ -99,7 +99,7 @@ def get_miso_output_files(event_name, chrom, settings):
             # see if the MISO file is in there
             if chrom in dirs:
                 chrom_dirname = os.path.abspath(os.path.join(root, chrom))
-                print("Looking for MISO files in: %s" %(chrom_dirname))
+                print("Looking for MISO files in: %s" % (chrom_dirname))
                 # Fetch MISO files, if any
                 curr_miso_files = get_miso_files_from_dir(chrom_dirname)
 
@@ -110,8 +110,8 @@ def get_miso_output_files(event_name, chrom, settings):
                     # Add to list
                     event_filename = os.path.join(root, chrom,
                                                   event_with_miso_ext)
-                    print("Found %s MISO file." %(event_name))
-                    print("  - Location: %s" %(event_filename))
+                    print("Found %s MISO file." % (event_name))
+                    print("  - Location: %s" % (event_filename))
                     miso_filenames.append(event_filename)
                     break
 

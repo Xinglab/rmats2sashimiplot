@@ -33,12 +33,13 @@ class MISODatabase:
             # Make mapping from uncompressed to compressed IDs
             self.uncomp_to_comp = misc_utils.inv_dict(self.comp_to_uncomp)
         if not os.path.isfile(db_fname):
-            raise Exception("%s does not exist." %(db_fname))
+            raise Exception("%s does not exist." % (db_fname))
         self.db_fname = db_fname
         # Create table names that start with 'table_' to properly handle
         # Ensembl headers, which are numeric only and tables cannot
         # be named numerically.
-        self.table_name = "table_%s" %(get_table_name_from_file(self.db_fname))
+        self.table_name = "table_%s" % (get_table_name_from_file(
+            self.db_fname))
         if self.table_name is None:
             print("Error: Cannot retrieve name of MISO db file %s" \
                   %(self.db_fname))
@@ -46,7 +47,6 @@ class MISODatabase:
         self.conn = sqlite3.connect(self.db_fname)
         # Determine event name format
         self.is_db_events_compressed = self.is_event_name_compressed()
-
 
     def is_event_name_compressed(self):
         """
@@ -60,7 +60,6 @@ class MISODatabase:
         event_name = str(first_result[0])
         is_comp = misc_utils.is_compressed_name(event_name)
         return is_comp
-
 
     def get_event_data_as_stream(self, event_name):
         """
@@ -105,30 +104,27 @@ class MISODatabase:
             # Event not found
             return None
         if len(rows) > 1:
-            raise Exception("More than one entry for event %s" %(event_to_query))
+            raise Exception("More than one entry for event %s" %
+                            (event_to_query))
         event_name, psi_vals_and_scores, header = rows[0]
         # If we're given a mapping to compressed events,
         # return the event name as the *uncompressed* event
         # name
-        event_data = "%s\n%s\n" %(header,
-                                  psi_vals_and_scores)
+        event_data = "%s\n%s\n" % (header, psi_vals_and_scores)
         event_stream = io.StringIO(event_data)
         return event_stream
-
 
     def get_event_data_as_string(self, event_name):
         data = self.get_event_data_as_stream(event_name).read()
         return data
-
 
     def get_all_events(self):
         """
         Get all events from table. Return iterator of results.
         """
         c = self.conn.cursor()
-        results = c.execute("SELECT * from %s" %(self.table_name))
+        results = c.execute("SELECT * from %s" % (self.table_name))
         return results
-
 
     def get_all_event_names(self):
         """
@@ -145,14 +141,14 @@ def miso_dir_to_db(dir_to_compress, output_filename):
     Convert MISO directory into MySQL table using sqlite3.
     """
     print("Converting MISO directory into database")
-    print("  - MISO dir: %s" %(dir_to_compress))
-    print("  - Output file: %s" %(output_filename))
+    print("  - MISO dir: %s" % (dir_to_compress))
+    print("  - Output file: %s" % (output_filename))
     if not os.path.isdir(dir_to_compress):
-        print("Error: %s not a directory, aborting." %(dir_to_compress))
+        print("Error: %s not a directory, aborting." % (dir_to_compress))
         sys.exit(1)
     miso_filenames = glob.glob(os.path.join(dir_to_compress, "*.miso"))
     num_files = len(miso_filenames)
-    print("  - %d files to compress" %(num_files))
+    print("  - %d files to compress" % (num_files))
     # Initialize the SQLite database
     if os.path.isfile(output_filename):
         print("Error: Database %s already exists, aborting." \
@@ -161,7 +157,7 @@ def miso_dir_to_db(dir_to_compress, output_filename):
     conn = sqlite3.connect(output_filename)
     c = conn.cursor()
     # Create table for the current directory to compress
-    table_name = "table_%s" %(os.path.basename(dir_to_compress))
+    table_name = "table_%s" % (os.path.basename(dir_to_compress))
     sql_create = \
         "CREATE TABLE %s " %(table_name) + \
         "(event_name text, psi_vals_and_scores text, header text)"
@@ -169,7 +165,7 @@ def miso_dir_to_db(dir_to_compress, output_filename):
     for miso_fname in miso_filenames:
         miso_file_fields = load_miso_file_as_str(miso_fname)
         if miso_file_fields is None:
-            print("Error: Cannot compress %s. Aborting." %(miso_fname))
+            print("Error: Cannot compress %s. Aborting." % (miso_fname))
             return None
         header, psi_vals_and_scores = miso_file_fields
         ######
@@ -177,10 +173,8 @@ def miso_dir_to_db(dir_to_compress, output_filename):
         ###### HANDLE COMPRESSED EVENT IDS HERE
         ######
         event_name = strip_miso_ext(os.path.basename(miso_fname))
-        sql_insert = "INSERT INTO %s VALUES (?, ?, ?)" %(table_name)
-        c.execute(sql_insert, (event_name,
-                               psi_vals_and_scores,
-                               header))
+        sql_insert = "INSERT INTO %s VALUES (?, ?, ?)" % (table_name)
+        c.execute(sql_insert, (event_name, psi_vals_and_scores, header))
     # Commit changes and close the database
     conn.commit()
     conn.close()
@@ -205,7 +199,7 @@ def get_table_name_from_file(db_filename):
     base_name = os.path.basename(db_filename)
     if base_name.endswith(MISO_DB_EXT):
         # Strip extension
-        return base_name[0:-1*len(MISO_DB_EXT)]
+        return base_name[0:-1 * len(MISO_DB_EXT)]
     return None
 
 
@@ -215,7 +209,7 @@ def load_miso_file_as_str(miso_filename):
     into an sqlite database.
     """
     if not os.path.isfile(miso_filename):
-        print("Error: Cannot find %s" %(miso_filename))
+        print("Error: Cannot find %s" % (miso_filename))
         return None
     header = ""
     psi_vals_and_scores = ""

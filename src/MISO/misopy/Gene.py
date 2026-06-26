@@ -12,15 +12,16 @@ class Interval:
     def __init__(self, start, end):
         self.start = start
         self.end = end
-        assert(self.start <= self.end)
+        assert (self.start <= self.end)
         self.len = self.end - self.start + 1
-        assert(self.len >= 1)
+        assert (self.len >= 1)
 
     def __repr__(self):
-        return "Interval([%d, %d])" %(self.start, self.end)
+        return "Interval([%d, %d])" % (self.start, self.end)
 
     def __eq__(self, interval):
-        if interval == None: return False
+        if interval == None:
+            return False
         return self.start == interval.start and self.end == interval.end
 
     def __ne__(self, interval):
@@ -37,20 +38,25 @@ class Interval:
         return False
 
     def intersects(self, other):
-        if (self.start < other.end
-            and self.end > other.start):
+        if (self.start < other.end and self.end > other.start):
             return True
         return False
 
+
 class Exon(Interval):
-    def __init__(self, start, end, label=None, gene=None, seq="",
+    def __init__(self,
+                 start,
+                 end,
+                 label=None,
+                 gene=None,
+                 seq="",
                  from_gff_record=None):
         Interval.__init__(self, start, end)
         self.gene = gene
         self.label = label
         self.seq = seq
         if self.seq != "":
-            assert(len(self.seq) == len(self.len))
+            assert (len(self.seq) == len(self.len))
 
         if from_gff_record != None:
             # Load information from a GFF record
@@ -71,12 +77,12 @@ class Exon(Interval):
         gene_label = None
         if self.gene:
             gene_label = self.gene.label
-        return "Exon([%d, %d], id = %s, seq = %s)(ParentGene = %s)" %(self.start, self.end,
-                                                                      self.label, self.seq,
-                                                                      gene_label)
+        return "Exon([%d, %d], id = %s, seq = %s)(ParentGene = %s)" % (
+            self.start, self.end, self.label, self.seq, gene_label)
 
     def __eq__(self, other):
-        if other == None: return False
+        if other == None:
+            return False
 
         # TEST -- removing sequence equality
         if self.start == other.start and self.end == other.end \
@@ -87,6 +93,7 @@ class Exon(Interval):
         #    return True
         return False
 
+
 class Intron(Interval):
     def __init__(self, start, end, label=None, gene=None, seq=""):
         Interval.__init__(self, start, end)
@@ -94,22 +101,23 @@ class Intron(Interval):
         self.label = label
         self.seq = seq
         if self.seq != "":
-            assert(len(seq) == len(self.len))
+            assert (len(seq) == len(self.len))
 
     def __repr__(self):
         gene_label = None
         if self.gene:
             gene_label = self.gene.label
-        return "Intron([%d, %d], id = %s)(ParentGene = %s)" %(self.start, self.end,
-                                                              self.label, self.seq,
-                                                              self.gene_label)
+        return "Intron([%d, %d], id = %s)(ParentGene = %s)" % (
+            self.start, self.end, self.label, self.seq, self.gene_label)
 
     def __eq__(self, other):
-        if other == None: return False
+        if other == None:
+            return False
         if self.seq == other.seq and self.start == other.start and self.end == other.end \
            and self.gene == other.gene:
             return True
         return False
+
 
 class Gene:
     """
@@ -124,7 +132,9 @@ class Gene:
 
     which creates two isoforms, composed of the 'A' and 'B' parts.
     """
-    def __init__(self, isoform_desc, parts,
+    def __init__(self,
+                 isoform_desc,
+                 parts,
                  chrom=None,
                  exons_seq=None,
                  label="",
@@ -150,7 +160,8 @@ class Gene:
         self.assign_transcript_ids()
 
         # The number of exons in each isoform
-        self.num_parts_per_isoform = array([iso.num_parts for iso in self.isoforms])
+        self.num_parts_per_isoform = array(
+            [iso.num_parts for iso in self.isoforms])
 
     def isoform_has_part(self, isoform, part):
         """
@@ -192,7 +203,8 @@ class Gene:
         return alternative_parts
 
     def get_rand_id(self, len):
-        rand_id = 'G' + "".join([pyrand.choice('abcdefghijklmnopqrstuvwxyz') for n in range(len)])
+        rand_id = 'G' + "".join(
+            [pyrand.choice('abcdefghijklmnopqrstuvwxyz') for n in range(len)])
         return rand_id
 
     def get_parts_before(self, part):
@@ -278,7 +290,7 @@ class Gene:
         """
         Get isoform coords and return genomic coords.
         """
-        assert(isoform in self.isoforms)
+        assert (isoform in self.isoforms)
         # ensure that the parts the coordinates map to are in the isoform
         start_part = self.get_part_by_coord(genomic_start)
         end_part = self.get_part_by_coord(genomic_end)
@@ -328,7 +340,8 @@ class Gene:
         """
         if self.transcript_ids != None:
             if len(self.transcript_ids) != len(self.isoforms):
-                raise Exception("Transcript IDs do not match number of isoforms.")
+                raise Exception(
+                    "Transcript IDs do not match number of isoforms.")
             for iso_num, iso in enumerate(self.isoforms):
                 curr_iso = self.isoforms[iso_num]
                 curr_iso.label = self.transcript_ids[iso_num]
@@ -339,18 +352,23 @@ class Gene:
         """
         return Exception, "Unimplemented method."
 
-    def align_read_pair_with_cigar(self, left_cigar, genomic_left_read_start,
-                                   genomic_left_read_end, right_cigar,
+    def align_read_pair_with_cigar(self,
+                                   left_cigar,
+                                   genomic_left_read_start,
+                                   genomic_left_read_end,
+                                   right_cigar,
                                    genomic_right_read_start,
-                                   genomic_right_read_end, read_len,
+                                   genomic_right_read_end,
+                                   read_len,
                                    overhang=1):
 
         alignment = []
         iso_frag_lens = []
 
-        left = self.align_read_to_isoforms_with_cigar(
-            left_cigar, genomic_left_read_start, genomic_left_read_end,
-            read_len, overhang)
+        left = self.align_read_to_isoforms_with_cigar(left_cigar,
+                                                      genomic_left_read_start,
+                                                      genomic_left_read_end,
+                                                      read_len, overhang)
         right = self.align_read_to_isoforms_with_cigar(
             right_cigar, genomic_right_read_start, genomic_right_read_end,
             read_len, overhang)
@@ -358,7 +376,7 @@ class Gene:
         for lal, lco, ral, rco in zip(left[0], left[1], right[0], right[1]):
             if lal and ral:
                 alignment.append(1)
-                iso_frag_lens.append(rco[1]-lco[0]+1)
+                iso_frag_lens.append(rco[1] - lco[0] + 1)
             else:
                 alignment.append(0)
                 iso_frag_lens.append(-Inf)
@@ -417,19 +435,26 @@ class Gene:
 #           iso_frag_lens.append(frag_len)
 #       return (alignment, iso_frag_lens)
 
-    def align_reads_to_isoforms(self, read_genomic_coords, overhang=1, read_len=36):
+    def align_reads_to_isoforms(self,
+                                read_genomic_coords,
+                                overhang=1,
+                                read_len=36):
         alignments = []
         isoforms_coords = []
         for read_coords in read_genomic_coords:
             genomic_read_start, genomic_read_end = read_coords
-            alignment, isoform_coords = self.align_read_to_isoforms(genomic_read_start, genomic_read_end,
-                                                                    overhang=overhang, read_len=read_len)
+            alignment, isoform_coords = self.align_read_to_isoforms(
+                genomic_read_start,
+                genomic_read_end,
+                overhang=overhang,
+                read_len=read_len)
             alignments.append(alignment)
             isoforms_coords.append(isoform_coords)
         return (array(alignments), isoforms_coords)
 
     def align_read_to_isoforms_with_cigar(self, cigar, genomic_read_start,
-                                          genomic_read_end, read_len, overhang_len):
+                                          genomic_read_end, read_len,
+                                          overhang_len):
         """
         Align a single-end read to all of the gene's isoforms.
         Use the cigar string of the read to determine whether an
@@ -438,9 +463,8 @@ class Gene:
         alignment = []
         isoform_coords = []
         for isoform in self.isoforms:
-            iso_read_start, iso_read_end = self.genomic_coords_to_isoform(isoform,
-                                                                          genomic_read_start,
-                                                                          genomic_read_end)
+            iso_read_start, iso_read_end = self.genomic_coords_to_isoform(
+                isoform, genomic_read_start, genomic_read_end)
             isocigar = isoform.get_local_cigar(genomic_read_start, read_len)
 
             # Check that read is consistent with isoform and that the overhang
@@ -454,7 +478,6 @@ class Gene:
                 isoform_coords.append(None)
 
         return (alignment, isoform_coords)
-
 
 #     def align_read_to_isoforms(self, genomic_read_start, genomic_read_end, overhang=1, read_len=36):
 #       """
@@ -522,7 +545,11 @@ class Gene:
 #           isoform_coords.append((iso_read_start, iso_read_end))
 #       return (alignment, isoform_coords)
 
-    def align_read(self, genomic_read_start, genomic_read_end, overhang=1, read_len=36):
+    def align_read(self,
+                   genomic_read_start,
+                   genomic_read_end,
+                   overhang=1,
+                   read_len=36):
         """
         Align a single-end read to all of the gene's isoforms.
         Return an alignment binary vector of length K, where K is the number of isoforms.
@@ -536,8 +563,8 @@ class Gene:
         alignment = []
         # align all the reads to isoforms and return an alignment back, as well as the set of
         # genomic coordinates for each isoform that the read aligns to.
-        alignment, aligned_genomic_coords = self.align_read_to_isoforms(genomic_read_start, genomic_read_end,
-                                                                        overhang=overhang)
+        alignment, aligned_genomic_coords = self.align_read_to_isoforms(
+            genomic_read_start, genomic_read_end, overhang=overhang)
         # get the parts that are crossed in genomic coordinates space, taking into account
         # the read's length
         category = None
@@ -552,33 +579,40 @@ class Gene:
                 # first convert the genomic coordinates of read to the first isoform's coordinates
                 isoform1 = self.isoforms[0]
                 # find isoform coordinate of genomic read start
-                iso1_read_start, c1 = self.genomic_coords_to_isoform(isoform1, genomic_read_start,
-                                                                     genomic_read_start)
+                iso1_read_start, c1 = self.genomic_coords_to_isoform(
+                    isoform1, genomic_read_start, genomic_read_start)
                 # find isoform coordinate of genomic read end
-                iso1_read_end, c2 = self.genomic_coords_to_isoform(isoform1, genomic_read_end,
-                                                                   genomic_read_end)
+                iso1_read_end, c2 = self.genomic_coords_to_isoform(
+                    isoform1, genomic_read_end, genomic_read_end)
                 # find which parts these coordinates land in
-                iso1_read_start_part, c1 = isoform1.get_part_by_coord(iso1_read_start)
-                iso1_read_end_part, c2 = isoform1.get_part_by_coord(iso1_read_end)
+                iso1_read_start_part, c1 = isoform1.get_part_by_coord(
+                    iso1_read_start)
+                iso1_read_end_part, c2 = isoform1.get_part_by_coord(
+                    iso1_read_end)
                 # if the read starts in the first part of the isoform and
                 # ends in the second part of the isoform, then it's an upstream
                 # inclusion junction read
-                if iso1_read_start_part == isoform1.parts[0] and iso1_read_end_part == isoform1.parts[1]:
+                if iso1_read_start_part == isoform1.parts[
+                        0] and iso1_read_end_part == isoform1.parts[1]:
                     category = 'upincjxn'
-                elif iso1_read_start_part == isoform1.parts[1] and iso1_read_end_part == isoform1.parts[2]:
+                elif iso1_read_start_part == isoform1.parts[
+                        1] and iso1_read_end_part == isoform1.parts[2]:
                     # if the read starts in the second part of the isoform and
                     # ends in the third, then it's a downstream inclusion
                     # junction read
                     category = 'dnincjxn'
-                elif iso1_read_start_part == isoform1.parts[1] and iso1_read_end_part == isoform1.parts[1]:
+                elif iso1_read_start_part == isoform1.parts[
+                        1] and iso1_read_end_part == isoform1.parts[1]:
                     # if the read starts and ends in the skipped exon body,
                     # then it's a body read
                     category = 'body'
                 else:
                     # If the read is not in one of those categories, the isoform must have more than three parts
-                    assert(len(isoform1.parts) > 3)
+                    assert (len(isoform1.parts) > 3)
                 # if the read doesn't fall into either of these categories, it can't possibly be
                 # an inclusion read
+
+
 #               if category == None:
 #                   raise Exception, "Incoherent inclusion read: not upincjxn, dnincjxn, or body! %s" \
 #                         %(str(iso1_read_start) + ' - ' + str(iso1_read_end))
@@ -608,7 +642,12 @@ class Gene:
         aligned_reads = []
         for read in reads:
             # align read to all of the isoforms
-            (alignment, isoform_coords) = self.align_read_pair(read[0], read[1], read[2], read[3], overhang=overhang)
+            (alignment,
+             isoform_coords) = self.align_read_pair(read[0],
+                                                    read[1],
+                                                    read[2],
+                                                    read[3],
+                                                    overhang=overhang)
             frag_lens = [c2 - c1 + 1 for c1, c2 in isoform_coords]
             aligned_reads.append(array([alignment, frag_lens]))
         return aligned_reads
@@ -686,15 +725,14 @@ class Gene:
         return mean(iso_lens)
 
     def __str__(self):
-        return "gene_id: %s\nisoforms: %s" %(self.label, self.isoforms)
+        return "gene_id: %s\nisoforms: %s" % (self.label, self.isoforms)
 
     def __repr__(self):
         return self.__str__()
 
+
 class Isoform:
-    def __init__(self, gene, parts,
-                 seq=None,
-                 label=None):
+    def __init__(self, gene, parts, seq=None, label=None):
         """
         Builds an isoform given an isoform description.
         """
@@ -740,7 +778,8 @@ class Isoform:
             if isoform_interval_start <= start_coord and start_coord <= isoform_interval_end:
                 # find parts before and sum them up to get the part-based coordinate
                 # the part based coordinate is start_coord - previous part lengths
-                prev_parts_sum = sum([p.len for p in self.get_parts_before(part)])
+                prev_parts_sum = sum(
+                    [p.len for p in self.get_parts_before(part)])
                 part_start = start_coord - prev_parts_sum
                 return part, part_start
             # add one to move to next part
@@ -802,12 +841,13 @@ class Isoform:
             # the next exon is needed as well
             else:
                 # is there a next exon?
-                if i+1 == len(self.parts):
+                if i + 1 == len(self.parts):
                     return None
                 cigar.append((0, self.parts[i].end - st + 1))
-                cigar.append((3, self.parts[i+1].start - self.parts[i].end - 1))
+                cigar.append(
+                    (3, self.parts[i + 1].start - self.parts[i].end - 1))
                 rl = rl - (self.parts[i].end - st + 1)
-                st = self.parts[i+1].start
+                st = self.parts[i + 1].start
         return cigar
 
     def part_coord_to_isoform(self, part_start):
@@ -818,7 +858,8 @@ class Isoform:
         isoform_coord = None
         for part in self.parts:
             if part.contains(part_start, part_start):
-                isoform_coord = isoform_interval_start + (part_start - part.start)
+                isoform_coord = isoform_interval_start + (part_start
+                                                          - part.start)
                 return isoform_coord
             isoform_interval_start += part.len
         return isoform_coord
@@ -832,8 +873,10 @@ class Isoform:
         end_part, end_part_coord = self.get_part_by_coord(isoform_end)
 
         # retrieve the corresponding genomic coordinates
-        genomic_start = self.gene.part_coords_to_genomic(start_part, start_part_coord)
-        genomic_end = self.gene.part_coords_to_genomic(end_part, end_part_coord)
+        genomic_start = self.gene.part_coords_to_genomic(
+            start_part, start_part_coord)
+        genomic_end = self.gene.part_coords_to_genomic(end_part,
+                                                       end_part_coord)
         return (genomic_start, genomic_end)
 
     def __repr__(self):
@@ -846,24 +889,27 @@ def pretty(d, indent=0):
     for key, value in d.items():
         print('  ' * indent + str(key))
         if isinstance(value, dict):
-            pretty(value, indent+1)
+            pretty(value, indent + 1)
         else:
-            print('  ' * (indent+1) + str(value))
+            print('  ' * (indent + 1) + str(value))
 
 
-def printTree(tree, depth = 0):
+def printTree(tree, depth=0):
     if tree == None or not type(tree) == dict:
         print("\t" * depth, tree)
     else:
         for key, val in list(tree.items()):
             print("\t" * depth, key)
-            printTree(val, depth+1)
+            printTree(val, depth + 1)
 
 
 def print_gene_hierarchy(gene_hierarchy):
     pretty(gene_hierarchy)
+
+
 #    pp = pprint.PrettyPrinter(indent=4)
 #    pp.pprint(gene_hierarchy)
+
 
 def load_genes_from_gff(gff_filename,
                         include_introns=False,
@@ -882,14 +928,15 @@ def load_genes_from_gff(gff_filename,
     num_genes = 0
 
     for gene in gff_db.genes:
-        gene_records, gene_hierarchy = gff_db.get_genes_records([gene.get_id()])
+        gene_records, gene_hierarchy = gff_db.get_genes_records(
+            [gene.get_id()])
 
         # Record the gene's GFF record
         gene_label = gene.get_id()
 
         if gene_label not in gene_hierarchy:
             if not suppress_warnings:
-                print("Skipping gene %s..." %(gene_label))
+                print("Skipping gene %s..." % (gene_label))
             continue
 
         gene_hierarchy[gene_label]['gene'] = gene
@@ -900,26 +947,26 @@ def load_genes_from_gff(gff_filename,
                                               gene_records)
         if gene_obj == None:
             if not suppress_warnings:
-                print("Cannot make gene out of %s" %(gene_label))
+                print("Cannot make gene out of %s" % (gene_label))
             continue
-        gff_genes[gene.get_id()] = {'gene_object': gene_obj,
-                                    'hierarchy': gene_hierarchy}
+        gff_genes[gene.get_id()] = {
+            'gene_object': gene_obj,
+            'hierarchy': gene_hierarchy
+        }
 
         if (num_genes % 5000) == 0:
             if not suppress_warnings:
-                print("Through %d genes..." %(num_genes))
+                print("Through %d genes..." % (num_genes))
         num_genes += 1
 
     num_genes = len(gff_genes)
     if not suppress_warnings:
-        print("Loaded %d genes" %(num_genes))
+        print("Loaded %d genes" % (num_genes))
 
     return gff_genes
 
 
-def make_gene_from_gff_records(gene_label,
-                               gene_hierarchy,
-                               gene_records):
+def make_gene_from_gff_records(gene_label, gene_hierarchy, gene_records):
     """
     Make a gene from a gene hierarchy.
     """
@@ -955,7 +1002,7 @@ def make_gene_from_gff_records(gene_label,
         exons = []
 
         if len(transcript_exons) == 0:
-            print("%s has no exons" %(transcript_id))
+            print("%s has no exons" % (transcript_id))
             continue
 
         # Record how many transcripts we have with exons children
@@ -965,10 +1012,12 @@ def make_gene_from_gff_records(gene_label,
         for exon_id, exon_info in transcript_exons.items():
             exon_rec = exon_info['record']
 
-            exon = Exon(exon_rec.start, exon_rec.end, from_gff_record={'record':
-                                                                       exon_rec,
-                                                                       'parent':
-                                                                       transcript_rec})
+            exon = Exon(exon_rec.start,
+                        exon_rec.end,
+                        from_gff_record={
+                            'record': exon_rec,
+                            'parent': transcript_rec
+                        })
             exons.append(exon)
 
         # Sort exons by their start coordinate
@@ -1007,7 +1056,8 @@ def make_gene_from_gff_records(gene_label,
     #if not chrom.startswith("chr"):
     #    chrom = "chr%s" %(chrom)
 
-    gene = Gene(isoform_desc, all_exons,
+    gene = Gene(isoform_desc,
+                all_exons,
                 label=gene_label,
                 chrom=chrom,
                 strand=strand,
@@ -1039,8 +1089,8 @@ def make_gene(parts_lens, isoforms, chrom=None):
     gene = Gene(isoform_desc, parts, chrom=chrom)
     return gene
 
-def se_event_to_gene(up_len, se_len, dn_len, chrom,
-                     label=None):
+
+def se_event_to_gene(up_len, se_len, dn_len, chrom, label=None):
     """
     Parse an SE event to a gene structure.
     """
@@ -1056,9 +1106,9 @@ def se_event_to_gene(up_len, se_len, dn_len, chrom,
     se_exon = Exon(exon2_start, exon2_end, label='B')
     dn_exon = Exon(exon3_start, exon3_end, label='C')
     parts = [up_exon, se_exon, dn_exon]
-    gene = Gene([['A', 'B', 'C'], ['A', 'C']], parts, label=label,
-                chrom=chrom)
+    gene = Gene([['A', 'B', 'C'], ['A', 'C']], parts, label=label, chrom=chrom)
     return gene
+
 
 def tandem_utr_event_to_gene(core_len, ext_len, chrom, label=None):
     """
@@ -1073,9 +1123,12 @@ def tandem_utr_event_to_gene(core_len, ext_len, chrom, label=None):
     core_exon = Exon(exon1_start, exon1_end, label='TandemUTRCore')
     ext_exon = Exon(exon2_start, exon2_end, label='TandemUTRExt')
     parts = [core_exon, ext_exon]
-    gene = Gene([['TandemUTRCore', 'TandemUTRExt'], ['TandemUTRCore']], parts,
-                label=label, chrom=chrom)
+    gene = Gene([['TandemUTRCore', 'TandemUTRExt'], ['TandemUTRCore']],
+                parts,
+                label=label,
+                chrom=chrom)
     return gene
+
 
 def make_proximal_distal_exon_pair(proximal_exons, distal_exons):
     """
@@ -1083,8 +1136,13 @@ def make_proximal_distal_exon_pair(proximal_exons, distal_exons):
     """
     return
 
-def afe_ale_event_to_gene(proximal_exons, distal_exons, event_type,
-                          chrom, read_len=None, overhang_len=None,
+
+def afe_ale_event_to_gene(proximal_exons,
+                          distal_exons,
+                          event_type,
+                          chrom,
+                          read_len=None,
+                          overhang_len=None,
                           label=None):
     """
     Parse an AFE/ALE event to a gene.
@@ -1103,8 +1161,9 @@ def afe_ale_event_to_gene(proximal_exons, distal_exons, event_type,
                                  in distal_exons])
     sum_distal_exons_lens += num_junction_positions
     distal_exon_end = sum_distal_exons_lens - 1
-    distal_exon = Exon(distal_exon_start, distal_exon_end,
-                       label='%sDistal' %(event_type))
+    distal_exon = Exon(distal_exon_start,
+                       distal_exon_end,
+                       label='%sDistal' % (event_type))
 
     # Proximal exon - closer to the gene body
     proximal_exon_start = distal_exon_end + 1
@@ -1112,19 +1171,25 @@ def afe_ale_event_to_gene(proximal_exons, distal_exons, event_type,
                                    in proximal_exons])
     sum_proximal_exons_lens += num_junction_positions
     proximal_exon_end = proximal_exon_start + (sum_proximal_exons_lens - 1)
-    proximal_exon = Exon(proximal_exon_start, proximal_exon_end,
-                         label='%sProximal' %(event_type))
+    proximal_exon = Exon(proximal_exon_start,
+                         proximal_exon_end,
+                         label='%sProximal' % (event_type))
     parts = None
 
     if event_type == 'AFE':
         parts = [distal_exon, proximal_exon]
     else:
-        raise Exception("Parsing wrong event type, %s" %(event_type))
+        raise Exception("Parsing wrong event type, %s" % (event_type))
 
     # Make it so proximal isoform is always first
-    gene = Gene(['%sProximal' %(event_type), '%sDistal' %(event_type)],
-                parts, chrom=chrom, label=label)
+    gene = Gene(
+        ['%sProximal' %
+         (event_type), '%sDistal' % (event_type)],
+        parts,
+        chrom=chrom,
+        label=label)
     return gene
+
 
 if __name__ == '__main__':
     pass

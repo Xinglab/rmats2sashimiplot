@@ -5,6 +5,7 @@
 from collections import defaultdict
 from numpy import *
 
+
 def count_aligned_reads(reads, paired_end=False):
     """
     Count the number of occurrences of each aligned read.

@@ -26,6 +26,7 @@ import misopy.cluster_utils as cluster_utils
 miso_path = os.path.dirname(os.path.abspath(__file__))
 manual_url = "http://genes.mit.edu/burgelab/miso/docs/"
 
+
 class MISOPacker:
     """
     Pack MISO directories. Traverses the directory that contains
@@ -34,7 +35,6 @@ class MISOPacker:
     """
     def __init__(self, dirs_to_pack):
         self.dirs_to_pack = dirs_to_pack
-
 
     def pack_dirs(self, miso_dirnames):
         """
@@ -49,9 +49,9 @@ class MISOPacker:
         """
         t1 = time.time()
         for miso_dirname in miso_dirnames:
-            print("Processing: %s" %(miso_dirname))
+            print("Processing: %s" % (miso_dirname))
             if not os.path.isdir(miso_dirname):
-                print("Error: %s not a directory." %(miso_dirname))
+                print("Error: %s not a directory." % (miso_dirname))
                 sys.exit(1)
             for dir_to_compress, subdirs, curr_fnames in os.walk(miso_dirname):
                 if miso_db.is_miso_unpacked_dir(dir_to_compress):
@@ -75,7 +75,7 @@ class MISOPacker:
                     # containing the *.miso file
                     shutil.rmtree(dir_to_compress)
         t2 = time.time()
-        print("Packing took %.2f minutes" %((t2 - t1)/60.))
+        print("Packing took %.2f minutes" % ((t2 - t1) / 60.))
 
 
 def greeting(parser=None):
@@ -102,12 +102,12 @@ def pack_miso_output(dirs_to_pack_as_str):
 def view_miso_db(db_fname):
     db_fname = misc_utils.pathify(db_fname)
     if not os.path.isfile(db_fname):
-        print("Error: %s does not exist." %(db_fname))
+        print("Error: %s does not exist." % (db_fname))
         sys.exit(1)
     curr_db = miso_db.MISODatabase(db_fname)
     event_names = curr_db.get_all_event_names()
     num_events = len(event_names)
-    print("Database contains %d events" %(num_events))
+    print("Database contains %d events" % (num_events))
     for event in event_names:
         print(event)
 
@@ -120,8 +120,10 @@ def main():
                       help="Pack a MISO output containing dir(s). Takes as input " \
                       "a directory or a comma-separated set of directories " \
                       "that contain MISO output.")
-    parser.add_option("--view", dest="view",
-                      nargs=1, default=None,
+    parser.add_option("--view",
+                      dest="view",
+                      nargs=1,
+                      default=None,
                       help="View a MISO database (.miso_db file).")
     (options, args) = parser.parse_args()
 

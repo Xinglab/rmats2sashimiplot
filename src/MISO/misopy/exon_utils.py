@@ -16,6 +16,7 @@ import misopy
 import misopy.gff_utils as gff_utils
 import misopy.misc_utils as misc_utils
 
+
 def is_exon_in_mRNA(gff_in, exon, mRNA):
     """
     Check if the exon is in mRNA based on genomic coordinates.
@@ -39,7 +40,8 @@ def is_exon_in_mRNA(gff_in, exon, mRNA):
     return False
 
 
-def get_const_exons_from_mRNA(gff_in, mRNAs,
+def get_const_exons_from_mRNA(gff_in,
+                              mRNAs,
                               min_size=0,
                               all_constitutive=False):
     """
@@ -61,7 +63,8 @@ def get_const_exons_from_mRNA(gff_in, mRNAs,
         const_exon = True
         # Skip exons that don't meet size requirement
         exon_len = exon.end - exon.start + 1
-        if exon_len < min_size: continue
+        if exon_len < min_size:
+            continue
 
         # Unless we're told all exons are constitutive, determine
         # which ones occur in all mRNAs
@@ -78,13 +81,13 @@ def get_const_exons_from_mRNA(gff_in, mRNAs,
         # as a field
         exon.attributes['GeneParent'] = [gene_id]
         # Record exon if it is constitutive
-        if const_exon: const_exons.append(exon)
+        if const_exon:
+            const_exons.append(exon)
 
     return const_exons
 
 
-def output_exons_to_file(recs, output_filename,
-                         output_format='gff'):
+def output_exons_to_file(recs, output_filename, output_format='gff'):
     """
     Output exons to file.
 
@@ -93,7 +96,7 @@ def output_exons_to_file(recs, output_filename,
     - records in gff format
     - filename to output results to
     """
-    print("Outputting exons to file: %s" %(output_filename))
+    print("Outputting exons to file: %s" % (output_filename))
 
     if output_format == "gff":
         # Write file in GFF format
@@ -131,13 +134,11 @@ def get_tagBam_cmd(bam_filename,
                "Must use as_sam=True with only_interval=True."
         # Keep only the header or the interval intersecting
         # reads
-        tagBam_cmd += " | egrep '^@|:%s:'" %(interval_label)
+        tagBam_cmd += " | egrep '^@|:%s:'" % (interval_label)
     return tagBam_cmd
 
 
-def map_bam2gff(bam_filename, gff_filename,
-                output_dir,
-                interval_label="gff"):
+def map_bam2gff(bam_filename, gff_filename, output_dir, interval_label="gff"):
     """
     Map BAM file against intervals in GFF, return results as BAM.
 
@@ -155,9 +156,9 @@ def map_bam2gff(bam_filename, gff_filename,
     output_filename = os.path.join(output_dir, bam_basename)
 
     print("Mapping BAM to GFF...")
-    print("  - BAM: %s" %(bam_filename))
-    print("  - GFF: %s" %(gff_filename))
-    print("  - Output file: %s" %(output_filename))
+    print("  - BAM: %s" % (bam_filename))
+    print("  - GFF: %s" % (gff_filename))
+    print("  - Output file: %s" % (output_filename))
 
     if os.path.isfile(output_filename):
         print("WARNING: %s exists. Skipping.." \
@@ -171,8 +172,7 @@ def map_bam2gff(bam_filename, gff_filename,
     if misc_utils.which("tagBam") is None:
         print("Aborting operation..")
         sys.exit(1)
-    tagBam_cmd = get_tagBam_cmd(bam_filename, interval_label,
-                                gff_filename)
+    tagBam_cmd = get_tagBam_cmd(bam_filename, interval_label, gff_filename)
     # Write intervals as BAM
     tagBam_cmd += " | samtools view -Shb -o %s - " \
                   %(output_filename)
@@ -195,7 +195,8 @@ def map_bam2gff(bam_filename, gff_filename,
     return output_filename
 
 
-def get_bedtools_coverage_cmd(bam_filename, gff_filename,
+def get_bedtools_coverage_cmd(bam_filename,
+                              gff_filename,
                               output_filename,
                               require_paired=False):
     """
@@ -203,8 +204,7 @@ def get_bedtools_coverage_cmd(bam_filename, gff_filename,
     from the BAM filename that are strictly contained within
     each interval of the GFF.
     """
-    args = {"bam_filename": bam_filename,
-            "gff_filename": gff_filename}
+    args = {"bam_filename": bam_filename, "gff_filename": gff_filename}
     # Do not include strandedness flag since that doesn't handle
     # paired-end cases
     intersect_cmd = "bedtools intersect -abam %(bam_filename)s " \
@@ -220,10 +220,10 @@ def get_bam_gff_coverage(bam_filename, gff_filename, output_dir):
     interval of a GFF)
     """
     if not os.path.isfile(bam_filename):
-        print("Error: BAM file %s does not exist." %(bam_filename))
+        print("Error: BAM file %s does not exist." % (bam_filename))
         sys.exit(1)
     if not os.path.isfile(gff_filename):
-        print("Error: GFF file %s does not exist." %(gff_filename))
+        print("Error: GFF file %s does not exist." % (gff_filename))
         sys.exit(1)
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -231,18 +231,17 @@ def get_bam_gff_coverage(bam_filename, gff_filename, output_dir):
     # the .bam extension (case-insensitive)
     bam_ext = re.compile("\.bam", re.IGNORECASE)
     output_basename = bam_ext.sub("", os.path.basename(bam_filename))
-    output_filename = "%s.bed" %(os.path.join(output_dir, output_basename))
+    output_filename = "%s.bed" % (os.path.join(output_dir, output_basename))
     print("Generating coverage file...")
-    print("  - BAM file: %s" %(bam_filename))
-    print("  - GFF file: %s" %(gff_filename))
-    print("  - Output file: %s" %(output_filename))
+    print("  - BAM file: %s" % (bam_filename))
+    print("  - GFF file: %s" % (gff_filename))
+    print("  - Output file: %s" % (output_filename))
     if os.path.isfile(output_filename):
         print("  - File exists. Skipping...")
         return output_filename
-    coverage_cmd = get_bedtools_coverage_cmd(bam_filename,
-                                             gff_filename,
+    coverage_cmd = get_bedtools_coverage_cmd(bam_filename, gff_filename,
                                              output_filename)
-    print("Executing: %s" %(coverage_cmd))
+    print("Executing: %s" % (coverage_cmd))
     status = os.system(coverage_cmd)
     if status != 0:
         print("Error computing coverage using bedtools.")
@@ -250,7 +249,8 @@ def get_bam_gff_coverage(bam_filename, gff_filename, output_dir):
     return output_filename
 
 
-def get_const_exons_by_gene(gff_filename, output_dir,
+def get_const_exons_by_gene(gff_filename,
+                            output_dir,
                             output_filename=None,
                             all_constitutive=False,
                             min_size=0,
@@ -269,9 +269,9 @@ def get_const_exons_by_gene(gff_filename, output_dir,
     - all_constitutive: treat all exons as constitutive
     """
     print("Getting constitutive exons...")
-    print("  - Input GFF: %s" %(gff_filename))
-    print("  - Output dir: %s" %(output_dir))
-    print("  - Output format: %s" %(output_format))
+    print("  - Input GFF: %s" % (gff_filename))
+    print("  - Output dir: %s" % (output_dir))
+    print("  - Output format: %s" % (output_format))
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -310,7 +310,8 @@ def get_const_exons_by_gene(gff_filename, output_dir,
     if not all_constitutive:
         print("Constitutive exon retrieval took %.2f seconds (%d exons)." \
               %((t2 - t1), num_exons))
-        output_exons_to_file(const_exons_by_gene, output_filename,
+        output_exons_to_file(const_exons_by_gene,
+                             output_filename,
                              output_format=output_format)
     else:
         print("Constitutive exons GFF was given, so not outputting " \
@@ -331,16 +332,24 @@ def greeting():
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("--get-const-exons", dest="get_const_exons",
-                      nargs=1, default=None,
+    parser.add_option("--get-const-exons",
+                      dest="get_const_exons",
+                      nargs=1,
+                      default=None,
                       help="Get constitutive exons from an input GFF file.")
-    parser.add_option("--min-exon-size", dest="min_exon_size",
-                      nargs=1, type="int", default=20,
-                      help="Minimum size of constitutive exon (in nucleotides) "
-                      "that should be used in the computation. "
-                      "Default is 20 bp.")
-    parser.add_option("--output-dir", dest="output_dir",
-                      nargs=1, default=None,
+    parser.add_option(
+        "--min-exon-size",
+        dest="min_exon_size",
+        nargs=1,
+        type="int",
+        default=20,
+        help="Minimum size of constitutive exon (in nucleotides) "
+        "that should be used in the computation. "
+        "Default is 20 bp.")
+    parser.add_option("--output-dir",
+                      dest="output_dir",
+                      nargs=1,
+                      default=None,
                       help="Output directory.")
     (options, args) = parser.parse_args()
 

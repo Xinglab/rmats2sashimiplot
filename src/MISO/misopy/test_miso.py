@@ -6,6 +6,7 @@ import unittest
 import pysam
 from . import sam_utils
 
+
 class TestMISO(unittest.TestCase):
     """
     Test MISO functionality.
@@ -28,7 +29,6 @@ class TestMISO(unittest.TestCase):
         self.sam_to_bam_script = "sam_to_bam"
         self.index_gff_script = "index_gff"
 
-
     def test_a_sam_to_bam(self):
         """
         Test conversion of SAM to BAM.
@@ -43,13 +43,12 @@ class TestMISO(unittest.TestCase):
             "%s --convert %s %s" %(self.sam_to_bam_script,
                                    self.test_sam_filename,
                                    output_dir)
-        print("Executing: %s" %(sam_to_bam_cmd))
+        print("Executing: %s" % (sam_to_bam_cmd))
         os.system(sam_to_bam_cmd)
 
         # Make sure conversion worked; sorted, indexed BAM file is outputted
-        assert(os.path.exists(os.path.join(output_dir,
-                                           "c2c12.Atp2b1.sorted.bam")))
-
+        assert (os.path.exists(
+            os.path.join(output_dir, "c2c12.Atp2b1.sorted.bam")))
 
     def test_a2_strandedness(self):
         """
@@ -143,33 +142,27 @@ class TestMISO(unittest.TestCase):
         insert_sd = 30
 
         # First index the GFF of interest
-        gff_filename = os.path.join(self.gff_events_dir,
-                                    "mm9",
-                                    "genes",
+        gff_filename = os.path.join(self.gff_events_dir, "mm9", "genes",
                                     "Atp2b1.mm9.gff")
-        gff_index_dir = os.path.join(self.gff_events_dir,
-                                     "mm9",
-                                     "genes",
-                                     "Atp2b1",
-                                     "indexed")
-        print("Testing GFF indexing of: %s" %(gff_filename))
-        index_cmd = "%s --index %s %s" %(self.index_gff_script,
-                                         gff_filename,
-                                         gff_index_dir)
+        gff_index_dir = os.path.join(self.gff_events_dir, "mm9", "genes",
+                                     "Atp2b1", "indexed")
+        print("Testing GFF indexing of: %s" % (gff_filename))
+        index_cmd = "%s --index %s %s" % (self.index_gff_script, gff_filename,
+                                          gff_index_dir)
 
-        print("Executing: %s" %(index_cmd))
+        print("Executing: %s" % (index_cmd))
         os.system(index_cmd)
 
-        output_dir = os.path.join(self.tests_output_dir,
-                                  "gene-psi-output")
+        output_dir = os.path.join(self.tests_output_dir, "gene-psi-output")
         miso_cmd = "%s --run %s %s --output-dir %s --read-len %d " \
                    %(self.events_analysis_cmd,
                      gff_index_dir,
                      bam_filename,
                      output_dir,
                      read_len)
-        print("Executing: %s" %(miso_cmd))
+        print("Executing: %s" % (miso_cmd))
         os.system(miso_cmd)
+
 
 def main():
     unittest.main()

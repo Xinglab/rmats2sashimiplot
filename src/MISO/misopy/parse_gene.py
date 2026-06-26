@@ -3,12 +3,13 @@ import os
 import misopy
 import misopy.gff_utils as gff_utils
 
+
 def parseGene(pickle_filename, event):
     """
     Parse a pickled gene.
     """
     if not os.path.isfile(pickle_filename):
-        raise Exception("Error: no filename %s" %(pickle_filename))
+        raise Exception("Error: no filename %s" % (pickle_filename))
     gff_genes = gff_utils.load_indexed_gff_file(pickle_filename)
 
     if gff_genes == None:

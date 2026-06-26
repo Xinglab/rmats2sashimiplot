@@ -20,8 +20,8 @@ import misopy.sam_utils as sam_utils
 import misopy.exon_utils as exon_utils
 from collections import defaultdict
 
-def get_insert_dist_array(interval_to_paired_dists,
-                          delim='\t'):
+
+def get_insert_dist_array(interval_to_paired_dists, delim='\t'):
     """
     Read insert length distribution as array of numbers.
     """
@@ -42,8 +42,7 @@ def parse_insert_len_params(insert_len_header):
     return params
 
 
-def filter_insert_len(interval_to_dists,
-                     sd_max):
+def filter_insert_len(interval_to_dists, sd_max):
     # Get vector of insert lengths
     insert_dist = get_insert_dist_array(interval_to_dists)
 
@@ -60,16 +59,14 @@ def filter_insert_len(interval_to_dists,
     for interval, dists in interval_to_dists.items():
         dists = array(dists)
         filtered_dists = delete(dists, nonzero(dists < min_cutoff)[0])
-        filtered_dists = delete(filtered_dists,
-                                nonzero(dists > max_cutoff)[0])
+        filtered_dists = delete(filtered_dists, nonzero(dists > max_cutoff)[0])
         filtered_interval_to_dists[interval] = filtered_dists
 
     return filtered_interval_to_dists
 
 
-def load_insert_len(insert_dist_filename,
-                    delim='\t'):
-    print("Loading insert length from: %s" %(insert_dist_filename))
+def load_insert_len(insert_dist_filename, delim='\t'):
+    print("Loading insert length from: %s" % (insert_dist_filename))
     insert_dist_file = open(insert_dist_filename, "r")
     insert_lens = []
     params_header = insert_dist_file.readline().strip()
@@ -102,7 +99,7 @@ def bedtools_map_bam_to_bed(bam_filename, gff_intervals_filename):
     bedtools_cmd = "intersectBed -abam %s -b %s -wa -wb -bed -f 1" \
                    %(bam_filename, gff_intervals_filename)
 
-    print("Executing: %s" %(bedtools_cmd))
+    print("Executing: %s" % (bedtools_cmd))
 
     if (not os.path.isfile(bam_filename)) or \
        (not os.path.isfile(gff_intervals_filename)):
@@ -113,8 +110,7 @@ def bedtools_map_bam_to_bed(bam_filename, gff_intervals_filename):
     return bed_stream
 
 
-def parse_tagBam_intervals(bam_read,
-                           gff_coords=True):
+def parse_tagBam_intervals(bam_read, gff_coords=True):
     """
     Return a list of intervals that are present in the current
     BAM line returned by tagBam. These intervals are encoded
@@ -194,12 +190,10 @@ def compute_inserts_from_paired_mates(paired_reads):
         # defined as the distance between the start position
         # of the left and the end position of the right mate
         left_start = left_mate.pos
-        left_end = sam_utils.cigar_to_end_coord(left_start,
-                                                left_mate.cigar)
+        left_end = sam_utils.cigar_to_end_coord(left_start, left_mate.cigar)
 
         right_start = right_mate.pos
-        right_end = sam_utils.cigar_to_end_coord(right_start,
-                                                 right_mate.cigar)
+        right_end = sam_utils.cigar_to_end_coord(right_start, right_mate.cigar)
 
         # Get the current GFF interval string
         curr_gff_interval = left_mate_intervals[0]
@@ -240,12 +234,12 @@ def compute_insert_len(bams_to_process,
     num_bams = len(bams_to_process)
     print("Computing insert length distribution of %d files:\n  %s" \
           %(num_bams, bams_str))
-    print("  - Using const. exons from: %s" %(const_exons_gff_filename))
-    print("  - Outputting to: %s" %(output_dir))
-    print("  - Minimum exon size used: %d" %(min_exon_size))
+    print("  - Using const. exons from: %s" % (const_exons_gff_filename))
+    print("  - Outputting to: %s" % (output_dir))
+    print("  - Minimum exon size used: %d" % (min_exon_size))
 
     if not os.path.isdir(output_dir):
-        print("Making directory: %s" %(output_dir))
+        print("Making directory: %s" % (output_dir))
         os.makedirs(output_dir)
 
     all_constitutive = True
@@ -269,7 +263,7 @@ def compute_insert_len(bams_to_process,
                                        "%s.insert_len" \
                                        %(os.path.basename(bam_filename)))
         if not os.path.isfile(bam_filename):
-            print("Cannot find BAM file %s" %(bam_filename))
+            print("Cannot find BAM file %s" % (bam_filename))
             print("Quitting...")
             sys.exit(1)
         print("Fetching reads in constitutive exons")
@@ -294,12 +288,14 @@ def compute_insert_len(bams_to_process,
                   "unset, try using --no-bam-filter." \
                   %(bam_filename))
             continue
-        print("Using %d paired mates" %(num_paired_reads))
-        interval_to_paired_dists = compute_inserts_from_paired_mates(paired_reads)
-        summarize_insert_len_dist(interval_to_paired_dists, output_filename,
+        print("Using %d paired mates" % (num_paired_reads))
+        interval_to_paired_dists = compute_inserts_from_paired_mates(
+            paired_reads)
+        summarize_insert_len_dist(interval_to_paired_dists,
+                                  output_filename,
                                   sd_max=sd_max)
         t2 = time.time()
-        print("Insert length computation took %.2f seconds." %(t2 - t1))
+        print("Insert length computation took %.2f seconds." % (t2 - t1))
 
 
 # def pair_reads_from_bed_intervals(bed_stream):
@@ -403,19 +399,18 @@ def compute_insert_len(bams_to_process,
 #     print "Insert length computation took %.2f seconds." %(t2 - t1)
 
 
-def output_insert_len_dist(interval_to_paired_dists,
-                           output_file):
+def output_insert_len_dist(interval_to_paired_dists, output_file):
     """
     Output insert length distribution indexed by regions.
     """
-    header = "#%s\t%s\n" %("region", "insert_len")
+    header = "#%s\t%s\n" % ("region", "insert_len")
     output_file.write(header)
 
     for region, insert_lens in interval_to_paired_dists.items():
         if len(insert_lens) == 0:
             continue
         str_lens = ",".join([str(l) for l in insert_lens])
-        output_line = "%s\t%s\n" %(region, str_lens)
+        output_line = "%s\t%s\n" % (region, str_lens)
         output_file.write(output_line)
 
 
@@ -450,7 +445,7 @@ def summarize_insert_len_dist(interval_to_paired_dists,
     Summarize insert len distributions.
     """
     print("Summarizing insert length distribution..")
-    print("  - Output file: %s" %(output_filename))
+    print("  - Output file: %s" % (output_filename))
 
     output_file = open(output_filename, "w")
 
@@ -477,8 +472,8 @@ def summarize_insert_len_dist(interval_to_paired_dists,
           %(mu, sdev, dispersion))
     min_insert = min(filtered_insert_dist)
     max_insert = max(filtered_insert_dist)
-    print("min insert: %d" %(min_insert))
-    print("max insert: %d" %(max_insert))
+    print("min insert: %d" % (min_insert))
+    print("max insert: %d" % (max_insert))
 
     # Write headers
     header_line = "#%s=%.1f,%s=%.1f,%s=%.1f,%s=%d\n" \
@@ -489,8 +484,7 @@ def summarize_insert_len_dist(interval_to_paired_dists,
     output_file.write(header_line)
 
     # Write raw insert lengths indexed by region
-    output_insert_len_dist(filtered_interval_to_dist,
-                           output_file)
+    output_insert_len_dist(filtered_interval_to_dist, output_file)
     output_file.close()
 
 
@@ -504,23 +498,47 @@ def greeting():
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("--compute-insert-len", dest="compute_insert_len", nargs=2, default=None,
-                      help="Compute insert length for given sample. Takes as input "
-                      "(1) a comma-separated list of sorted, indexed BAM files with headers "
-                      "(or a single BAM filename), (2) a GFF file with constitutive exons. "
-                      "Outputs the insert length distribution into the output directory.")
-    parser.add_option("--no-bam-filter", dest="no_bam_filter", action="store_true", default=False,
-                      help="If provided, this ignores the BAM file flags that state whether the read was paired "
-                      "or not, and instead uses only the read IDs to pair up the mates. Use this if your "
-                      "paired-end BAM was the result of a samtools merge operation.")
-    parser.add_option("--min-exon-size", dest="min_exon_size", nargs=1, type="int", default=500,
-                      help="Minimum size of constitutive exon (in nucleotides) that should be used "
-                      "in the computation. Default is 500 bp.")
-    parser.add_option("--sd-max", dest="sd_max", nargs=1, default=2, type="int",
-                      help="Number of standard deviations used to define outliers. By default, set "
-                      "to 2, meaning that any points at least 2*sigma away from the mean of the "
-                      "insert length distribution will be discarded.")
-    parser.add_option("--output-dir", dest="output_dir", nargs=1, default=None,
+    parser.add_option(
+        "--compute-insert-len",
+        dest="compute_insert_len",
+        nargs=2,
+        default=None,
+        help="Compute insert length for given sample. Takes as input "
+        "(1) a comma-separated list of sorted, indexed BAM files with headers "
+        "(or a single BAM filename), (2) a GFF file with constitutive exons. "
+        "Outputs the insert length distribution into the output directory.")
+    parser.add_option(
+        "--no-bam-filter",
+        dest="no_bam_filter",
+        action="store_true",
+        default=False,
+        help=
+        "If provided, this ignores the BAM file flags that state whether the read was paired "
+        "or not, and instead uses only the read IDs to pair up the mates. Use this if your "
+        "paired-end BAM was the result of a samtools merge operation.")
+    parser.add_option(
+        "--min-exon-size",
+        dest="min_exon_size",
+        nargs=1,
+        type="int",
+        default=500,
+        help=
+        "Minimum size of constitutive exon (in nucleotides) that should be used "
+        "in the computation. Default is 500 bp.")
+    parser.add_option(
+        "--sd-max",
+        dest="sd_max",
+        nargs=1,
+        default=2,
+        type="int",
+        help=
+        "Number of standard deviations used to define outliers. By default, set "
+        "to 2, meaning that any points at least 2*sigma away from the mean of the "
+        "insert length distribution will be discarded.")
+    parser.add_option("--output-dir",
+                      dest="output_dir",
+                      nargs=1,
+                      default=None,
                       help="Output directory.")
     (options, args) = parser.parse_args()
 
@@ -541,11 +559,15 @@ def main():
     if options.compute_insert_len != None:
         bams_to_process = [os.path.abspath(os.path.expanduser(f)) for f in \
                            options.compute_insert_len[0].split(",")]
-        gff_filename = os.path.abspath(os.path.expanduser(options.compute_insert_len[1]))
-        compute_insert_len(bams_to_process, gff_filename, output_dir,
+        gff_filename = os.path.abspath(
+            os.path.expanduser(options.compute_insert_len[1]))
+        compute_insert_len(bams_to_process,
+                           gff_filename,
+                           output_dir,
                            options.min_exon_size,
                            no_bam_filter=options.no_bam_filter,
                            sd_max=sd_max)
+
 
 if __name__ == "__main__":
     main()

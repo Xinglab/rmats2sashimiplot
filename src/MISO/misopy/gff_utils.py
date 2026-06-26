@@ -52,6 +52,7 @@ from collections import defaultdict
 
 #     return gene_records
 
+
 def load_indexed_gff_file(indexed_gff_filename):
     """
     Load indexed representation of a set of genes.
@@ -64,7 +65,8 @@ def load_indexed_gff_chrom(indexed_gff_chrom_filename):
     """
     Load indexed representation of a GFF chromosome.
     """
-    indexed_gff_chrom = pickle_utils.load_pickled_file(indexed_gff_chrom_filename)
+    indexed_gff_chrom = pickle_utils.load_pickled_file(
+        indexed_gff_chrom_filename)
     return indexed_gff_chrom
 
 
@@ -76,7 +78,7 @@ def load_shelved_genes_to_fnames(indexed_gff_dir,
     if it exists. Return None if it does not exist.
     """
     shelve_fname = os.path.join(indexed_gff_dir, shelve_basename)
-    print("Searching for %s.." %(shelve_fname))
+    print("Searching for %s.." % (shelve_fname))
     gene_ids_to_gff_index = None
     if os.path.isfile(shelve_fname):
         print("  - Found shelved file.")
@@ -106,12 +108,12 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
     gene_ids_to_gff_index = {}
 
     for chrom_dir in gff_chrom_dirs:
-        chrom_dir_path = os.path.abspath(os.path.join(indexed_gff_dir,
-                                                      chrom_dir))
+        chrom_dir_path = os.path.abspath(
+            os.path.join(indexed_gff_dir, chrom_dir))
 
         # Skip subentries that are not directories
         if not os.path.isdir(chrom_dir_path):
-            print("Skipping: %s" %(chrom_dir_path))
+            print("Skipping: %s" % (chrom_dir_path))
             continue
 
         # Get the chromosome filename
@@ -125,21 +127,21 @@ def get_gene_ids_to_gff_index(indexed_gff_dir):
             # Handle genes case
             print("Loading indexed gene filenames from: %s" \
                   %(chrom_dir_path))
-            print("  - Loading %d genes" %(num_genes))
+            print("  - Loading %d genes" % (num_genes))
 
             for gene_index_filename in chrom_indexed_filenames:
                 # Skip non-Pickle files
                 if not gene_index_filename.endswith(".pickle"):
                     continue
 
-                gene_index_filename = os.path.abspath(os.path.join(chrom_dir_path,
-                                                                   gene_index_filename))
+                gene_index_filename = os.path.abspath(
+                    os.path.join(chrom_dir_path, gene_index_filename))
                 indexed_gene = load_indexed_gff_chrom(gene_index_filename)
 
                 for gene_id, gene_info in indexed_gene.items():
                     gene_ids_to_gff_index[gene_id] = gene_index_filename
         elif num_genes == 0:
-            raise Exception("No genes in directory: %s" %(chrom_dir_path))
+            raise Exception("No genes in directory: %s" % (chrom_dir_path))
         else:
             chrom_indexed_filename = os.path.join(chrom_dir_path,
                                                   chrom_indexed_filenames[0])
@@ -165,7 +167,8 @@ class GFFDatabase:
     """
     A set of GFF entries from a GFF file.
     """
-    def __init__(self, from_filename=None,
+    def __init__(self,
+                 from_filename=None,
                  reverse_recs=False,
                  include_introns=False,
                  suppress_warnings=False):
@@ -194,8 +197,9 @@ class GFFDatabase:
     def __len(self):
         return len(self.__entries)
 
-
-    def from_file(self, filename, version="3",
+    def from_file(self,
+                  filename,
+                  version="3",
                   reverse_recs=False,
                   include_introns=False):
         FILE = open(filename, "r")
@@ -280,16 +284,17 @@ class GFFDatabase:
                           %(gene, self.from_filename))
                 # Remove from gene hierarchy
                 del gene_hierarchy[gene]
+
+
 #               raise Exception, "No entries found for gene %s in GFF: %s" %(gene,
 #                                                                             self.from_filename)
-            # add mRNAs
+# add mRNAs
             recs.extend(mRNAs)
             # add exons
             recs.extend(exons)
             # add cdss
             recs.extend(cdss)
         return recs, gene_hierarchy
-
 
     def write_genes(self, genes, filename):
         """
@@ -298,10 +303,12 @@ class GFFDatabase:
         recs, hierarchy = self.get_genes_records(genes)
         # retrieve the records corresponding to the genes
         if len(recs) == 0:
-            raise Exception("No entries found for " + str(genes) + " in GFF: %s" %(filename))
+            raise Exception("No entries found for " + str(genes)
+                            + " in GFF: %s" % (filename))
         # serialize them as GFF
         output_file = open(filename, 'w')
-        print("Outputting sliced GFF records to: %s" %(filename), file=sys.stderr)
+        print("Outputting sliced GFF records to: %s" % (filename),
+              file=sys.stderr)
         gff_writer = Writer(output_file)
         gff_writer.write_recs(recs)
 
@@ -312,6 +319,7 @@ class GFFDatabase:
 
     def __iter__(self):
         return self
+
 
 class GFF:
     """A record from a GFF file.
@@ -327,9 +335,16 @@ class GFF:
        phase
        attributes
     """
-
-    def __init__(self, seqid, source, type, start, end,
-                 score=None, strand=None, phase=None, attributes=None):
+    def __init__(self,
+                 seqid,
+                 source,
+                 type,
+                 start,
+                 end,
+                 score=None,
+                 strand=None,
+                 phase=None,
+                 attributes=None):
         self.seqid = seqid
         self.source = source
         self.type = type
@@ -348,7 +363,9 @@ class GFF:
         if self.start > self.end:
             self.start, self.end = self.end, self.start
             if strand != '-':
-                print("WARNING: Swapping start and end fields, which must satisfy start <= end:", file=sys.stderr)
+                print(
+                    "WARNING: Swapping start and end fields, which must satisfy start <= end:",
+                    file=sys.stderr)
                 print(self.__repr__(), file=sys.stderr)
 
         # set default exon IDs if they are not already set
@@ -357,7 +374,6 @@ class GFF:
         # Filter the IDs to not have underscores, since these are used
         # internally.
         self._filter_exon_id()
-
 
     def _set_default_exon_id(self):
         """
@@ -369,10 +385,8 @@ class GFF:
         """
         if self.type == "exon" and "ID" not in self.attributes:
             parent_id = self.get_parent()
-            exon_id = "%s@%s@%s@%s" %(parent_id,
-                                      self.start,
-                                      self.end,
-                                      self.strand)
+            exon_id = "%s@%s@%s@%s" % (parent_id, self.start, self.end,
+                                       self.strand)
             self.attributes['ID'] = [exon_id]
 
     def _filter_exon_id(self, replace_char='@'):
@@ -389,34 +403,34 @@ class GFF:
         #                                                         new_exon_id)
         #         self.attributes['ID'] = [new_exon_id]
 
-
     def copy(self):
         """Returns a copy of this GFF record"""
 
         # Make new attributes dict with copied value lists
-        attributes_copy = dict([(k, v[:]) for k, v in list(self.attributes.items())])
+        attributes_copy = dict([(k, v[:])
+                                for k, v in list(self.attributes.items())])
 
         return GFF(self.seqid,
-                      self.source,
-                      self.type,
-                      self.start,
-                      self.end,
-                      score=self.score,
-                      strand=self.strand,
-                      phase=self.phase,
-                      attributes=attributes_copy)
+                   self.source,
+                   self.type,
+                   self.start,
+                   self.end,
+                   score=self.score,
+                   strand=self.strand,
+                   phase=self.phase,
+                   attributes=attributes_copy)
 
     def is_valid(self):
         """Returns True if this record passes basic GFF record requirements."""
 
         # Check that the first five fields are defined and non-empty/zero
-        if not (self.seqid and self.source and self.type and
-                self.start and self.end):
+        if not (self.seqid and self.source and self.type and self.start
+                and self.end):
             return False
 
         # Check that [start, end] is a valid genomic interval
-        if not (is_integer(self.start) and is_integer(self.end) and
-                  self.start > 0 and self.start <= self.end):
+        if not (is_integer(self.start) and is_integer(self.end)
+                and self.start > 0 and self.start <= self.end):
             return False
 
         # Check that score is a valid floating point number
@@ -469,46 +483,48 @@ class GFF:
             return self.attributes[key][0].rstrip()
         return ""
 
-    def get_id (self):
+    def get_id(self):
         """Get the ID attribute."""
-        return self.get_value ("ID")
+        return self.get_value("ID")
 
-    def get_parent (self):
+    def get_parent(self):
         """Get the Parent attribute."""
 
-        return self.get_value ("Parent")
+        return self.get_value("Parent")
 
-    def get_name (self):
+    def get_name(self):
         """Get the Name attribute."""
 
-        return self.get_value ("Name")
+        return self.get_value("Name")
 
-    def get_note (self):
+    def get_note(self):
         """Get the Note attribute."""
 
-        return self.get_value ("Note")
+        return self.get_value("Note")
+
 
 class Metadatum:
     def __init__(self, name, value=None):
         self.name = name
         self.value = value
 
+
 class SequenceRegion(Metadatum):
     def __init__(self, seqid, start, end):
-        Metadatum.__init__(self,
-                           "sequence-region",
-                           "%s %d %d" % (seqid, start, end))
+        Metadatum.__init__(self, "sequence-region", "%s %d %d" %
+                           (seqid, start, end))
         self.seqid = seqid
         self.start = start
         self.end = end
+
 
 class FormatError(Exception):
     """Invalid format for GFF file"""
     pass
 
+
 class Reader:
     """Reads a GFF formatted file"""
-
     def __init__(self, stream, version="3"):
         self._stream = stream
         self._default_version = version
@@ -524,12 +540,14 @@ class Reader:
         self._fasta_string = ""
 
         # Create record parser table
-        self._record_parsers = {"1": self._parse_record_v1,
-                                "2": self._parse_record_v2,
-                                "2.1": self._parse_record_v2,
-                                "2.2": self._parse_record_v2,
-                                "2.5": self._parse_record_v2,
-                                "3": self._parse_record_v3}
+        self._record_parsers = {
+            "1": self._parse_record_v1,
+            "2": self._parse_record_v2,
+            "2.1": self._parse_record_v2,
+            "2.2": self._parse_record_v2,
+            "2.5": self._parse_record_v2,
+            "3": self._parse_record_v3
+        }
 
         #  Set default record parser
         if version not in self._record_parsers:
@@ -669,18 +687,19 @@ class Reader:
         elif len(fields) == 9:
             attributes = {"group": [fields[8]]}
         else:
-            raise FormatError("Invalid number of fields (should be 8 or 9):\n" + line)
+            raise FormatError("Invalid number of fields (should be 8 or 9):\n"
+                              + line)
 
         try:
             return GFF(seqid=fields[0],
-                          source=fields[1],
-                          type=fields[2],
-                          start=int(fields[3]),
-                          end=int(fields[4]),
-                          score=float(fields[5]),
-                          strand=parse_maybe_empty(fields[6]),
-                          phase=parse_maybe_empty(fields[7], int),
-                          attributes=attributes)
+                       source=fields[1],
+                       type=fields[2],
+                       start=int(fields[3]),
+                       end=int(fields[4]),
+                       score=float(fields[5]),
+                       strand=parse_maybe_empty(fields[6]),
+                       phase=parse_maybe_empty(fields[7], int),
+                       attributes=attributes)
         except ValueError as e:
             raise FormatError("GFF field format error: " + e.message)
 
@@ -692,18 +711,19 @@ class Reader:
         elif len(fields) == 9:
             attributes_string = fields[8]
         else:
-            raise FormatError("Invalid number of fields (should be 8 or 9):\n" + line)
+            raise FormatError("Invalid number of fields (should be 8 or 9):\n"
+                              + line)
 
         try:
             return GFF(seqid=fields[0],
-                          source=fields[1],
-                          type=fields[2],
-                          start=int(fields[3]),
-                          end=int(fields[4]),
-                          score=parse_maybe_empty(fields[5], float),
-                          strand=parse_maybe_empty(fields[6]),
-                          phase=parse_maybe_empty(fields[7], int),
-                          attributes=self._parse_attributes_v2(attributes_string))
+                       source=fields[1],
+                       type=fields[2],
+                       start=int(fields[3]),
+                       end=int(fields[4]),
+                       score=parse_maybe_empty(fields[5], float),
+                       strand=parse_maybe_empty(fields[6]),
+                       phase=parse_maybe_empty(fields[7], int),
+                       attributes=self._parse_attributes_v2(attributes_string))
         except ValueError as e:
             raise FormatError("GFF field format error: " + e.message)
 
@@ -716,18 +736,19 @@ class Reader:
         fields = line.split('\t')
 
         if len(fields) != 9:
-            raise FormatError("Invalid number of fields (should be 9):\n" + line)
+            raise FormatError("Invalid number of fields (should be 9):\n"
+                              + line)
 
         try:
             return GFF(seqid=url_unquote(fields[0]),
-                          source=url_unquote(fields[1]),
-                          type=url_unquote(fields[2]),
-                          start=int(fields[3]),
-                          end=int(fields[4]),
-                          score=parse_maybe_empty(fields[5], float),
-                          strand=parse_maybe_empty(fields[6]),
-                          phase=parse_maybe_empty(fields[7], int),
-                          attributes=self._parse_attributes_v3(fields[8]))
+                       source=url_unquote(fields[1]),
+                       type=url_unquote(fields[2]),
+                       start=int(fields[3]),
+                       end=int(fields[4]),
+                       score=parse_maybe_empty(fields[5], float),
+                       strand=parse_maybe_empty(fields[6]),
+                       phase=parse_maybe_empty(fields[7], int),
+                       attributes=self._parse_attributes_v3(fields[8]))
         except ValueError as e:
             raise FormatError("GFF field format error: " + e.message)
 
@@ -735,14 +756,18 @@ class Reader:
         attributes = {}
 
         for pair_string in s.split(";"):
-            if (len (pair_string) == 0):
+            if (len(pair_string) == 0):
                 continue
             try:
                 tag, value = pair_string.split("=")
-                attributes[url_unquote(tag)] = list(map(url_unquote,
-                                                   value.split(",")))
+                attributes[url_unquote(tag)] = list(
+                    map(url_unquote, value.split(",")))
             except ValueError:
-                print("WARNING: Invalid attributes string: ", s, file=sys.stderr)
+                print("WARNING: Invalid attributes string: ",
+                      s,
+                      file=sys.stderr)
+
+
 #                raise FormatError("Invalid attributes string: " + s)
         return attributes
 
@@ -768,16 +793,26 @@ class Reader:
                 raise FormatError("Invalid attributes string: " + s)
         return attributes
 
+
 class IdentifierToken:
     pass
+
+
 class ValueToken:
     pass
+
+
 class CommentToken:
     pass
+
+
 class SeparatorToken:
     pass
+
+
 class UnknownToken:
     pass
+
 
 class AttributeIterator:
     identifierPat = re.compile(r'\s*([A-Za-z][A-Za-z0-9_]*)')
@@ -787,8 +822,8 @@ class AttributeIterator:
     commentPat = re.compile(r'\s*#(.*)$')
 
     pats = (identifierPat, freeTextPat, valuePat, sepPat, commentPat)
-    tokenClasses = (IdentifierToken, ValueToken, ValueToken,
-                    SeparatorToken, CommentToken)
+    tokenClasses = (IdentifierToken, ValueToken, ValueToken, SeparatorToken,
+                    CommentToken)
 
     def __init__(self, s):
         self.s = s.rstrip()
@@ -812,9 +847,11 @@ class AttributeIterator:
         else:
             return UnknownToken()
 
+
 def is_integer(x):
     """Returns true if x is of integer type (int or long)."""
     return type(x) in (int, int)
+
 
 def parse_maybe_empty(s, parse_type=str):
     if s == '.':
@@ -822,17 +859,21 @@ def parse_maybe_empty(s, parse_type=str):
     else:
         return parse_type(s)
 
+
 def format_maybe_empty(value, empty_str='.'):
     if value is None or value == "":
         return empty_str
     else:
         return str(value)
 
+
 def quote(s):
     return '"%s"' % str(s)
 
+
 def url_quote_sub(m):
     return url_quote(m.group(0))
+
 
 # Added slash '/' to allowable characters
 # as well as '(' and ')'
@@ -842,19 +883,21 @@ _type_pat = _source_pat
 _tag_pat = re.compile(r'[\t\n\r\f\v;=%&,]')
 _value_pat = _tag_pat
 
+
 class Writer:
     """Writes a GFF formatted file"""
-
     def __init__(self, stream, version="3", metadata=[]):
         self.stream = stream
 
         # Create record writer table
-        self._record_writers = {"1": self._write_rec_v1,
-                                "2": self._write_rec_v2,
-                                "2.1": self._write_rec_gtf,
-                                "2.2": self._write_rec_gtf,
-                                "2.5": self._write_rec_gtf,
-                                "3": self._write_rec_v3}
+        self._record_writers = {
+            "1": self._write_rec_v1,
+            "2": self._write_rec_v2,
+            "2.1": self._write_rec_gtf,
+            "2.2": self._write_rec_gtf,
+            "2.5": self._write_rec_gtf,
+            "3": self._write_rec_v3
+        }
 
         # Set version
         try:
@@ -870,7 +913,8 @@ class Writer:
     def write_metadatum(self, metadatum):
         """Writes a metadatum line."""
         if metadatum.value is not None:
-            print("##%s %s" % (metadatum.name, metadatum.value), file=self.stream)
+            print("##%s %s" % (metadatum.name, metadatum.value),
+                  file=self.stream)
         else:
             print("##%s" % metadatum.name, file=self.stream)
 
@@ -888,42 +932,44 @@ class Writer:
             self.write(rec)
 
     def _write_rec_v1(self, rec):
-        fields = [rec.seqid,
-                  rec.source,
-                  rec.type,
-                  str(rec.start),
-                  str(rec.end),
-                  format_maybe_empty(rec.score, '0'),
-                  format_maybe_empty(rec.strand),
-                  format_maybe_empty(rec.phase)]
+        fields = [
+            rec.seqid, rec.source, rec.type,
+            str(rec.start),
+            str(rec.end),
+            format_maybe_empty(rec.score, '0'),
+            format_maybe_empty(rec.strand),
+            format_maybe_empty(rec.phase)
+        ]
         if rec.attributes.get('group') is not None:
             fields.append(rec.attributes['group'][0])
         print('\t'.join(fields), file=self.stream)
 
     def _write_rec_v2(self, rec):
-        fields = [rec.seqid,
-                  rec.source,
-                  rec.type,
-                  str(rec.start),
-                  str(rec.end),
-                  format_maybe_empty(rec.score),
-                  format_maybe_empty(rec.strand),
-                  format_maybe_empty(rec.phase)]
+        fields = [
+            rec.seqid, rec.source, rec.type,
+            str(rec.start),
+            str(rec.end),
+            format_maybe_empty(rec.score),
+            format_maybe_empty(rec.strand),
+            format_maybe_empty(rec.phase)
+        ]
         if rec.attributes:
             fields.append(self._format_attributes_v2(rec.attributes))
         print('\t'.join(fields), file=self.stream)
 
     def _write_rec_v3(self, rec):
         _type_pat.sub(url_quote, rec.type)
-        fields = [_seqid_pat.sub(url_quote, rec.seqid),
-                  _source_pat.sub(url_quote, rec.source),
-                  _type_pat.sub(url_quote, rec.type),
-                  str(rec.start),
-                  str(rec.end),
-                  format_maybe_empty(rec.score),
-                  format_maybe_empty(rec.strand),
-                  format_maybe_empty(rec.phase),
-                  format_maybe_empty(self._format_attributes_v3(rec.attributes))]
+        fields = [
+            _seqid_pat.sub(url_quote, rec.seqid),
+            _source_pat.sub(url_quote, rec.source),
+            _type_pat.sub(url_quote, rec.type),
+            str(rec.start),
+            str(rec.end),
+            format_maybe_empty(rec.score),
+            format_maybe_empty(rec.strand),
+            format_maybe_empty(rec.phase),
+            format_maybe_empty(self._format_attributes_v3(rec.attributes))
+        ]
         print('\t'.join(fields), file=self.stream)
 
     def _write_rec_gtf(self, rec):
@@ -942,14 +988,18 @@ class Writer:
         self._write_rec_v2(gtf_rec)
 
     def _format_attributes_v3(self, attributes):
-        return ';'.join(["%s=%s" % (_tag_pat.sub(url_quote_sub, tag),
-                                    ','.join([_value_pat.sub(url_quote_sub, value)
-                                              for value in values]))
-                         for tag, values in list(attributes.items())])
+        return ';'.join([
+            "%s=%s" % (_tag_pat.sub(url_quote_sub, tag), ','.join(
+                [_value_pat.sub(url_quote_sub, value)
+                 for value in values]))
+            for tag, values in list(attributes.items())
+        ])
 
     def _format_attributes_v2(self, attributes):
-        return ' '.join([' '.join([tag] + list(map(quote, values))) + ";"
-                          for tag, values in list(attributes.items())])
+        return ' '.join([
+            ' '.join([tag] + list(map(quote, values))) + ";"
+            for tag, values in list(attributes.items())
+        ])
 
 
 def get_inclusive_txn_bounds(gene_hierarchy):
@@ -970,12 +1020,12 @@ def get_inclusive_txn_bounds(gene_hierarchy):
         mRNA_starts.append(mRNA_rec.start)
         mRNA_ends.append(mRNA_rec.end)
 
-    assert(strand != None)
+    assert (strand != None)
 
     tx_start = min(mRNA_starts)
     tx_end = max(mRNA_ends)
 
     # Start must be less than end always
-    assert(tx_start < tx_end)
+    assert (tx_start < tx_end)
 
     return tx_start, tx_end

@@ -9,12 +9,12 @@ import time
 import csv
 import os
 
+
 class Event(object):
     """
     Representation of an alternative splicing event.
     """
-    def __init__(self, label, pcr_psi=None, uniqueness=None,
-                 chrom=None):
+    def __init__(self, label, pcr_psi=None, uniqueness=None, chrom=None):
         self.label = label
         # The gene that it's in
         #self.gene = gene
@@ -24,11 +24,15 @@ class Event(object):
         self.uniqueness = uniqueness
         self.chrom = chrom
 
+
 class TwoIsoEvent(Event):
     """
     Representation of an alternative splicing event with two isoforms.
     """
-    def __init__(self, label, event_type, chrom,
+    def __init__(self,
+                 label,
+                 event_type,
+                 chrom,
                  psi_map=None,
                  psi_sj=None,
                  pcr_psi=None,
@@ -65,25 +69,20 @@ class TwoIsoEvent(Event):
 
     def __repr__(self):
         if self.event_type == 'SE':
-            return "TwoIsoEvent(%s, %s)[ni = %d, ne = %d, nb = %d]" %(self.label,
-                                                                      self.event_type,
-                                                                      self.num_inc,
-                                                                      self.num_exc,
-                                                                      self.num_common)
+            return "TwoIsoEvent(%s, %s)[ni = %d, ne = %d, nb = %d]" % (
+                self.label, self.event_type, self.num_inc, self.num_exc,
+                self.num_common)
         elif self.event_type == 'TandemUTR':
-            return "TwoIsoEvent(%s, %s)[num_core = %d, num_ext = %d]" %(self.label,
-                                                                        self.event_type,
-                                                                        self.num_core,
-                                                                        self.num_ext)
+            return "TwoIsoEvent(%s, %s)[num_core = %d, num_ext = %d]" % (
+                self.label, self.event_type, self.num_core, self.num_ext)
         elif self.event_type == 'RI':
-            return "TwoIsoEvent(%s, %s)[ni = %d, ne = %d, nb = %d]" %(self.label,
-                                                                      self.event_type,
-                                                                      self.num_inc,
-                                                                      self.num_exc,
-                                                                      self.num_common)
+            return "TwoIsoEvent(%s, %s)[ni = %d, ne = %d, nb = %d]" % (
+                self.label, self.event_type, self.num_inc, self.num_exc,
+                self.num_common)
         else:
-            return "UnsupportedTwoIsoEvent(%s, %s)" %(self.label,
-                                                      self.event_type)
+            return "UnsupportedTwoIsoEvent(%s, %s)" % (self.label,
+                                                       self.event_type)
+
 
 class MultIsoEvent(Event):
     """
@@ -94,7 +93,8 @@ class MultIsoEvent(Event):
         self.gene = gene
 
     def __repr__(self):
-        return "MultIsoEvent(label = %s)" %(self.label)
+        return "MultIsoEvent(label = %s)" % (self.label)
+
 
 class MISOEvents:
     """
@@ -104,7 +104,7 @@ class MISOEvents:
         self.num_iso = num_iso
         self.event_type = event_type
         # Can't give a set of events and load events from a file at the same time
-        assert(not(events and from_file))
+        assert (not (events and from_file))
         self.events = events
         self.from_file = from_file
         if self.from_file != None:
@@ -139,9 +139,11 @@ class MISOEvents:
         elif (self.event_type == 'AFE' or self.event_type == 'ALE'):
             self.filter_afe_ale_events(settings)
         else:
-            raise Exception("Unsupported event type for filtering: %s" %(self.event_type))
+            raise Exception("Unsupported event type for filtering: %s" %
+                            (self.event_type))
 
-    def filter_afe_ale_events(self, settings,
+    def filter_afe_ale_events(self,
+                              settings,
                               atleast_proximal=0,
                               atleast_distal=0,
                               proximal_distal_sum=20):
@@ -155,7 +157,8 @@ class MISOEvents:
                 filtered_events[event_name] = event
         self.events = filtered_events
 
-    def filter_tandem_utr_events(self, settings,
+    def filter_tandem_utr_events(self,
+                                 settings,
                                  atleast_core=1,
                                  atleast_ext=1,
                                  core_ext_sum=20):
@@ -173,15 +176,16 @@ class MISOEvents:
                 filtered_events[event_name] = event
         self.events = filtered_events
 
-    def filter_ri_events(self, settings,
+    def filter_ri_events(self,
+                         settings,
                          atleast_ri_plus_ne=10,
                          atleast_ne=0,
                          atleast_num_common=1):
         print("Filtering RI events...")
         print("Filter: ")
-        print("  - ri_plus_ne >= %d" %(atleast_ri_plus_ne))
-        print("  - ne >= %d" %(atleast_ne))
-        print("  - num_common >= %d" %(atleast_num_common))
+        print("  - ri_plus_ne >= %d" % (atleast_ri_plus_ne))
+        print("  - ne >= %d" % (atleast_ne))
+        print("  - num_common >= %d" % (atleast_num_common))
 
         filtered_events = {}
         for event_name, event in self.events.items():
@@ -191,7 +195,8 @@ class MISOEvents:
                 filtered_events[event_name] = event
         self.events = filtered_events
 
-    def filter_se_events(self, settings,
+    def filter_se_events(self,
+                         settings,
                          atleast_ni_plus_ne=10,
                          atleast_ne=0,
                          atleast_num_common=1):
@@ -216,7 +221,7 @@ class MISOEvents:
         t1 = time.time()
         self.events = json_utils.json_load_file(json_filename)
         t2 = time.time()
-        print("Loading from JSON file took %.2f seconds." %(float(t2 - t1)))
+        print("Loading from JSON file took %.2f seconds." % (float(t2 - t1)))
         self.num_events = len(self.events)
 
     def load_from_pickle_file(self, pickle_filename):
@@ -227,16 +232,20 @@ class MISOEvents:
         t1 = time.time()
         self.events = pickle_utils.load_pickled_file(pickle_filename)
         t2 = time.time()
-        print("Loading from Pickle file took %.2f seconds." %(float(t2 - t1)))
+        print("Loading from Pickle file took %.2f seconds." % (float(t2 - t1)))
         self.num_events = len(self.events)
 
-    def loaded_events_to_genes(self, single_event_name=None,
-                               read_len=None, overhang_len=None):
+    def loaded_events_to_genes(self,
+                               single_event_name=None,
+                               read_len=None,
+                               overhang_len=None):
         """
         Parse the loaded set of events into gene structures.  Map events to genes.
         """
         if len(self.events) == 0:
-            raise Exception("Must load events first before they can be converted to genes.")
+            raise Exception(
+                "Must load events first before they can be converted to genes."
+            )
         events_to_genes = {}
 
         t1 = time.time()
@@ -249,69 +258,87 @@ class MISOEvents:
             event = self.events[event_name]
 
             if self.event_type == 'SE' or self.event_type == 'RI':
-                gene = Gene.se_event_to_gene(event.up_part_len, event.len, event.dn_part_len,
+                gene = Gene.se_event_to_gene(event.up_part_len,
+                                             event.len,
+                                             event.dn_part_len,
                                              event.chrom,
                                              label=event.label)
             elif self.event_type == 'TandemUTR':
-                gene = Gene.tandem_utr_event_to_gene(event.core_len, event.ext_len,
+                gene = Gene.tandem_utr_event_to_gene(event.core_len,
+                                                     event.ext_len,
                                                      event.chrom,
                                                      label=event.label)
             elif (self.event_type == 'AFE' or self.event_type == 'ALE'):
-                gene = Gene.afe_ale_event_to_gene(event.proximal_exons, event.distal_exons,
-                                                  self.event_type, event.chrom,
-                                                  label=event.label, read_len=read_len,
+                gene = Gene.afe_ale_event_to_gene(event.proximal_exons,
+                                                  event.distal_exons,
+                                                  self.event_type,
+                                                  event.chrom,
+                                                  label=event.label,
+                                                  read_len=read_len,
                                                   overhang_len=overhang_len)
             else:
-                raise Exception("Unsupported event type: %s" %(self.event_type))
+                raise Exception("Unsupported event type: %s" %
+                                (self.event_type))
             events_to_genes[event_name] = gene
         t2 = time.time()
-        print("Parsing of events to genes took %.2f seconds." %(t2 - t1))
+        print("Parsing of events to genes took %.2f seconds." % (t2 - t1))
         return events_to_genes
 
     def output_file(self, results_output_dir, sample_label, method="pickle"):
         events_filename = None
         if method == "json":
-            events_filename = self.output_json_file(results_output_dir, sample_label)
+            events_filename = self.output_json_file(results_output_dir,
+                                                    sample_label)
         elif method == "pickle":
-            events_filename = self.output_pickle_file(results_output_dir, sample_label)
+            events_filename = self.output_pickle_file(results_output_dir,
+                                                      sample_label)
         return events_filename
 
     def output_json_file(self, results_output_dir, sample_label):
         """
         Output as json.
         """
-        print("Serializing a total of %d events by JSON." %(len(self.events)))
+        print("Serializing a total of %d events by JSON." % (len(self.events)))
         json_output_dir = os.path.join(results_output_dir, 'json')
         if not os.path.isdir(json_output_dir):
             os.mkdir(json_output_dir)
-        json_events_filename = os.path.join(json_output_dir, sample_label + '.json')
+        json_events_filename = os.path.join(json_output_dir,
+                                            sample_label + '.json')
         json_utils.json_serialize(self.events, json_events_filename)
         return json_events_filename
 
     def output_pickle_file(self, results_output_dir, sample_label):
-        print("Serializing a total of %d events by Pickle." %(len(self.events)))
+        print("Serializing a total of %d events by Pickle." %
+              (len(self.events)))
         pickle_output_dir = os.path.join(results_output_dir, 'pickle')
         if not os.path.isdir(pickle_output_dir):
             os.mkdir(pickle_output_dir)
-        pickle_events_filename = os.path.join(pickle_output_dir, sample_label + '.pickle')
+        pickle_events_filename = os.path.join(pickle_output_dir,
+                                              sample_label + '.pickle')
         pickle_utils.write_pickled_file(self.events, pickle_events_filename)
         return pickle_events_filename
 
     def clear_events(self):
         self.events = []
 
+
 def parse_part(exon, delimiter=':'):
     chrom, start_coord, end_coord, strand = exon.split(delimiter)
     start_coord = int(start_coord)
     end_coord = int(end_coord)
     exon_len = abs(end_coord - start_coord) + 1
-    return {'chrom': chrom,
-            'start_coord': start_coord,
-            'end_coord': end_coord,
-            'strand': strand,
-            'len': exon_len}
+    return {
+        'chrom': chrom,
+        'start_coord': start_coord,
+        'end_coord': end_coord,
+        'strand': strand,
+        'len': exon_len
+    }
 
-def parse_event_information(event_name, event_type, delimiter=';',
+
+def parse_event_information(event_name,
+                            event_type,
+                            delimiter=';',
                             events_to_info=None):
     """
     Parse event information from event counts file.
@@ -322,17 +349,21 @@ def parse_event_information(event_name, event_type, delimiter=';',
         up_part_info = parse_part(up_part)
         se_part_info = parse_part(se_part)
         dn_part_info = parse_part(dn_part)
-        return {'up_part': up_part_info,
-                'part': se_part_info,
-                'dn_part': dn_part_info,
-                'chrom': up_part_info['chrom']}
+        return {
+            'up_part': up_part_info,
+            'part': se_part_info,
+            'dn_part': dn_part_info,
+            'chrom': up_part_info['chrom']
+        }
     elif event_type == 'TandemUTR':
         core_part, ext_part = event_name.split(delimiter)
         core_part_info = parse_part(core_part)
         ext_part_info = parse_part(ext_part)
-        return {'core_part': core_part_info,
-                'ext_part': ext_part_info,
-                'chrom': core_part_info['chrom']}
+        return {
+            'core_part': core_part_info,
+            'ext_part': ext_part_info,
+            'chrom': core_part_info['chrom']
+        }
     elif (event_type == 'AFE' or event_type == 'ALE'):
         if event_name not in events_to_info:
             raise Exception("Error: Given unknown event %s of type %s." \
@@ -340,8 +371,8 @@ def parse_event_information(event_name, event_type, delimiter=';',
         # Return information about the events
         return events_to_info[event_name]
 
-def parse_afe_ale_event(proximal_exons_str, distal_exons_str,
-                        delimiter=','):
+
+def parse_afe_ale_event(proximal_exons_str, distal_exons_str, delimiter=','):
     """
     Extract lengths of AFE/ALE proximal and distal exons.
     """
@@ -355,16 +386,18 @@ def parse_afe_ale_event(proximal_exons_str, distal_exons_str,
     distal_exons = [parse_part(distal_exon) \
                     for distal_exon in distal_exons]
 
-    assert(len(proximal_exons) > 0)
-    assert(len(distal_exons) > 0)
+    assert (len(proximal_exons) > 0)
+    assert (len(distal_exons) > 0)
 
-    event_info = {'proximal_exons':
-                  proximal_exons,
-                  'distal_exons':
-                  distal_exons}
+    event_info = {
+        'proximal_exons': proximal_exons,
+        'distal_exons': distal_exons
+    }
     return event_info
 
-def load_afe_ale_events_information(events_info_filename, event_type,
+
+def load_afe_ale_events_information(events_info_filename,
+                                    event_type,
                                     delimiter='\t'):
     """
     Load information about AFE/ALE events.
@@ -372,20 +405,22 @@ def load_afe_ale_events_information(events_info_filename, event_type,
     assert((event_type == 'AFE') or (event_type == 'ALE')), \
                        "Error: Event type must be AFE/ALE"
 
-    print("Loading events from %s (event type: %s)" %(events_info_filename,
-                                                      event_type))
+    print("Loading events from %s (event type: %s)" %
+          (events_info_filename, event_type))
     events_info_file = open(events_info_filename, 'r')
-    events_info = csv.reader(events_info_file,
-                             delimiter=delimiter)
+    events_info = csv.reader(events_info_file, delimiter=delimiter)
     events_to_info = {}
 
     for event_name, proximal_exons, distal_exons in events_info:
-        events_to_info[event_name] = parse_afe_ale_event(proximal_exons,
-                                                         distal_exons)
+        events_to_info[event_name] = parse_afe_ale_event(
+            proximal_exons, distal_exons)
     events_info_file.close()
     return events_to_info
 
-def load_event_counts(events_filename, event_type, delimiter=';',
+
+def load_event_counts(events_filename,
+                      event_type,
+                      delimiter=';',
                       events_info_filename=None):
     """
     Parse mRNA-Seq counts data.
@@ -397,20 +432,21 @@ def load_event_counts(events_filename, event_type, delimiter=';',
     # Load length information about events, if given
     if events_info_filename != None:
         if (event_type == 'AFE' or event_type == 'AFE'):
-            events_to_info = load_afe_ale_events_information(events_info_filename,
-                                                             event_type)
+            events_to_info = load_afe_ale_events_information(
+                events_info_filename, event_type)
 
     for line in events_file:
         event_name, counts = line.strip().split('\t')
         counts_list = counts.split(delimiter)
 
         # Make sure there's more than one count in the set
-        assert(len(counts_list) > 1)
+        assert (len(counts_list) > 1)
 
         counts = [int(c) for c in counts_list]
 
         # Part information about event (lengths of exons, etc.)
-        event_info = parse_event_information(event_name, event_type,
+        event_info = parse_event_information(event_name,
+                                             event_type,
                                              events_to_info=events_to_info)
 
         chrom = event_info['chrom']
@@ -494,7 +530,7 @@ def load_event_counts(events_filename, event_type, delimiter=';',
         elif event_type == 'MXE':
             raise Exception("MXEs not supported.")
 
-        assert(event != None), "Event type %s is unknown." %(event_type)
+        assert (event != None), "Event type %s is unknown." % (event_type)
 
         events[event_name] = event
 

@@ -21,9 +21,19 @@ import misopy.sashimi_plot.plot_utils.plot_settings as plot_settings
 from misopy.sashimi_plot.plot_utils.plotting import show_spines
 from misopy.parse_gene import parseGene
 
-def plot_density_single(settings, sample_label,
-                        tx_start, tx_end, gene_obj, mRNAs, strand,
-                        graphcoords, graphToGene, bam_group, axvar, chrom,
+
+def plot_density_single(settings,
+                        sample_label,
+                        tx_start,
+                        tx_end,
+                        gene_obj,
+                        mRNAs,
+                        strand,
+                        graphcoords,
+                        graphToGene,
+                        bam_group,
+                        axvar,
+                        chrom,
                         paired_end=False,
                         intron_scale=30,
                         exon_scale=4,
@@ -55,10 +65,12 @@ def plot_density_single(settings, sample_label,
         file_name = os.path.expanduser(bam_group[i])
         bamfile = pysam.Samfile(file_name, 'rb')
         try:
-            subset_reads = bamfile.fetch(reference=chrom, start=tx_start,end=tx_end)
+            subset_reads = bamfile.fetch(reference=chrom,
+                                         start=tx_start,
+                                         end=tx_end)
         except ValueError as e:
-            print("Error retrieving files from %s: %s" %(chrom, str(e)))
-            print("Are you sure %s appears in your BAM file?" %(chrom))
+            print("Error retrieving files from %s: %s" % (chrom, str(e)))
+            print("Are you sure %s appears in your BAM file?" % (chrom))
             print("Aborting plot...")
             return axvar
         # wiggle, jxns = readsToWiggle_pysam(subset_reads, tx_start, tx_end)
@@ -72,10 +84,20 @@ def plot_density_single(settings, sample_label,
         # p3.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
         # p4.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
         # output,err = p5.communicate()
-        p1 = subprocess.Popen(["samtools", "idxstats", file_name,], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(["awk", "{s+=$3} END {print s}",], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1 = subprocess.Popen([
+            "samtools",
+            "idxstats",
+            file_name,
+        ],
+                              stdout=subprocess.PIPE)
+        p2 = subprocess.Popen([
+            "awk",
+            "{s+=$3} END {print s}",
+        ],
+                              stdin=p1.stdout,
+                              stdout=subprocess.PIPE)
         p1.stdout.close()
-        output,err = p2.communicate()
+        output, err = p2.communicate()
         if err:
             print(err)
             print('Setting the number of mapped read to 1.')
@@ -128,7 +150,8 @@ def plot_density_single(settings, sample_label,
         for s, e in mRNA:
             tmp.extend([s, e])
         sslists.append(tmp)
-    min_counts = settings["min_counts"]  # if the jxn is smaller than it, then omit the text plotting
+    min_counts = settings[
+        "min_counts"]  # if the jxn is smaller than it, then omit the text plotting
     show_text_background = settings["text_background"]
     maxy = 0
     for jxn in jxns:
@@ -146,31 +169,39 @@ def plot_density_single(settings, sample_label,
                 rightss in sslists[i]:
                 numisoforms += 1
         if numisoforms > 0:
-            if numisoforms % 2 == 0: # put on bottom
+            if numisoforms % 2 == 0:  # put on bottom
                 pts = [(ss1, 0), (ss1, -h), (ss2, -h), (ss2, 0)]
                 midpt = cubic_bezier(pts, .5)
-            else:                         # put on top
+            else:  # put on top
                 leftdens = wiggle[leftss - tx_start - 1]
                 rightdens = wiggle[rightss - tx_start]
 
-                pts = [(ss1, leftdens),
-                       (ss1, leftdens + h),
-                       (ss2, rightdens + h),
-                       (ss2, rightdens)]
+                pts = [(ss1, leftdens), (ss1, leftdens + h),
+                       (ss2, rightdens + h), (ss2, rightdens)]
                 midpt = cubic_bezier(pts, .5)
             if min_counts == 0 or jxns[jxn] >= min_counts:
                 if number_junctions:
                     if show_text_background:
-                        txt = text(midpt[0], midpt[1], '%s'%(jxns[jxn]),
-                            fontsize=font_size-2, ha='center', va='center', backgroundcolor='w')
+                        txt = text(midpt[0],
+                                   midpt[1],
+                                   '%s' % (jxns[jxn]),
+                                   fontsize=font_size - 2,
+                                   ha='center',
+                                   va='center',
+                                   backgroundcolor='w')
                     else:
-                        txt = text(midpt[0], midpt[1], '%s' % (jxns[jxn]),
-                            fontsize=font_size-2, ha='center', va='center')
-                    interval = axvar.get_ylim()[1]*0.05
+                        txt = text(midpt[0],
+                                   midpt[1],
+                                   '%s' % (jxns[jxn]),
+                                   fontsize=font_size - 2,
+                                   ha='center',
+                                   va='center')
+                    interval = axvar.get_ylim()[1] * 0.05
                     y = interval + midpt[1]
                     maxy = max(maxy, y)
 
-                a = Path(pts, [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4])
+                a = Path(pts,
+                         [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4])
                 p = PathPatch(a, ec=color, lw=log(jxns[jxn] + 1) /\
                     log(junction_log_base) * (jxns[jxn] + 1)**0.33 * 0.1, fc='none', clip_on=False)
                 axvar.add_patch(p)
@@ -183,8 +214,8 @@ def plot_density_single(settings, sample_label,
 
     if showXaxis:
         axvar.xaxis.set_ticks_position('bottom')
-        xlabel('Genomic coordinate (%s), "%s" strand'%(gene_obj.chrom,
-                                                       strand),
+        xlabel('Genomic coordinate (%s), "%s" strand' %
+               (gene_obj.chrom, strand),
                fontsize=font_size)
         max_graphcoords = max(graphcoords) - 1
         coords_fontsize = font_size - (font_size * 0.2)
@@ -247,27 +278,29 @@ def analyze_group_info(group_info, bam_files, original_labels):
             for item in file_names:
                 if '-' in item:
                     start, end = list(map(int, item.split('-')))
-                    for i in range(start, end+1):
-                        files.append(bam_files[i-1])  # here we suppose that the index of files begins from 0
-                        prefix = label_prefixs[i-1]
+                    for i in range(start, end + 1):
+                        files.append(
+                            bam_files[i - 1]
+                        )  # here we suppose that the index of files begins from 0
+                        prefix = label_prefixs[i - 1]
                         if not has_inc_level:
                             continue
-                        inc += inc_levels[i-1]
+                        inc += inc_levels[i - 1]
                     num_file += end + 1 - start
                 else:
-                    files.append(bam_files[int(item)-1])
-                    prefix = label_prefixs[int(item)-1]
+                    files.append(bam_files[int(item) - 1])
+                    prefix = label_prefixs[int(item) - 1]
                     num_file += 1
                     if not has_inc_level:
                         continue
-                    inc += inc_levels[int(item)-1]
+                    inc += inc_levels[int(item) - 1]
             group_files.append(files)
             pre_group_name = prefix + ' ' + group_name
             group_num += 1
             if not has_inc_level:
                 sample_labels.append(group_name)
                 continue
-            pre_group_name += " IncLevel: {0:.2f}".format(inc/num_file)
+            pre_group_name += " IncLevel: {0:.2f}".format(inc / num_file)
             sample_labels.append(pre_group_name)
         except:
             print('read grouping info failed.')
@@ -281,12 +314,16 @@ def analyze_group_info(group_info, bam_files, original_labels):
 
 
 # Plot density for a series of bam files.
-def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_info=None):
-#                 intron_scale=30, exon_scale=1, gene_posterior_ratio=5, posterior_bins=40,
-#                 colors=None, ymax=None, logged=False, show_posteriors=True, coverages=None,
-#                 number_junctions=True, resolution=.5, fig_width=8.5, fig_height=11,
-#                 font_size=6, junction_log_base=10, reverse_minus=False,
-#                 bar_posterior=False):
+def plot_density(sashimi_obj,
+                 pickle_filename,
+                 event,
+                 plot_title=None,
+                 group_info=None):
+    #                 intron_scale=30, exon_scale=1, gene_posterior_ratio=5, posterior_bins=40,
+    #                 colors=None, ymax=None, logged=False, show_posteriors=True, coverages=None,
+    #                 number_junctions=True, resolution=.5, fig_width=8.5, fig_height=11,
+    #                 font_size=6, junction_log_base=10, reverse_minus=False,
+    #                 bar_posterior=False):
     # Get the settings we need
     settings = sashimi_obj.settings
     bam_files = settings["bam_files"]
@@ -327,14 +364,17 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                                           exon_starts, exon_ends, intron_scale,
                                           exon_scale, reverse_minus)
     if group_info is not None:
-        group_files, group_labels, group_colors = analyze_group_info(group_info, bam_files, settings["sample_labels"])
+        group_files, group_labels, group_colors = analyze_group_info(
+            group_info, bam_files, settings["sample_labels"])
         settings["sample_labels"] = group_labels
 
         # if the group color is customized by the user
         if len(colors) != len(group_colors):
-            print('\033[0;31;m') # change the print color as red
-            print(("The number of custom colors is {0} which doesn't match the group number {1}. The program uses the "
-                  "rainbow color as default.".format(len(colors), len(group_colors))))
+            print('\033[0;31;m')  # change the print color as red
+            print((
+                "The number of custom colors is {0} which doesn't match the group number {1}. The program uses the "
+                "rainbow color as default.".format(len(colors),
+                                                   len(group_colors))))
             print('\033[0m')  # set the color as default value
             colors = settings["colors"] = group_colors
 
@@ -367,7 +407,8 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
             showXaxis = False
         else:
             showXaxis = True
-        bam_group = group_files[i]  # ['./testData/S1.R1.test.bam','./testData/S1.R2.test.bam']
+        bam_group = group_files[
+            i]  # ['./testData/S1.R1.test.bam','./testData/S1.R2.test.bam']
 
         # bam_file = os.path.expanduser(bam_files[i])
         if show_posteriors:
@@ -380,20 +421,38 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         # Read sample label
         sample_label = settings["sample_labels"][i]
 
-        print("Reading sample label: %s" %(sample_label))
+        print("Reading sample label: %s" % (sample_label))
         # print "Processing BAM: %s" %(bam_file)
 
-        plotted_ax, maxy = plot_density_single(settings, sample_label,
-                                         tx_start, tx_end, gene_obj, mRNAs, strand,
-                                         graphcoords, graphToGene, bam_group, ax1, chrom,
-                                         paired_end=False, intron_scale=intron_scale,
-                                         exon_scale=exon_scale, color=color,
-                                         ymax=ymax, logged=logged, coverage=coverage,
-                                         number_junctions=number_junctions, resolution=resolution,
-                                         showXaxis=showXaxis, nyticks=nyticks, nxticks=nxticks,
-                                         show_ylabel=show_ylabel, show_xlabel=show_xlabel,
-                                         font_size=font_size,
-                                         junction_log_base=junction_log_base)
+        plotted_ax, maxy = plot_density_single(
+            settings,
+            sample_label,
+            tx_start,
+            tx_end,
+            gene_obj,
+            mRNAs,
+            strand,
+            graphcoords,
+            graphToGene,
+            bam_group,
+            ax1,
+            chrom,
+            paired_end=False,
+            intron_scale=intron_scale,
+            exon_scale=exon_scale,
+            color=color,
+            ymax=ymax,
+            logged=logged,
+            coverage=coverage,
+            number_junctions=number_junctions,
+            resolution=resolution,
+            showXaxis=showXaxis,
+            nyticks=nyticks,
+            nxticks=nxticks,
+            show_ylabel=show_ylabel,
+            show_xlabel=show_xlabel,
+            font_size=font_size,
+            junction_log_base=junction_log_base)
         plotted_axes.append(plotted_ax)
         maxys[i] = maxy
 
@@ -404,11 +463,14 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                     (i, gene_posterior_ratio - 1))
 
                 if not os.path.isfile(miso_file):
-                    print("Warning: MISO file %s not found" %(miso_file))
+                    print("Warning: MISO file %s not found" % (miso_file))
 
-                print("Loading MISO file: %s" %(miso_file))
-                plot_posterior_single(miso_file, ax2, posterior_bins,
-                                      showXaxis=showXaxis, show_ylabel=False,
+                print("Loading MISO file: %s" % (miso_file))
+                plot_posterior_single(miso_file,
+                                      ax2,
+                                      posterior_bins,
+                                      showXaxis=showXaxis,
+                                      show_ylabel=False,
                                       font_size=font_size,
                                       bar_posterior=bar_posterior)
             except:
@@ -434,8 +496,7 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
     # Reset axes based on this.
     # Set fake ymin bound to allow lower junctions to be visible
     fake_ymin = -0.6 * max_used_yval
-    universal_yticks = linspace(0, max_used_yval,
-                                nyticks + 1)
+    universal_yticks = linspace(0, max_used_yval, nyticks + 1)
     # Round up yticks
     universal_ticks = list(map(math.ceil, universal_yticks))
     for sample_num, curr_ax in enumerate(plotted_axes):
@@ -448,21 +509,21 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
                     curr_yticklabels.append("")
                 else:
                     if label % 1 != 0:
-                        curr_yticklabels.append("%.1f" %(label))
+                        curr_yticklabels.append("%.1f" % (label))
                     else:
-                        curr_yticklabels.append("%d" %(label))
+                        curr_yticklabels.append("%d" % (label))
             curr_ax.set_yticks(universal_yticks)
-            curr_ax.set_yticklabels(curr_yticklabels,
-                                    fontsize=font_size)
+            curr_ax.set_yticklabels(curr_yticklabels, fontsize=font_size)
             curr_ax.spines["left"].set_bounds(0, max_used_yval)
             curr_ax.yaxis.set_ticks_position('left')
             curr_ax.spines["right"].set_color('none')
             if show_ylabel:
                 y_horz_alignment = 'left'
                 if logged:
-                    curr_ax.set_ylabel('RPKM $(\mathregular{\log}_{\mathregular{10}})$',
-                                       fontsize=font_size,
-                                       ha=y_horz_alignment)
+                    curr_ax.set_ylabel(
+                        'RPKM $(\mathregular{\log}_{\mathregular{10}})$',
+                        fontsize=font_size,
+                        ha=y_horz_alignment)
                 else:
                     curr_ax.set_ylabel('RPKM',
                                        fontsize=font_size,
@@ -485,34 +546,36 @@ def plot_density(sashimi_obj, pickle_filename, event, plot_title=None, group_inf
         else:
             label_ypos = universal_yticks[-1]
         curr_label = settings["sample_labels"][sample_num]
-        curr_ax.text(max(graphcoords), max(label_ypos, maxys[sample_num]),
+        curr_ax.text(max(graphcoords),
+                     max(label_ypos, maxys[sample_num]),
                      curr_label,
                      fontsize=font_size,
                      va='bottom',
                      ha='right',
                      color=sample_color)
 
-
     # Draw gene structure
     if show_posteriors:
         ax = subplot2grid((nfiles + 3, gene_posterior_ratio), (nfiles + 1, 0),
-                          colspan=gene_posterior_ratio - 1, rowspan=2)
+                          colspan=gene_posterior_ratio - 1,
+                          rowspan=2)
     else:
         ax = subplot2grid((nfiles + 3, gene_posterior_ratio), (nfiles + 1, 0),
-                          colspan=gene_posterior_ratio, rowspan=2)
+                          colspan=gene_posterior_ratio,
+                          rowspan=2)
     plot_mRNAs(tx_start, mRNAs, strand, graphcoords, reverse_minus)
     subplots_adjust(hspace=.10, wspace=.7)
 
 
-def getScaling(tx_start, tx_end, strand, exon_starts, exon_ends,
-               intron_scale, exon_scale, reverse_minus):
+def getScaling(tx_start, tx_end, strand, exon_starts, exon_ends, intron_scale,
+               exon_scale, reverse_minus):
     """
     Compute the scaling factor across various genic regions.
     """
 
     exoncoords = zeros((tx_end - tx_start + 1))
     for i in range(len(exon_starts)):
-        exoncoords[exon_starts[i] - tx_start : exon_ends[i] - tx_start] = 1
+        exoncoords[exon_starts[i] - tx_start:exon_ends[i] - tx_start] = 1
 
     graphToGene = {}
     graphcoords = zeros((tx_end - tx_start + 1), dtype='f')
@@ -545,7 +608,7 @@ def readsToWiggle_pysam(reads, tx_start, tx_end, wiggle, jxns):
     for read in reads:
         # Skip reads with no CIGAR string
         if read.cigar is None:
-            print("Skipping read with no CIGAR string: %s" %(read.cigar))
+            print("Skipping read with no CIGAR string: %s" % (read.cigar))
             continue
         cigar_str = sam_utils.sam_cigar_to_str(read.cigar)
 
@@ -569,15 +632,15 @@ def readsToWiggle_pysam(reads, tx_start, tx_end, wiggle, jxns):
         aligned_positions = read.positions
         for i, pos in enumerate(aligned_positions):
             if pos < tx_start or pos > tx_end:
-#                print "=>",pos
+                #                print "=>",pos
                 continue
-            wig_index = pos-tx_start
-            wiggle[wig_index] += 1./read.qlen
+            wig_index = pos - tx_start
+            wiggle[wig_index] += 1. / read.qlen
             try:
                 # if there is a junction coming up
-                if aligned_positions[i+1] > pos + 1:
-                    leftss = pos+1
-                    rightss= aligned_positions[i+1]+1
+                if aligned_positions[i + 1] > pos + 1:
+                    leftss = pos + 1
+                    rightss = aligned_positions[i + 1] + 1
                     if leftss > tx_start and leftss < tx_end \
                            and rightss > tx_start and rightss < tx_end:
                         jxn = ":".join(map(str, [leftss, rightss]))
@@ -648,7 +711,9 @@ def plot_mRNAs(tx_start, mRNAs, strand, graphcoords, reverse_minus):
         for s, e in mRNA:
             s = s - tx_start
             e = e - tx_start
-            x = [graphcoords[s], graphcoords[e], graphcoords[e], graphcoords[s]]
+            x = [
+                graphcoords[s], graphcoords[e], graphcoords[e], graphcoords[s]
+            ]
             y = [yloc - exonwidth / 2, yloc - exonwidth / 2,\
                 yloc + exonwidth / 2, yloc + exonwidth / 2]
             fill(x, y, 'k', lw=.5, zorder=20)
@@ -676,8 +741,9 @@ def plot_mRNAs(tx_start, mRNAs, strand, graphcoords, reverse_minus):
     yticks([])
 
 
-
-def plot_posterior_single(miso_f, axvar, posterior_bins,
+def plot_posterior_single(miso_f,
+                          axvar,
+                          posterior_bins,
                           showXaxis=True,
                           showYaxis=True,
                           show_ylabel=True,
@@ -707,13 +773,23 @@ def plot_posterior_single(miso_f, axvar, posterior_bins,
     if not bar_posterior:
         y, x, p = hist(psis, linspace(0, 1, posterior_bins),\
             normed=True, facecolor='k', edgecolor='w', lw=.2)
-        axvline(clow, ymin=.33, linestyle='--', dashes=(1, 1), color='#CCCCCC', lw=.5)
-        axvline(chigh, ymin=.33, linestyle='--', dashes=(1, 1), color='#CCCCCC', lw=.5)
+        axvline(clow,
+                ymin=.33,
+                linestyle='--',
+                dashes=(1, 1),
+                color='#CCCCCC',
+                lw=.5)
+        axvline(chigh,
+                ymin=.33,
+                linestyle='--',
+                dashes=(1, 1),
+                color='#CCCCCC',
+                lw=.5)
         axvline(mean(psis), ymin=.33, color='r')
 
         ymax = max(y) * 1.5
         ymin = -.5 * ymax
-#             "$\Psi$ = %.2f\n$\Psi_{0.05}$ = %.2f\n$\Psi_{0.95}$ = %.2f" %\
+        #             "$\Psi$ = %.2f\n$\Psi_{0.05}$ = %.2f\n$\Psi_{0.95}$ = %.2f" %\
 
         text(1, ymax,
              "$\Psi$ = %.2f\n[%.2f, %.2f]" % \
@@ -777,10 +853,9 @@ def plot_posterior_single(miso_f, axvar, posterior_bins,
     axis_color = "k"
     for shown_axis in axes_to_show:
         if shown_axis in axvar.spines:
-            print("Setting color on %s axis" %(shown_axis))
+            print("Setting color on %s axis" % (shown_axis))
             axvar.spines[shown_axis].set_linewidth(axis_size)
-            axvar.xaxis.set_tick_params(size=tick_size,
-                                        color=axis_color)
+            axvar.xaxis.set_tick_params(size=tick_size, color=axis_color)
     if showXaxis:
         from matplotlib.ticker import FormatStrFormatter
         majorFormatter = FormatStrFormatter('%g')
@@ -807,7 +882,9 @@ def cubic_bezier(pts, t):
         3 * t**2 * (1 - t) * p2 + t**3 * p3
 
 
-def plot_density_from_file(settings_f, pickle_filename, event,
+def plot_density_from_file(settings_f,
+                           pickle_filename,
+                           event,
                            output_dir,
                            group_info=None,
                            no_posteriors=False,
@@ -824,14 +901,15 @@ def plot_density_from_file(settings_f, pickle_filename, event,
 
     # Override settings flag on whether to show posterior plots
     # if --no-posteriors was given to plot.py
-    sashimi_obj = Sashimi(event, output_dir,
+    sashimi_obj = Sashimi(event,
+                          output_dir,
                           event=event,
                           chrom=chrom,
                           settings_filename=settings_f,
                           no_posteriors=no_posteriors)
 
     print("Plotting read densities and MISO estimates along event...")
-    print("  - Event: %s" %(event))
+    print("  - Event: %s" % (event))
 
     settings = sashimi_obj.settings
     if no_posteriors:
@@ -842,25 +920,28 @@ def plot_density_from_file(settings_f, pickle_filename, event,
     # Setup the figure
     sashimi_obj.setup_figure()
 
-    plot_density(sashimi_obj, pickle_filename, event, group_info=group_info,
+    plot_density(sashimi_obj,
+                 pickle_filename,
+                 event,
+                 group_info=group_info,
                  plot_title=plot_title)
 
     # Save figure
     sashimi_obj.save_plot(plot_label=plot_label)
-                 # intron_scale=settings["intron_scale"],
-                 # exon_scale=settings["exon_scale"],
-                 # gene_posterior_ratio=settings["gene_posterior_ratio"],
-                 # posterior_bins=settings["posterior_bins"],
-                 # show_posteriors=settings["show_posteriors"],
-                 # logged=settings["logged"],
-                 # colors=settings["colors"],
-                 # ymax=settings["ymax"],
-                 # coverages=settings["coverages"],
-                 # number_junctions=settings["number_junctions"],
-                 # resolution=settings["resolution"],
-                 # fig_width=settings["fig_width"],
-                 # fig_height=settings["fig_height"],
-                 # font_size=settings["font_size"],
-                 # junction_log_base=settings["junction_log_base"],
-                 # reverse_minus=settings["reverse_minus"],
-                 # bar_posterior=settings["bar_posteriors"])
+    # intron_scale=settings["intron_scale"],
+    # exon_scale=settings["exon_scale"],
+    # gene_posterior_ratio=settings["gene_posterior_ratio"],
+    # posterior_bins=settings["posterior_bins"],
+    # show_posteriors=settings["show_posteriors"],
+    # logged=settings["logged"],
+    # colors=settings["colors"],
+    # ymax=settings["ymax"],
+    # coverages=settings["coverages"],
+    # number_junctions=settings["number_junctions"],
+    # resolution=settings["resolution"],
+    # fig_width=settings["fig_width"],
+    # fig_height=settings["fig_height"],
+    # font_size=settings["font_size"],
+    # junction_log_base=settings["junction_log_base"],
+    # reverse_minus=settings["reverse_minus"],
+    # bar_posterior=settings["bar_posteriors"])

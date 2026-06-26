@@ -43,7 +43,6 @@ class MISOCompressor:
         # any sort of MISO output within it
         self.comp_ext = ".misozip"
 
-
     def compress(self, output_filename, miso_dirnames):
         """
         Takes a set of MISO input directories and compresses them
@@ -54,15 +53,15 @@ class MISOCompressor:
         if os.path.isfile(output_filename):
             print("Error: %s already exists. Please delete to overwrite." \
                   %(output_filename))
-        output_dir = "%s%s" %(output_filename, miso_db.MISO_DB_EXT)
+        output_dir = "%s%s" % (output_filename, miso_db.MISO_DB_EXT)
         if os.path.isdir(output_dir):
             print("Error: Intermediate compressed directory %s " \
                   "exists. Please delete to overwrite." %(output_dir))
             sys.exit(1)
         for miso_dirname in miso_dirnames:
-            print("Processing: %s" %(miso_dirname))
+            print("Processing: %s" % (miso_dirname))
             if not os.path.isdir(miso_dirname):
-                print("Error: %s not a directory." %(miso_dirname))
+                print("Error: %s not a directory." % (miso_dirname))
                 sys.exit(1)
             if os.path.isfile(output_filename):
                 print("Output file %s already exists, aborting. " \
@@ -71,20 +70,21 @@ class MISOCompressor:
                 sys.exit(1)
             self.miso_dirs_to_compress = []
             print("Copying source directory tree..")
-            shutil.copytree(miso_dirname, output_dir,
+            shutil.copytree(miso_dirname,
+                            output_dir,
                             ignore=self.collect_miso_dirs)
             for dir_to_compress in self.miso_dirs_to_compress:
                 rel_path = os.path.relpath(dir_to_compress, miso_dirname)
                 comp_path = os.path.join(output_dir, rel_path)
                 # Remove the place holder directory
                 os.rmdir(comp_path)
-                comp_path = "%s%s" %(comp_path, miso_db.MISO_DB_EXT)
+                comp_path = "%s%s" % (comp_path, miso_db.MISO_DB_EXT)
                 miso_db.miso_dir_to_db(dir_to_compress, comp_path)
         # Zip directory using conventional zip
         print("Zipping compressed directory with standard zip...")
         t1 = time.time()
         zipper(output_dir, output_filename)
-        print("Deleting intermediate directory: %s" %(output_dir))
+        print("Deleting intermediate directory: %s" % (output_dir))
         shutil.rmtree(output_dir)
         t2 = time.time()
         print("  - Standard zipping took %.2f minutes." \
@@ -92,8 +92,7 @@ class MISOCompressor:
         print("To access the SQLite representation of raw MISO output ")
         print("(*.miso) files, simply unzip with the .miso_zip file ")
         print("with standard unzip utility:\n")
-        print("  unzip %s" %(output_filename))
-
+        print("  unzip %s" % (output_filename))
 
     def uncompress(self, compressed_filename, output_dir):
         """
@@ -109,16 +108,14 @@ class MISOCompressor:
                   %(compressed_filename, self.comp_ext))
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
-        print("Uncompressing %s into %s" %(compressed_filename,
-                                           output_dir))
+        print("Uncompressing %s into %s" % (compressed_filename, output_dir))
         # First unzip the file using conventional unzip
         unzipped_files = unzipper(compressed_filename, output_dir)
         # Remove the original .zip
         if os.path.isfile(compressed_filename):
-            print("Removing the compressed file %s" %(compressed_filename))
+            print("Removing the compressed file %s" % (compressed_filename))
             if os.path.isfile(compressed_filename):
                 os.remove(compressed_filename)
-
 
     def collect_miso_dirs(self, path, dirnames):
         """
@@ -130,9 +127,7 @@ class MISOCompressor:
         return []
 
 
-
-def compress_miso(output_filename, input_dirs,
-                  comp_ext=".misozip"):
+def compress_miso(output_filename, input_dirs, comp_ext=".misozip"):
     """
     Compress a directory containing MISO files.
 
@@ -142,7 +137,7 @@ def compress_miso(output_filename, input_dirs,
     output_filename = utils.pathify(output_filename)
     for input_dir in input_dirs:
         if not os.path.isdir(input_dir):
-            print("Error: Cannot find directory %s" %(input_dir))
+            print("Error: Cannot find directory %s" % (input_dir))
             sys.exit(1)
     if not os.path.basename(output_filename).endswith(comp_ext):
         print("Error: Compressed output filename must end in %s" \
@@ -156,7 +151,7 @@ def compress_miso(output_filename, input_dirs,
     miso_comp = MISOCompressor()
     miso_comp.compress(output_filename, input_dirs)
     t2 = time.time()
-    print("Compression took %.2f minutes." %((t2 - t1)/60.))
+    print("Compression took %.2f minutes." % ((t2 - t1) / 60.))
 
 
 def uncompress_miso(compressed_filename, output_dir):
@@ -171,7 +166,7 @@ def uncompress_miso(compressed_filename, output_dir):
     miso_comp = MISOCompressor()
     miso_comp.uncompress(compressed_filename, output_dir)
     t2 = time.time()
-    print("Uncompression took %.2f minutes." %((t2 - t1)/60.))
+    print("Uncompression took %.2f minutes." % ((t2 - t1) / 60.))
 
 
 def zipper(dir, zip_file):
@@ -182,7 +177,8 @@ def zipper(dir, zip_file):
     by Corey Goldberg.
     """
     # Enable Zip64 to allow creation of large Zip files
-    zip = zipfile.ZipFile(zip_file, 'w',
+    zip = zipfile.ZipFile(zip_file,
+                          'w',
                           compression=zipfile.ZIP_DEFLATED,
                           allowZip64=True)
     root_len = len(os.path.abspath(dir))
@@ -202,8 +198,7 @@ def unzipper(zip_file, outdir):
 
     Return the names of files in the archive.
     """
-    zf = zipfile.ZipFile(zip_file, "r",
-                         allowZip64=True)
+    zf = zipfile.ZipFile(zip_file, "r", allowZip64=True)
     filenames = zf.namelist()
     zf.extractall(outdir)
     return filenames
@@ -221,13 +216,19 @@ def greeting():
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("--compress", dest="compress", nargs=2, default=None,
+    parser.add_option("--compress",
+                      dest="compress",
+                      nargs=2,
+                      default=None,
                       help="Compress a directory containing MISO output. "
                       "Takes as arguments: (1) the output filename of the "
                       "compressed file, (2) a comma-separated list of "
                       "directory names to be compressed. "
                       "Example: --compress output.misozip dirname1,dirname2")
-    parser.add_option("--uncompress", dest="uncompress", nargs=2, default=None,
+    parser.add_option("--uncompress",
+                      dest="uncompress",
+                      nargs=2,
+                      default=None,
                       help="Uncompress a file generated by compress_miso. "
                       "Takes as arguments: (1) the filename to be "
                       "uncompressed, and (2) the directory to place the "
@@ -241,7 +242,8 @@ def main():
     elif (options.compress is not None) and (options.uncompress is not None):
         # Can't be given both.
         greeting()
-        print("Error: Cannot process --compress and --uncompress at same time.")
+        print(
+            "Error: Cannot process --compress and --uncompress at same time.")
         sys.exit(1)
 
     if options.compress is not None:

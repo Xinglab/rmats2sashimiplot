@@ -5,19 +5,20 @@
 import unittest
 import os
 
+
 class TestCluster(unittest.TestCase):
     """
     Test cluster functionality.
     """
     def setUp(self):
         # Find out the current directory
-        self.miso_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
+        self.miso_path = os.path.dirname(
+            os.path.abspath(os.path.expanduser(__file__)))
         self.tests_data_dir = os.path.join(self.miso_path, "test-data")
-        self.events_analysis_cmd = "python %s " %(os.path.join(self.miso_path,
-                                                               "run_events_analysis.py"))
+        self.events_analysis_cmd = "python %s " % (os.path.join(
+            self.miso_path, "run_events_analysis.py"))
         self.tests_output_dir = os.path.join(self.miso_path, "test-output")
-        self.test_sam_filename = os.path.join(self.tests_data_dir,
-                                              "sam-data",
+        self.test_sam_filename = os.path.join(self.tests_data_dir, "sam-data",
                                               "c2c12.Atp2b1.sam")
         self.gff_events_dir = os.path.join(self.miso_path, "gff-events")
         self.sam_to_bam_script = os.path.join(self.miso_path, "sam_to_bam.py")
@@ -33,8 +34,7 @@ class TestCluster(unittest.TestCase):
         ## Try running MISO on cluster using default settings.
         ##
         sample_name = "se-sample"
-        counts_filename = os.path.join(self.tests_data_dir,
-                                       "se-counts",
+        counts_filename = os.path.join(self.tests_data_dir, "se-counts",
                                        "se_test.counts")
         output_dir = os.path.join(self.tests_output_dir, "SE-output")
 
@@ -51,7 +51,7 @@ class TestCluster(unittest.TestCase):
                                                        read_len,
                                                        overhang_len,
                                                        event_type)
-        print("Executing: %s" %(miso_cmd))
+        print("Executing: %s" % (miso_cmd))
         os.system(miso_cmd)
 
     def test_cluster_gene_psi(self):
@@ -67,13 +67,13 @@ class TestCluster(unittest.TestCase):
         insert_sd = 30
 
         # First index the GFF of interest
-        gff_filename = os.path.join(self.gff_events_dir, "mm9", "genes", "Atp2b1.mm9.gff")
+        gff_filename = os.path.join(self.gff_events_dir, "mm9", "genes",
+                                    "Atp2b1.mm9.gff")
         gff_index_dir = os.path.join(self.gff_events_dir, "mm9", "indexed")
-        index_cmd = "python %s --index %s %s" %(self.index_gff_script,
-                                                gff_filename,
-                                                gff_index_dir)
+        index_cmd = "python %s --index %s %s" % (self.index_gff_script,
+                                                 gff_filename, gff_index_dir)
 
-        print("Executing: %s" %(index_cmd))
+        print("Executing: %s" % (index_cmd))
         os.system(index_cmd)
 
         output_dir = os.path.join(self.tests_output_dir, "gene-psi-output")
@@ -87,7 +87,7 @@ class TestCluster(unittest.TestCase):
                      read_len,
                      insert_mean,
                      insert_sd)
-        print("Executing: %s" %(miso_cmd))
+        print("Executing: %s" % (miso_cmd))
         os.system(miso_cmd)
 
 
