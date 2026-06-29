@@ -27,7 +27,7 @@ rmats2sashimiplot produces a sashimiplot visualization of [rMATS](https://github
 
 ## Dependencies
 
-- Python 2.7 (Python 3 can be used after running [2to3.sh](2to3.sh))
+- Python 3
   * numpy
   * scipy
   * matplotlib
@@ -39,20 +39,14 @@ rmats2sashimiplot is intended to be used in a Unix-based environment.
 
 ## Install
 
-rmats2sasmimiplot can be run without installing:
+rmats2sashimiplot can be run without installing:
 ```
 python ./src/rmats2sashimiplot/rmats2sashimiplot.py
 ```
 
 rmats2sashimiplot can be installed with:
 ```
-python ./setup.py install
-```
-
-rmats2sashimiplot can be updated with:
-```
-pip uninstall rmats2sashimiplot
-python ./setup.py install
+python -m pip install .
 ```
 
 If installed, rmats2sashimiplot can be run with just:
@@ -110,7 +104,6 @@ Where grouping.gf has:
 ```
 group1name: 1-2
 group2name: 3-6
-
 ```
 
 ### Grouping
@@ -177,7 +170,7 @@ usage: rmats2sashimiplot [-h] -o OUT_DIR [--l1 L1] [--l2 L2]
                          [--keep-event-chr-prefix] [--remove-event-chr-prefix]
                          [--ymax YMAX]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
 
 Required:

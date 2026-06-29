@@ -1,8 +1,7 @@
-FROM debian:bullseye
+FROM debian:trixie
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       2to3 \
        ca-certificates \
        curl \
        git \
@@ -13,22 +12,12 @@ RUN apt-get update \
     && curl -L 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh' -O \
     && bash Miniconda3-latest-Linux-x86_64.sh -b -p /conda/install \
     && /conda/install/bin/conda init \
-    # Use libmamba solver
-    && /conda/install/bin/conda install conda-libmamba-solver \
-    && /conda/install/bin/conda config --set solver libmamba \
+    && echo '' > /conda/install/.condarc \
     && git clone https://github.com/Xinglab/rmats2sashimiplot.git /rmats2sashimiplot \
     && cd /rmats2sashimiplot \
     # && git checkout {commit} \
-    && /conda/install/bin/conda install -c conda-forge -c bioconda \
-      'python>3' \
-      numpy \
-      scipy \
-      matplotlib-base \
-      pysam \
-      samtools \
-      bedtools \
-    && ./2to3.sh \
-    && /conda/install/bin/pip install ./
+    && /conda/install/bin/conda install -c conda-forge -c bioconda --file conda_requirements.txt \
+    && /conda/install/bin/python -m pip install .
 
 # Make conda installed programs available on PATH
 ENV PATH /conda/install/bin:${PATH}
