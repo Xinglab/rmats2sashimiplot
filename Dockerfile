@@ -16,11 +16,13 @@ RUN apt-get update \
     && git clone https://github.com/Xinglab/rmats2sashimiplot.git /rmats2sashimiplot \
     && cd /rmats2sashimiplot \
     # && git checkout {commit} \
-    && /conda/install/bin/conda install -c conda-forge -c bioconda --file conda_requirements.txt \
-    && /conda/install/bin/python -m pip install .
+    && bash -l -c 'conda create --prefix ./conda_env \
+        && conda activate ./conda_env \
+        && conda install -c conda-forge -c bioconda --file conda_requirements.txt \
+        && python -m pip install .'
 
 # Make conda installed programs available on PATH
-ENV PATH /conda/install/bin:${PATH}
+ENV PATH /rmats2sashimiplot/conda_env/bin:${PATH}
 
 # Set defaults for running the image.
 # The ENTRYPOINT AND CMD are empty to be compatible with
