@@ -1,6 +1,38 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+requires = ['setuptools >= 80.0.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'rmats2sashimiplot'
+version='4.0.0'
+dependencies = [
+  'matplotlib>=3',
+  'numpy>=2',
+  'pysam',
+  'scipy>=1',
 ]
-build-backend = "setuptools.build_meta"
+requires-python = '>= 3.11'
+classifiers = [
+  'Programming Language :: Python :: 3',
+]
+authors = [
+  {name = 'Yu-Ting Tseng'},
+  {name = 'Emad Bahrami-Samani'},
+  {name = 'Zhijie Xie', email = 'shiehshiehzhijie@gmail.com'},
+  {name = 'Yukai Jiang'},
+]
+maintainers = [
+  {name = 'Eric Kutschera', email = 'kutscherae@chop.edu'},
+]
+description = 'rmats2sashimiplot'
+readme = 'README.md'
+license-files = ['LICENSE']
+license = 'GPL-2.0-only'
+
+[project.scripts]
+rmats2sashimiplot = 'rmats2sashimiplot.rmats2sashimiplot:main'
+index_gff = 'MISO.misopy.index_gff:main'
+sashimi_plot = 'MISO.misopy.sashimi_plot.sashimi_plot:main'
+
+[project.urls]
+repository = 'https://github.com/Xinglab/rmats2sashimiplot.git'

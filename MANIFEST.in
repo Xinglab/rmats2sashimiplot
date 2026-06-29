@@ -1,3 +1,2 @@
 #include these files in the python package source distribution
-include LICENSE
-include pyproject.toml
+include LICENSE MANIFEST.in pyproject.toml README.md setup.py

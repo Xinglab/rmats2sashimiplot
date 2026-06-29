@@ -5,93 +5,95 @@ import sys
 import os
 import ast
 
-import ConfigParser
+import configparser
 
 import misopy
 import misopy.miso_utils as miso_utils
+
 
 def get_default_settings():
     """
     Return default settings for sashimi_plot.
     """
-    settings = {"intron_scale": 30,
-                "exon_scale": 1,
-                "logged": False,
-                "ymax": None,
-                "show_posteriors": True,
-                "number_junctions": True,
-                "posterior_bins": 40,
-                "gene_posterior_ratio": 5,
-                "resolution": .5,
-                "fig_width": 8.5,
-                "fig_height": 11,
-                "bar_posteriors": False,
-                "junction_log_base": 10.,
-                "reverse_minus": False,
-                "bf_dist_bins": 20,
-                "font_size": 6,
-                "insert_len_bins": 25,
-                "bf_thresholds": [0, 1, 2, 5, 10, 20],
-                "nyticks": 3,
-                "nxticks": 4,
-                "show_ylabel": True,
-                "show_xlabel": True,
-                "sans_serif": False,
-                "bar_color": "k",
-                "min_counts": 0.0,
-                "text_background": True,}
+    settings = {
+        "intron_scale": 30,
+        "exon_scale": 1,
+        "logged": False,
+        "ymax": None,
+        "show_posteriors": True,
+        "number_junctions": True,
+        "posterior_bins": 40,
+        "gene_posterior_ratio": 5,
+        "resolution": .5,
+        "fig_width": 8.5,
+        "fig_height": 11,
+        "bar_posteriors": False,
+        "junction_log_base": 10.,
+        "reverse_minus": False,
+        "bf_dist_bins": 20,
+        "font_size": 6,
+        "insert_len_bins": 25,
+        "bf_thresholds": [0, 1, 2, 5, 10, 20],
+        "nyticks": 3,
+        "nxticks": 4,
+        "show_ylabel": True,
+        "show_xlabel": True,
+        "sans_serif": False,
+        "bar_color": "k",
+        "min_counts": 0.0,
+        "text_background": True,
+    }
     return settings
 
-def parse_plot_settings(settings_filename, event=None, chrom=None,
-                        # Float parameters
-                        FLOAT_PARAMS=["intron_scale",
-                                      "exon_scale",
-                                      "ymax",
-                                      "resolution",
-                                      "fig_width",
-                                      "fig_height",
-                                      "font_size",
-                                      "junction_log_base",
-                                      "min_counts",],
-                        # Integer parameters
-                        INT_PARAMS=["posterior_bins",
-                                    "gene_posterior_ratio",
-                                    "insert_len_bins",
-                                    "nyticks",
-                                    "nxticks"],
-                        # Boolean parameters
-                        BOOL_PARAMS=["logged",
-                                     "show_posteriors",
-                                     "reverse_minus",
-                                     "bar_posteriors",
-                                     "show_ylabel",
-                                     "show_xlabel",
-                                     "number_junctions",
-                                     "sans_serif",
-                                     "text_background",
-                                     "group_info"],
-                        # Parameters to be interpreted as Python lists or
-                        # data structures
-                        DATA_PARAMS=["miso_files",
-                                     "bam_files",
-                                     "bf_thresholds",
-                                     "bar_color",
-                                     "sample_labels"],
-                        no_posteriors=False):
+
+def parse_plot_settings(
+        settings_filename,
+        event=None,
+        chrom=None,
+        # Float parameters
+        FLOAT_PARAMS=[
+            "intron_scale",
+            "exon_scale",
+            "ymax",
+            "resolution",
+            "fig_width",
+            "fig_height",
+            "font_size",
+            "junction_log_base",
+            "min_counts",
+        ],
+        # Integer parameters
+        INT_PARAMS=[
+            "posterior_bins", "gene_posterior_ratio", "insert_len_bins",
+            "nyticks", "nxticks"
+        ],
+        # Boolean parameters
+        BOOL_PARAMS=[
+            "logged", "show_posteriors", "reverse_minus", "bar_posteriors",
+            "show_ylabel", "show_xlabel", "number_junctions", "sans_serif",
+            "text_background", "group_info"
+        ],
+        # Parameters to be interpreted as Python lists or
+        # data structures
+        DATA_PARAMS=[
+            "miso_files", "bam_files", "bf_thresholds", "bar_color",
+            "sample_labels"
+        ],
+        no_posteriors=False):
     """
     Populate a settings dictionary with the plotting parameters, parsed
     as the right datatype.
     """
     settings = get_default_settings()
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
 
-    print "Reading settings from: %s" %(settings_filename)
+    print("Reading settings from: %s" % (settings_filename))
     config.read(settings_filename)
 
     for section in config.sections():
         for option in config.options(section):
-            print "Parsing %s:%s" %(section, option)
+            print("Parsing %s:%s" % (section, option))
             if option in FLOAT_PARAMS:
                 settings[option] = config.getfloat(section, option)
             elif option in INT_PARAMS:
@@ -99,8 +101,8 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
             elif option in BOOL_PARAMS:
                 settings[option] = config.getboolean(section, option)
             elif option in DATA_PARAMS:
-                settings[option] = ast.literal_eval(config.get(section,
-                                                               option))
+                settings[option] = ast.literal_eval(config.get(
+                    section, option))
             else:
                 settings[option] = config.get(section, option)
 
@@ -127,11 +129,14 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
     num_bams = len(settings["bam_files"])
     num_colors = len(settings["colors"])
 
-    if not (num_labels == num_bams == num_colors) and not(settings["group_info"]):
+    if not (num_labels == num_bams ==
+            num_colors) and not (settings["group_info"]):
         print('\033[0;31;m')  # change the print color as red
-        print "Error: Must provide sample label and color for each entry in bam_files!"
-        print "  - Provided %d labels, %d BAMs, %d colors" \
-            %(num_labels, num_bams, num_colors)
+        print(
+            "Error: Must provide sample label and color for each entry in bam_files!"
+        )
+        print("  - Provided %d labels, %d BAMs, %d colors" \
+            %(num_labels, num_bams, num_colors))
         print('\033[0m')  # set the color as default value
         sys.exit(1)
 
@@ -149,16 +154,18 @@ def parse_plot_settings(settings_filename, event=None, chrom=None,
 
     if "coverages" in settings:
         coverages = ast.literal_eval(settings["coverages"])
-        coverages = map(float, coverages)
+        coverages = list(map(float, coverages))
         # Normalize coverages per M
-        coverages = [x / 1e6  for x in coverages]
+        coverages = [x / 1e6 for x in coverages]
     else:
         coverages = [1 for x in settings["bam_files"]]
     settings["coverages"] = coverages
 
     if len(settings["coverages"]) != len(settings["sample_labels"]):
         print('\033[0;31;m')  # change the print color as red
-        print "Error: Must provide a coverage value for each sample or leave coverages unset."
+        print(
+            "Error: Must provide a coverage value for each sample or leave coverages unset."
+        )
         print('\033[0m')  # set the color as default value
         sys.exit(1)
 

@@ -1,0 +1,7 @@
+bedtools=2.31.*
+matplotlib-base=3.11.*
+numpy=2.4.*
+pysam=0.24.*
+python=3.11.*
+samtools=1.23.*
+scipy=1.17.*

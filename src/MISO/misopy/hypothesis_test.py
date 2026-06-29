@@ -12,6 +12,7 @@ from misopy.samples_utils import *
 from misopy.credible_intervals import *
 import misopy.misc_utils as misc_utils
 
+
 class NullPeakedDensity:
     """
     A density peaked on the null hypothesis
@@ -25,6 +26,7 @@ class NullPeakedDensity:
         else:
             return 0
 
+
 class gaussian_kde_set_covariance(stats.gaussian_kde):
     '''
     from Anne Archibald in mailinglist:
@@ -36,17 +38,20 @@ class gaussian_kde_set_covariance(stats.gaussian_kde):
 
     def _compute_covariance(self):
         self.inv_cov = np.linalg.inv(self.covariance)
-        self._norm_factor = sqrt(np.linalg.det(2*np.pi*self.covariance)) * self.n
+        self._norm_factor = sqrt(np.linalg.det(
+            2 * np.pi * self.covariance)) * self.n
+
 
 class gaussian_kde_covfact(stats.gaussian_kde):
-    def __init__(self, dataset, covfact = 'scotts'):
+    def __init__(self, dataset, covfact='scotts'):
         self.covfact = covfact
         scipy.stats.gaussian_kde.__init__(self, dataset)
 
     def _compute_covariance_(self):
         '''not used'''
         self.inv_cov = np.linalg.inv(self.covariance)
-        self._norm_factor = sqrt(np.linalg.det(2*np.pi*self.covariance)) * self.n
+        self._norm_factor = sqrt(np.linalg.det(
+            2 * np.pi * self.covariance)) * self.n
 
     def covariance_factor(self):
         if self.covfact in ['sc', 'scotts']:
@@ -56,13 +61,14 @@ class gaussian_kde_covfact(stats.gaussian_kde):
         elif self.covfact:
             return float(self.covfact)
         else:
-            raise ValueError, \
-                'covariance factor has to be scotts, silverman or a number'
+            raise ValueError(
+                'covariance factor has to be scotts, silverman or a number')
 
     def reset_covfact(self, covfact):
         self.covfact = covfact
         self.covariance_factor()
         self._compute_covariance()
+
 
 def compute_prior_proportion_diff(num_samples):
     """
@@ -103,7 +109,7 @@ def compute_delta_densities(samples1_results,
     densities = {}
     # Compute analytic prior density
     prior_density_fn = lambda x: 1 + x if x <= 0 else 1 - x
-    analytic_prior_density = map(prior_density_fn, diff_range)
+    analytic_prior_density = list(map(prior_density_fn, diff_range))
     posterior_samples1 = samples1_results[0]
     posterior_samples2 = samples2_results[0]
 
@@ -155,10 +161,10 @@ def compute_delta_densities(samples1_results,
         all_same_diff = all(posterior_diff - posterior_diff[0] == 0)
 
         if all_same_diff and not warning_outputted:
-            print "Warning: Event %s was not sampled properly in %s or %s" \
+            print("Warning: Event %s was not sampled properly in %s or %s" \
                   %(event_name,
                     sample1_label,
-                    sample2_label)
+                    sample2_label))
             warning_outputted = True
 
         if mean_abs_posterior_diff <= .009 or all_same_diff:
@@ -179,7 +185,9 @@ def compute_delta_densities(samples1_results,
     return densities
 
 
-def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
+def output_samples_comparison(sample1_dir,
+                              sample2_dir,
+                              output_dir,
                               alpha=.95,
                               sample_labels=None,
                               use_compressed=None):
@@ -190,16 +198,16 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
     Expects two directories with samples from a MISO run, where corresponding
     events in the two samples' directories begin with the same event name.
     """
-    print "Given output dir: %s" %(output_dir)
-    print "Retrieving MISO files in sample directories..."
-    sample1_obj = MISOSamples(sample1_dir,
-                              use_compressed=use_compressed)
-    sample2_obj = MISOSamples(sample2_dir,
-                              use_compressed=use_compressed)
-    print "Computing sample comparison between %s and %s..." %(sample1_dir,
-                                                               sample2_dir)
-    print "  - No. of events in %s: %d" %(sample1_dir, sample1_obj.num_events)
-    print "  - No. of events in %s: %d" %(sample2_dir, sample2_obj.num_events)
+    print("Given output dir: %s" % (output_dir))
+    print("Retrieving MISO files in sample directories...")
+    sample1_obj = MISOSamples(sample1_dir, use_compressed=use_compressed)
+    sample2_obj = MISOSamples(sample2_dir, use_compressed=use_compressed)
+    print("Computing sample comparison between %s and %s..." %
+          (sample1_dir, sample2_dir))
+    print("  - No. of events in %s: %d" %
+          (sample1_dir, sample1_obj.num_events))
+    print("  - No. of events in %s: %d" %
+          (sample2_dir, sample2_obj.num_events))
     # Output header for Bayes factor file
     if sample_labels is None:
         # Use directory names as sample labels
@@ -208,11 +216,11 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
     else:
         # If we're given sample labels, use them
         sample1_label, sample2_label = sample_labels
-        print "Using user-given sample labels (sample1 = %s, sample2 = %s)" \
-              %(sample1_label, sample2_label)
-    output_dir = os.path.join(output_dir, "%s_vs_%s" %(sample1_label,
-                                                       sample2_label))
-    print "Creating comparisons parent directory: %s" %(output_dir)
+        print("Using user-given sample labels (sample1 = %s, sample2 = %s)" \
+              %(sample1_label, sample2_label))
+    output_dir = os.path.join(output_dir, "%s_vs_%s" %
+                              (sample1_label, sample2_label))
+    print("Creating comparisons parent directory: %s" % (output_dir))
     # Create parent directory for comparison
     misc_utils.make_dir(output_dir)
 
@@ -220,24 +228,14 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
     bf_output_dir = os.path.join(output_dir, 'bayes-factors/')
     misc_utils.make_dir(bf_output_dir)
 
-    header_fields = ['event_name',
-                     'sample1_posterior_mean',
-                     'sample1_ci_low',
-                     'sample1_ci_high',
-                     'sample2_posterior_mean',
-                     'sample2_ci_low',
-                     'sample2_ci_high',
-                     'diff',
-                     'bayes_factor',
-                     'isoforms',
-                     'sample1_counts',
-                     'sample1_assigned_counts',
-                     'sample2_counts',
-                     'sample2_assigned_counts',
-                     'chrom',
-                     'strand',
-                     'mRNA_starts',
-                     'mRNA_ends']
+    header_fields = [
+        'event_name', 'sample1_posterior_mean', 'sample1_ci_low',
+        'sample1_ci_high', 'sample2_posterior_mean', 'sample2_ci_low',
+        'sample2_ci_high', 'diff', 'bayes_factor', 'isoforms',
+        'sample1_counts', 'sample1_assigned_counts', 'sample2_counts',
+        'sample2_assigned_counts', 'chrom', 'strand', 'mRNA_starts',
+        'mRNA_ends'
+    ]
     header_line = "\t".join(header_fields) + "\n"
     output_filename = \
         os.path.join(bf_output_dir, "%s_vs_%s.miso_bf" %(sample1_label,
@@ -303,49 +301,53 @@ def output_samples_comparison(sample1_dir, sample2_dir, output_dir,
                 Decimal(str(sample1_posterior_mean[0])).quantize(Decimal('0.01'))
             sample2_posterior_mean = \
                 Decimal(str(sample2_posterior_mean[0])).quantize(Decimal('0.01'))
-            posterior_diff = "%.2f" %(sample1_posterior_mean - sample2_posterior_mean)
-            bayes_factor = "%.2f" %(bf[0])
+            posterior_diff = "%.2f" % (sample1_posterior_mean
+                                       - sample2_posterior_mean)
+            bayes_factor = "%.2f" % (bf[0])
         else:
             posterior_diff = \
                 ",".join(["%.2f" %(v) for v in (sample1_posterior_mean - sample2_posterior_mean)])
             sample1_posterior_mean = sample1_cred_intervals[1]
             sample2_posterior_mean = sample2_cred_intervals[1]
-            bayes_factor = ",".join(["%.2f" %(max(v, 0)) for v in bf])
+            bayes_factor = ",".join(["%.2f" % (max(v, 0)) for v in bf])
 
         # Write comparison output line
-        output_fields = [event_name,
-                         # Mean and confidence bounds for sample 1
-                         "%s" %(sample1_posterior_mean),
-                         "%s" %(sample1_ci_low),
-                         "%s" %(sample1_ci_high),
-                         # Mean and confidence bounds for sample 2
-                         "%s" %(sample2_posterior_mean),
-                         "%s" %(sample2_ci_low),
-                         "%s" %(sample2_ci_high),
-                         # Delta Psi value
-                         "%s" %(posterior_diff),
-                         # Bayes factor
-                         "%s" %(bayes_factor),
-                         # Description of the isoforms
-                         "%s" %(isoforms_field),
-                         # Counts information for sample 1
-                         "%s" %(sample1_counts_info['counts']),
-                         "%s" %(sample1_counts_info['assigned_counts']),
-                         # Counts information for sample 2
-                         "%s" %(sample2_counts_info['counts']),
-                         "%s" %(sample2_counts_info['assigned_counts']),
-                         # Gene information
-                         gene_info["chrom"],
-                         gene_info["strand"],
-                         gene_info["mRNA_starts"],
-                         gene_info["mRNA_ends"]]
-        output_line = "%s\n" %("\t".join(output_fields))
+        output_fields = [
+            event_name,
+            # Mean and confidence bounds for sample 1
+            "%s" % (sample1_posterior_mean),
+            "%s" % (sample1_ci_low),
+            "%s" % (sample1_ci_high),
+            # Mean and confidence bounds for sample 2
+            "%s" % (sample2_posterior_mean),
+            "%s" % (sample2_ci_low),
+            "%s" % (sample2_ci_high),
+            # Delta Psi value
+            "%s" % (posterior_diff),
+            # Bayes factor
+            "%s" % (bayes_factor),
+            # Description of the isoforms
+            "%s" % (isoforms_field),
+            # Counts information for sample 1
+            "%s" % (sample1_counts_info['counts']),
+            "%s" % (sample1_counts_info['assigned_counts']),
+            # Counts information for sample 2
+            "%s" % (sample2_counts_info['counts']),
+            "%s" % (sample2_counts_info['assigned_counts']),
+            # Gene information
+            gene_info["chrom"],
+            gene_info["strand"],
+            gene_info["mRNA_starts"],
+            gene_info["mRNA_ends"]
+        ]
+        output_line = "%s\n" % ("\t".join(output_fields))
         output_file.write(output_line)
-    print "Compared a total of %d events." %(num_events_compared)
+    print("Compared a total of %d events." % (num_events_compared))
     output_file.close()
 
 
-def compute_bayes_factor(prior_density, posterior_density,
+def compute_bayes_factor(prior_density,
+                         posterior_density,
                          at_point=0,
                          print_bayes=False):
     """
@@ -370,8 +372,8 @@ def compute_bayes_factor(prior_density, posterior_density,
         bayes_factor = bayes_factor[0]
 
     if print_bayes:
-        print "diff_posterior: %.4f" %(diff_posterior)
-        print "bayes_factor: %.2f" %(bayes_factor)
+        print("diff_posterior: %.4f" % (diff_posterior))
+        print("bayes_factor: %.2f" % (bayes_factor))
 
     # Upper bound on Bayes factor
     if bayes_factor > max_bf:
@@ -382,6 +384,7 @@ def compute_bayes_factor(prior_density, posterior_density,
 
 def main():
     pass
+
 
 if __name__ == '__main__':
     main()

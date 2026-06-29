@@ -1,1 +1,1 @@
-import misopy
+from . import misopy

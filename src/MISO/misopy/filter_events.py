@@ -11,6 +11,7 @@ import misopy
 from misopy.parse_csv import *
 from collections import defaultdict
 
+
 def fname_callback(option, op_str, value, parser):
     """
     Handles the parsing the variable number of filenames to the --filter
@@ -23,6 +24,7 @@ def fname_callback(option, op_str, value, parser):
         else:
             flist.append(arg)
     setattr(parser.values, option.dest, flist)
+
 
 def get_counts(counts_str):
     """
@@ -58,8 +60,8 @@ def get_counts(counts_str):
     return num_inc, num_exc, num_both
 
 
-def filter_event(sample_inc, sample_exc, sample_both,
-                 num_total, num_inc, num_exc, num_sum):
+def filter_event(sample_inc, sample_exc, sample_both, num_total, num_inc,
+                 num_exc, num_sum):
     """
     Return True if event passes filter, False otherwise.
     """
@@ -80,8 +82,16 @@ def filter_event(sample_inc, sample_exc, sample_both,
 
     return True
 
-def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
-                 num_sum, delta_psi_filter, bf_filter, vote_thresh,
+
+def multi_filter(filter_filename,
+                 output_dir,
+                 num_total,
+                 num_inc,
+                 num_exc,
+                 num_sum,
+                 delta_psi_filter,
+                 bf_filter,
+                 vote_thresh,
                  apply_both_samples=False):
 
     diff_thresh = vote_thresh
@@ -101,9 +111,15 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
         data, h = csv2dictlist_raw(fname)
         total_events.append(len(data))
 
-        filtered = filter_events(data, h, num_total, num_inc, num_exc, num_sum,
-                                    delta_psi_filter, bf_filter,
-                                    apply_both_samples=apply_both_samples)
+        filtered = filter_events(data,
+                                 h,
+                                 num_total,
+                                 num_inc,
+                                 num_exc,
+                                 num_sum,
+                                 delta_psi_filter,
+                                 bf_filter,
+                                 apply_both_samples=apply_both_samples)
         comp.append(filtered)
 
     # if there is just a single file of inputs
@@ -111,8 +127,8 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
         num_pass = len(comp[0])
         output_filename = os.path.join(output_dir,
                                        os.path.basename(fname) + ".filtered")
-        print "Filtering %s into %s" %(",".join(filter_filename),
-                                       output_filename)
+        print("Filtering %s into %s" %
+              (",".join(filter_filename), output_filename))
         filter_output(comp[0], output_filename, h, num_pass, total_events[0])
 
     else:
@@ -129,10 +145,10 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
                 rep_list[c][event['event_name']].append(event)
             c = c + 1
 
-        for event_name in event_dict.keys():
+        for event_name in list(event_dict.keys()):
             # not enough replicates of the event passed the previous filters
             if len(event_dict[event_name]) < diff_thresh:
-                del(event_dict[event_name])
+                del (event_dict[event_name])
                 continue
 
             # test to see if enough of the replicates point in the same direction
@@ -140,7 +156,8 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
             dp_list = []
             for event in event_dict[event_name]:
                 if not bf_list:
-                    bf_pass = bayes_factor_pass(event['bayes_factor'], bf_filter)
+                    bf_pass = bayes_factor_pass(event['bayes_factor'],
+                                                bf_filter)
                     bf_list = bf_list + bf_pass
                     dp_pass = delta_psi_pass(event['diff'], delta_psi_filter)
                     dp_list = dp_list + dp_pass
@@ -155,34 +172,35 @@ def multi_filter(filter_filename, output_dir, num_total, num_inc, num_exc,
 
             bf_pass = False
             for bf in bf_list:
-                if(abs(bf) >= diff_thresh):
+                if (abs(bf) >= diff_thresh):
                     bf_pass = True
                     break
             dp_pass = False
             for dp in dp_list:
-                if(abs(dp) >= diff_thresh):
+                if (abs(dp) >= diff_thresh):
                     dp_pass = True
                     break
 
             if not bf_pass and dp_pass:
-                del(event_dict[event_name])
+                del (event_dict[event_name])
 
         comp_new = []
         for events in comp:
             event_list = []
             for event in events:
-                if event_dict.has_key(event['event_name']):
+                if event['event_name'] in event_dict:
                     event_list.append(event)
             comp_new.append(event_list)
 
         for i in range(0, len(comp_new)):
             num_pass = len(comp_new[i])
             fname = filter_filename[i]
-            output_filename = os.path.join(output_dir,
-                                           os.path.basename(fname) + ".filtered")
-            print "Filtering %s into %s" %(fname,
-                                           output_filename)
-            filter_output(comp_new[i], output_filename, h, num_pass, total_events[i])
+            output_filename = os.path.join(
+                output_dir,
+                os.path.basename(fname) + ".filtered")
+            print("Filtering %s into %s" % (fname, output_filename))
+            filter_output(comp_new[i], output_filename, h, num_pass,
+                          total_events[i])
 
 
 def bayes_factor_pass(bayes_factor, bf_filter):
@@ -201,6 +219,7 @@ def bayes_factor_pass(bayes_factor, bf_filter):
             bf_list.append(1)
 
     return bf_list
+
 
 def delta_psi_pass(delta_psi, dp_filter):
     """
@@ -238,8 +257,15 @@ def fix_bayes_factor(bayes_factor):
 
     return bayes_factor
 
-def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
-                  delta_psi_filter, bf_filter,
+
+def filter_events(data,
+                  h,
+                  num_total,
+                  num_inc,
+                  num_exc,
+                  num_sum,
+                  delta_psi_filter,
+                  bf_filter,
                   apply_both_samples=False):
     """
     Filter.
@@ -249,7 +275,7 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
     if abs(delta_psi_filter) > 1 or \
        abs(delta_psi_filter) < 0:
-        raise Exception, "Error: delta psi value outside [0, 1]."
+        raise Exception("Error: delta psi value outside [0, 1].")
 
     for event in data:
         # Sometimes the bayes factor is not formatted correctly, this fixes that
@@ -257,9 +283,9 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
         num_isoforms = len(event['isoforms'])
         if num_isoforms != 2:
-            print "Error: filter_events.py is only defined for MISO output " \
+            print("Error: filter_events.py is only defined for MISO output " \
                   "on two-isoform alternative events. " \
-                  "Found a non-two isoform event: %s" %(event['event_name'])
+                  "Found a non-two isoform event: %s" %(event['event_name']))
             sys.exit(1)
 
         # Get sample 1 counts
@@ -292,19 +318,21 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
 
             sample1_inc, sample1_exc, sample1_both = sample1_counts
 
-            sample1_result = filter_event(sample1_inc, sample1_exc, sample1_both,
-                                          num_total, num_inc, num_exc, num_sum)
+            sample1_result = filter_event(sample1_inc, sample1_exc,
+                                          sample1_both, num_total, num_inc,
+                                          num_exc, num_sum)
 
             # Get sample 2 counts
             sample2_counts = get_counts(event['sample2_counts'])
 
             if sample2_counts == None:
-                raise Exception, "Incompatible samples."
+                raise Exception("Incompatible samples.")
 
             sample2_inc, sample2_exc, sample2_both = sample2_counts
 
-            sample2_result = filter_event(sample2_inc, sample2_exc, sample2_both,
-                                          num_total, num_inc, num_exc, num_sum)
+            sample2_result = filter_event(sample2_inc, sample2_exc,
+                                          sample2_both, num_total, num_inc,
+                                          num_exc, num_sum)
 
             if abs(delta_psi) < abs(delta_psi_filter):
                 continue
@@ -324,7 +352,7 @@ def filter_events(data, h, num_total, num_inc, num_exc, num_sum,
         filtered_events.append(event)
 
     # filter_output(filtered_Events, output_filename, h, num_pass, total_events)
-    return(filtered_events)
+    return (filtered_events)
 
 
 def filter_output(filtered_events, output_filename, h, num_pass, total_events):
@@ -333,67 +361,108 @@ def filter_output(filtered_events, output_filename, h, num_pass, total_events):
     """
     dictlist2file(filtered_events, output_filename, h)
 
-    print "%d/%d events pass the filter (%.2f percent)." \
+    print("%d/%d events pass the filter (%.2f percent)." \
           %(num_pass,
             total_events,
-            (num_pass/float(total_events)) * 100)
+            (num_pass/float(total_events)) * 100))
 
 
 def greeting():
-    print "filter_events: filtering MISO pairwise comparison output.\n"
-    print "Note: This utility is only works on MISO output for two-isoform "
-    print "event annotations.\n"
+    print("filter_events: filtering MISO pairwise comparison output.\n")
+    print("Note: This utility is only works on MISO output for two-isoform ")
+    print("event annotations.\n")
 
 
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("--filter", dest="filter_filename", default=None,
-                      action="callback", callback=fname_callback,
-                      help="Comparison file to filter or list of replicate files to filter.")
-    parser.add_option("--control", dest="control_filename", default=[],
-                     action="callback", callback=fname_callback,
-                     help="Control comparison file to filter.")
-    parser.add_option("--output-dir", dest="output_dir", nargs=1,
+    parser.add_option(
+        "--filter",
+        dest="filter_filename",
+        default=None,
+        action="callback",
+        callback=fname_callback,
+        help="Comparison file to filter or list of replicate files to filter.")
+    parser.add_option("--control",
+                      dest="control_filename",
+                      default=[],
+                      action="callback",
+                      callback=fname_callback,
+                      help="Control comparison file to filter.")
+    parser.add_option("--output-dir",
+                      dest="output_dir",
+                      nargs=1,
                       default=None,
                       help="Output directory for filtered file.")
-    parser.add_option("--num-total", dest="num_total", nargs=1, default=0,
-                      type="int",
-                      help="Require at least N-many total reads (inclusion reads, "
-                      "exclusion reads or reads supporting both isoforms.")
-    parser.add_option("--num-inc", dest="num_inc", nargs=1, default=0,
+    parser.add_option(
+        "--num-total",
+        dest="num_total",
+        nargs=1,
+        default=0,
+        type="int",
+        help="Require at least N-many total reads (inclusion reads, "
+        "exclusion reads or reads supporting both isoforms.")
+    parser.add_option("--num-inc",
+                      dest="num_inc",
+                      nargs=1,
+                      default=0,
                       type="int",
                       help="Require at least N-many inclusion reads. "
                       "Assumes that the first isoform (isoform 0) is the "
                       "inclusion isoform.")
-    parser.add_option("--num-exc", dest="num_exc", nargs=1, default=0,
+    parser.add_option("--num-exc",
+                      dest="num_exc",
+                      nargs=1,
+                      default=0,
                       type="int",
                       help="Require at least N-many exclusion reads")
-    parser.add_option("--num-sum-inc-exc", dest="num_sum", nargs=1, default=0,
-                      type="int",
-                      help="Require the sum of inclusion and exclusion reads to "
-                      "be at least N.")
-    parser.add_option("--delta-psi", dest="delta_psi", nargs=1, default=0, type="float",
-                      help="Require the absolute change in Psi (delta Psi) to be at least N. "
-                      "Only takes positive floats as arguments.")
-    parser.add_option("--bayes-factor", dest="bayes_factor", nargs=1, default=0, type="float",
+    parser.add_option(
+        "--num-sum-inc-exc",
+        dest="num_sum",
+        nargs=1,
+        default=0,
+        type="int",
+        help="Require the sum of inclusion and exclusion reads to "
+        "be at least N.")
+    parser.add_option(
+        "--delta-psi",
+        dest="delta_psi",
+        nargs=1,
+        default=0,
+        type="float",
+        help="Require the absolute change in Psi (delta Psi) to be at least N. "
+        "Only takes positive floats as arguments.")
+    parser.add_option("--bayes-factor",
+                      dest="bayes_factor",
+                      nargs=1,
+                      default=0,
+                      type="float",
                       help="Require the Bayes factor to be at least N.")
-    parser.add_option("--apply-both", dest="apply_both", default=False, action="store_true",
+    parser.add_option("--apply-both",
+                      dest="apply_both",
+                      default=False,
+                      action="store_true",
                       help="Apply filter to both samples.")
-    parser.add_option("--votes", dest="vote_thresh", nargs=1, default=0, type="int",
-                    help="The number of biological replicates in a sample which must pass the  "
-                    " filters to call an event significant.")
+    parser.add_option(
+        "--votes",
+        dest="vote_thresh",
+        nargs=1,
+        default=0,
+        type="int",
+        help=
+        "The number of biological replicates in a sample which must pass the  "
+        " filters to call an event significant.")
 
     greeting()
 
     (options, args) = parser.parse_args()
 
     if options.filter_filename == None:
-        print "Need at least one filename to filter (use --filter.)"
+        print("Need at least one filename to filter (use --filter.)")
         return
     if options.output_dir == None:
-        print "Need an output directory to output filtered file to " \
-              "(use --output-dir)"
+        print("Need an output directory to output filtered file to " \
+              "(use --output-dir)")
         return
 
     filter_filename = []
@@ -411,10 +480,17 @@ def main():
     #                  options.num_sum, options.delta_psi, options.bayes_factor,
     #                  apply_both_samples=options.apply_both)
 
-    multi_filter(filter_filename, output_dir, options.num_total, options.num_inc,
-            options.num_exc, options.num_sum, options.delta_psi,
-            options.bayes_factor, options.vote_thresh,
-            apply_both_samples=options.apply_both)
+    multi_filter(filter_filename,
+                 output_dir,
+                 options.num_total,
+                 options.num_inc,
+                 options.num_exc,
+                 options.num_sum,
+                 options.delta_psi,
+                 options.bayes_factor,
+                 options.vote_thresh,
+                 apply_both_samples=options.apply_both)
+
 
 if __name__ == '__main__':
     main()
